@@ -17,6 +17,36 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 /**
+ * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the cylinder.
+ * @param value new radius.
+ */
+void MainWindow::on_radiusSpinBox_valueChanged(double value) {
+  ui->mainView->cylinder.setRadius(value);
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_angleSpinBox_valueChanged Updates the opening angle of the cylinder.
+ * @param value new opening angle.
+ */
+void MainWindow::on_angleSpinBox_valueChanged(double value) {
+  ui->mainView->cylinder.setAngle(value);
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the cylinder.
+ * @param value new height.
+ */
+void MainWindow::on_heightSpinBox_valueChanged(double value) {
+  ui->mainView->cylinder.setHeight(value);
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
  * @brief MainWindow::on_ResetRotationButton_clicked Resets the rotation.
  * @param checked Unused.
  */

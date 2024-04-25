@@ -23,6 +23,7 @@
 class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
+    friend class MainWindow;
 
     Pyramid pyramid;
     Cylinder cylinder;
@@ -59,6 +60,7 @@ public:
     // Functions for widget input events
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
+    void updateBuffers();
 
 protected:
     void initializeGL() override;

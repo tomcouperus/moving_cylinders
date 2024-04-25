@@ -75,6 +75,8 @@ void MainView::initializeGL()
 
     createShaderProgram();
 
+    // TODO: refactor, delete knot
+
     // Define the vertices of the cylinder
     cylinder.initCylinder();
     vertexArr = cylinder.getVertexArr();
@@ -101,8 +103,7 @@ void MainView::initializeGL()
     glBindVertexArray(vao);
 
     glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
+    updateBuffers();
 
     // Set up the vertex attributes
     glEnableVertexAttribArray(0);
@@ -170,6 +171,18 @@ void MainView::initializeGL()
     // Set the initial projection transformation
     projTransf.setToIdentity();
     projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
+}
+
+/**
+ * @brief MainView::updateBuffers gets the vertex array of the cylinder and updates the buffer
+ * TODO: extend to update buffer of other cylinders and enveloping surfaces.
+ */
+void MainView::updateBuffers(){
+    vertexArr.clear();
+    vertexArr = cylinder.getVertexArr();
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
 }
 
 /**
