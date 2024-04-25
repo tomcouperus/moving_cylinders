@@ -12,7 +12,6 @@
 
 #include "model.h"
 #include "vertex.h"
-#include "pyramid.h"
 #include "cylinder.h"
 
 
@@ -25,27 +24,19 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
     friend class MainWindow;
 
-    Pyramid pyramid;
     Cylinder cylinder;
 
     GLuint vao;
     GLuint vbo;
-    GLuint knotVbo;
-    GLuint knotVao;
     QOpenGLShaderProgram shader;
     QVector<Vertex> vertexArr;
 
-    // Define knot model
-    QVector<QVector3D> knotVertices;
-    QVector<Vertex> knotArr;
 
-    // Transformation matrices for the model (pyramid, knot)
+    // Transformation matrices for the model
     QMatrix4x4 modelScaling;
     QMatrix4x4 modelRotation;
-    QMatrix4x4 knotTranslation;
-    QMatrix4x4 pyramidTranslation;
-    QMatrix4x4 knotTransf;    // knotTranslation * modelRotation * modelScaling
-    QMatrix4x4 pyramidTransf; // pyramidTranslation * modelRotation * modelScaling
+    QMatrix4x4 cylinderTranslation;
+    QMatrix4x4 cylinderTransf; // cylinderTranslation * modelRotation * modelScaling
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
@@ -64,6 +55,7 @@ public:
 
 protected:
     void initializeGL() override;
+    void initBuffers();
     void resizeGL(int newWidth, int newHeight) override;
     void paintGL() override;
 

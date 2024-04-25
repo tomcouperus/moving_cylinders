@@ -30,9 +30,7 @@ MainView::~MainView()
 
     // CLEAN UP!
     glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &knotVbo);
     glDeleteVertexArrays(1, &vao);
-    glDeleteVertexArrays(1, &knotVao);
 
     makeCurrent();
 }
@@ -75,102 +73,59 @@ void MainView::initializeGL()
 
     createShaderProgram();
 
-    // TODO: refactor, delete knot
+    // TODO: refactor
 
     // Define the vertices of the cylinder
     cylinder.initCylinder();
     vertexArr = cylinder.getVertexArr();
 
-    // Load the knot model
-    knotVertices = Model(":/models/knot.obj").getMeshCoords();
+    initBuffers();
 
-    for (int i = 0; i < knotVertices.size(); i++)
-    {
-        float r = fabs(knotVertices[i].x());
-        float g = fabs(knotVertices[i].y());
-        float b = fabs(knotVertices[i].z());
-
-        knotArr.append(
-            Vertex(
-                knotVertices[i].x(),
-                knotVertices[i].y(),
-                knotVertices[i].z(),
-                r, g, b));
-    }
-
-    // Make a VAO for the pyramid
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    updateBuffers();
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(
-        0,                               // index
-        3,                               // size of part of interest (x,y,z)
-        GL_FLOAT,                        // type
-        GL_FALSE,                        // normalized
-        sizeof(Vertex),                  // stride (size of object)
-        (void *)offsetof(Vertex, xCoord) // offset
-        );
-    glVertexAttribPointer(
-        1,                             // index
-        3,                             // size of part of interest (r,g,b)
-        GL_FLOAT,                      // type
-        GL_FALSE,                      // normalized
-        sizeof(Vertex),                // stride (size of object)
-        (void *)offsetof(Vertex, rVal) // offset
-        );
-
-    // Make a VAO for the knot
-    glGenVertexArrays(1, &knotVao);
-    glBindVertexArray(knotVao);
-
-    glGenBuffers(1, &knotVbo);
-    glBindBuffer(GL_ARRAY_BUFFER, knotVbo);
-    glBufferData(GL_ARRAY_BUFFER, knotArr.size() * sizeof(Vertex), knotArr.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(
-        0,                               // index
-        3,                               // size of part of interest (x,y,z)
-        GL_FLOAT,                        // type
-        GL_FALSE,                        // normalized
-        sizeof(Vertex),                  // stride (size of object)
-        (void *)offsetof(Vertex, xCoord) // offset
-        );
-    glVertexAttribPointer(
-        1,                             // index
-        3,                             // size of part of interest (r,g,b)
-        GL_FLOAT,                      // type
-        GL_FALSE,                      // normalized
-        sizeof(Vertex),                // stride (size of object)
-        (void *)offsetof(Vertex, rVal) // offset
-        );
-
-    // First transformation of the pyramid
-    pyramidTranslation.setToIdentity();
-    pyramidTranslation.translate(-2, 0, -6);
-
-    // First transformation of the knot
-    knotTranslation.setToIdentity();
-    knotTranslation.translate(2, 0, -6);
+    // First transformation of the cylinder
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation.translate(-2, 0, -6);
 
     // Set the initial model transformation to
     // just the translation
-    pyramidTransf = pyramidTranslation;
-    knotTransf = knotTranslation;
+    cylinderTransf = cylinderTranslation;
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
     projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
+}
+
+/**
+ * @brief MainView::initBuffers Initialises the buffers
+ * TODO: extend for other cylinders and enveloping surfaces.
+ */
+void MainView::initBuffers() {
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glGenBuffers(1, &vbo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
+
+    // Set up the vertex attributes
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(
+        0,                               // index
+        3,                               // size of part of interest (x,y,z)
+        GL_FLOAT,                        // type
+        GL_FALSE,                        // normalized
+        sizeof(Vertex),                  // stride (size of object)
+        (void *)offsetof(Vertex, xCoord) // offset
+        );
+    glVertexAttribPointer(
+        1,                             // index
+        3,                             // size of part of interest (r,g,b)
+        GL_FLOAT,                      // type
+        GL_FALSE,                      // normalized
+        sizeof(Vertex),                // stride (size of object)
+        (void *)offsetof(Vertex, rVal) // offset
+        );
 }
 
 /**
@@ -214,23 +169,14 @@ void MainView::paintGL()
     // Bind the shader program
     shaderProgram.bind();
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, projTransf.data());
-    // Set the pyramid model
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, pyramidTransf.data());
+    // Set the cylinder model
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, cylinderTransf.data());
     // Bind the vao
     glBindVertexArray(vao);
     // Draw the triangles
     glDrawArrays(GL_TRIANGLES, 0, vertexArr.size());
     shaderProgram.release();
 
-    // Bind the shader program
-    shaderProgram.bind();
-    // Set the knot model
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, knotTransf.data());
-    // Bind the vao
-    glBindVertexArray(knotVao);
-    // Draw the triangles
-    glDrawArrays(GL_TRIANGLES, 0, knotArr.size());
-    shaderProgram.release();
 }
 
 /**
@@ -269,8 +215,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     modelRotation.rotate(rotateZ, 0, 0, 1); // rotate around z axis
 
     // Update the model transformation matrix
-    knotTransf = knotTranslation * modelScaling * modelRotation;
-    pyramidTransf = pyramidTranslation * modelScaling * modelRotation;
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     update();
 }
 
@@ -290,8 +235,7 @@ void MainView::setScale(float scale)
     modelScaling.scale(scale);
 
     // Update the model transformation matrix
-    knotTransf = knotTranslation * modelScaling * modelRotation;
-    pyramidTransf = pyramidTranslation * modelScaling * modelRotation;
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     update();
 }
 
