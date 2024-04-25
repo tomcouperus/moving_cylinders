@@ -9,7 +9,7 @@
 
 class Cylinder
 {
-    float r, angle, h;
+    float r, angle, height;
     int sectors;
     float theta;
     constexpr static float PI = acos(-1.0f);
@@ -22,11 +22,12 @@ public:
     inline void setSectors(int sectors){ sectors = sectors; theta = 2*PI/sectors; }
     inline void setRadius(float radius){ r = radius; }
     inline void setAngle(float angle){ angle = angle; }
-    inline void setHeight(float height){ h = height; }
+    inline void setHeight(float height){ height = height; }
     inline void setPosit(QVector3D position){ posit = position; }
 
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
-
+private:
+    QVector3D calcCircleBound(QVector3D posit, float r, float angle, float h);
 };
 
 #endif // CYLINDER_H
