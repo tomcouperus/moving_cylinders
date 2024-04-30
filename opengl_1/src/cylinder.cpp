@@ -72,7 +72,7 @@ void Cylinder::computeCylinder(){
         r0 = r1;
         r1 = r + h1*tan(angle);
         for(size_t i=0;i<sectors;i++){
-            // Calculate vertices of a quad of a cylinder
+            // Calculate vertices of a quad of the cylinder
             v1 = calcCircleBound(posit, r0, theta*i, h0);
             v2 = calcCircleBound(posit, r1, theta*i, h1);
             v3 = calcCircleBound(posit, r0, theta*(i+1), h0);
@@ -86,20 +86,28 @@ void Cylinder::computeCylinder(){
             vertexArr.append(v4);
         }
     }
+    qDebug() << "done";
 }
 
 /**
  * @brief Cylinder::calcCircleBound Calculates a point at a layer (circle) of the cylinder and its normal
  * @param posit Cylinder position
  * @param r radius of circle at h
- * @param angle rotation angle
+ * @param theta rotation angle
  * @param h height
  * @return Vertex of circle at height h and direction of angle
  */
-Vertex Cylinder::calcCircleBound(QVector3D posit, float r, float angle, float h) {
-    QVector3D v = QVector3D();
-    v.setX(posit.x() + r*cos(angle));
-    v.setY(posit.y() + r*sin(angle));
-    v.setZ(posit.z() + h);
-    return Vertex(v, v.normalized());
+Vertex Cylinder::calcCircleBound(QVector3D posit, float r1, float theta, float h) {
+    // point position
+    QVector3D p = QVector3D();
+    p.setX(posit.x() + r1*cos(theta));
+    p.setY(posit.y() + r1*sin(theta));
+    p.setZ(posit.z() + h);
+
+    float a = h + r1*tan(angle); // sphere height
+    QVector3D q = posit; // sphere center
+    q.setZ(posit.z()+a);
+    QVector3D n = (q-p).normalized(); // direction of the normal
+
+    return Vertex(p, n);
 }

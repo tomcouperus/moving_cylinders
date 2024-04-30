@@ -28,7 +28,7 @@ public:
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 private:
     void computeCylinder();
-    Vertex calcCircleBound(QVector3D posit, float r, float angle, float h);
+    Vertex calcCircleBound(QVector3D posit, float r1, float theta, float h);
 };
 
 #endif // CYLINDER_H
