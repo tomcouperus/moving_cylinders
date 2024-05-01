@@ -21,10 +21,10 @@ public:
     void setAngle(float angle);
     void setHeight(float height);
     void setPosit(QVector3D position);
-    inline void getSectors(){ return sectors; }
-    inline void getRadius(){ return r; }
-    inline void getAngle(){ return angle; }
-    inline void getHeight(){ return height; }
+    inline int getSectors(){ return sectors; }
+    inline float getRadius(){ return r; }
+    inline float getAngle(){ return angle; }
+    inline float getHeight(){ return height; }
 
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 private:
