@@ -3,8 +3,6 @@
 
 #include <QOpenGLDebugLogger>
 
-#include <QVector>
-#include <QVector3D>
 #include "vertex.h"
 
 class Cylinder

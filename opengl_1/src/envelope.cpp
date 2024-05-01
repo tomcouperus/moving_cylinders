@@ -5,8 +5,7 @@
  * Uses default cylinder constructor.
  */
 Envelope::Envelope()
-    : cylinder(Cylinder()), a(1.0), b(0.0), c(0.0), d(0.0),
-        axisDirection(QVector3D(0.0,0.0,1.0)), sectors(20)
+    : cylinder(Cylinder()), path(CubicPath()), axisDirection(QVector3D(0.0,0.0,1.0)), sectors(20)
 {
     t0 = -1;
     t1 = 1;
@@ -23,8 +22,8 @@ Envelope::Envelope()
  * @param direction Vector describing the (initial) orientation of the cylinder
  * @param sectors number of sectors in the surface grid
  */
-Envelope::Envelope(Cylinder cylinder, float a, float b, float c, float d, QVector3D direction, int sectors)
-    : cylinder(cylinder), a(a), b(b), c(c), d(d), axisDirection(direction), sectors(sectors)
+Envelope::Envelope(Cylinder cylinder, CubicPath path, QVector3D direction, int sectors)
+    : cylinder(cylinder), path(path), axisDirection(direction), sectors(sectors)
 {
     t0 = -1;
     t1 = 1;
@@ -34,15 +33,14 @@ void Envelope::setCylinder(Cylinder cylinder){
     this->cylinder = cylinder;
     // recompute envelope
 }
+
 void Envelope::setSectors(int sectors){
     this->sectors = sectors;
     // recompute envelope
 }
-void Envelope::setPath(float a, float b, float c, float d){
-    this->a = a;
-    this->b = b;
-    this->c = c;
-    this->d = d;
+
+void Envelope::setPath(CubicPath path){
+    this->path = path;
     // recompute envelope
 }
 void Envelope::setAxisDirection(QVector3D direction){
@@ -85,7 +83,11 @@ void Envelope::computeEnvelope(){
 }
 
 Vertex Envelope::calcSurfaceVertex(float t, float a){
-    float pt = a*t*t*t + b*t*t + c*t + d;
-    // TODO: get r(a) function in cylinder
-
+    //QVector3D pt = path.getPathAt(t); // make a Path surface class?
+    //QVector3D s = pt + a *axisDirection; // a0 = 0?
+    // TODO: make a get r(a) function in cylinder
+    QVector3D n;
+    QVector3D xt; // = s;
+    // xt += cylinder.getR()*n;
+    return Vertex(xt,n);
 }

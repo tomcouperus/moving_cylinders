@@ -30,6 +30,8 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     pyramid.h pyramid.cpp
     cylinder.h cylinder.cpp
     envelope.h envelope.cpp
+    path.h
+    cubicpath.h cubicpath.cpp
 
 
 
