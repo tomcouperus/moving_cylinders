@@ -14,7 +14,7 @@ class Envelope
     QVector<Vertex> vertexArr;
 public:
     Envelope();
-    Envelope(Cylinder cylinder, float a, float b, float c, float d, QVector3D direction);
+    Envelope(Cylinder cylinder, float a, float b, float c, float d, QVector3D direction, int sectors);
 
     void initEnvelope();
     void setCylinder(Cylinder cylinder);
