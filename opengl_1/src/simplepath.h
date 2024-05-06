@@ -1,0 +1,33 @@
+#ifndef SIMPLEPATH_H
+#define SIMPLEPATH_H
+
+#include "path.h"
+#include "polynomial.h"
+
+/**
+ * @brief The SimplePath class is a path parameterized by a
+ * vector of three polynomials.
+ */
+class SimplePath : public Path
+{
+    // P(t) = (x(t), y(t), z(t))
+    Polynomial x, y, z;
+    float t0, t1;
+public:
+    SimplePath();
+    SimplePath(Polynomial x, Polynomial y, Polynomial z);
+
+    QVector3D getPathAt(float t) override;
+    void initVertexArr() override;
+
+    inline void setX(Polynomial x) {this->x = x;}
+    inline void setY(Polynomial y) {this->y = y;}
+    inline void setZ(Polynomial z) {this->z = z;}
+    inline void setRange(float t0, float t1){this->t0 = t0; this->t1 = t1;}
+
+    inline Polynomial getX() {return x;}
+    inline Polynomial getY() {return y;}
+    inline Polynomial getZ() {return z;}
+};
+
+#endif // SIMPLEPATH_H

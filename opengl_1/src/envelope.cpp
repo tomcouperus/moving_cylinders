@@ -5,7 +5,7 @@
  * Uses default cylinder constructor.
  */
 Envelope::Envelope()
-    : cylinder(Cylinder()), path(CubicPath()), axisDirection(QVector3D(0.0,0.0,1.0)), sectors(20)
+    : cylinder(Cylinder()), path(), axisDirection(QVector3D(0.0,0.0,1.0)), sectors(20)
 {
     t0 = -1;
     t1 = 1;
@@ -15,14 +15,11 @@ Envelope::Envelope()
  * @brief Envelope::Envelope Constructor for the envelope of a cylinder moving along
  * a path P(t) = at³+bt²+ct+d
  * @param cylinder Cylinder that defines the envelope
- * @param a 1st coefficient of the path equation
- * @param b 2nd coefficient of the path equation
- * @param c 3rd coefficient of the path equation
- * @param d 4th coefficient of the path equation
+ * @param path path thraced by the bottom of the cylinder axis
  * @param direction Vector describing the (initial) orientation of the cylinder
  * @param sectors number of sectors in the surface grid
  */
-Envelope::Envelope(Cylinder cylinder, CubicPath path, QVector3D direction, int sectors)
+Envelope::Envelope(Cylinder cylinder, Path* path, QVector3D direction, int sectors)
     : cylinder(cylinder), path(path), axisDirection(direction), sectors(sectors)
 {
     t0 = -1;
@@ -39,8 +36,8 @@ void Envelope::setSectors(int sectors){
     // recompute envelope
 }
 
-void Envelope::setPath(CubicPath path){
-    this->path = path;
+void Envelope::setPath(Path* path){
+    this->path.reset(path);
     // recompute envelope
 }
 void Envelope::setAxisDirection(QVector3D direction){

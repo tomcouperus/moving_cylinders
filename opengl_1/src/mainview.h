@@ -24,13 +24,12 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
     friend class MainWindow;
 
+    // Cylinder rendering
     Cylinder cylinder;
-
-    GLuint vao;
-    GLuint vbo;
+    GLuint vaoCyl;
+    GLuint vboCyl;
+    QVector<Vertex> vertexArrCyl;
     QOpenGLShaderProgram shader;
-    QVector<Vertex> vertexArr;
-
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;

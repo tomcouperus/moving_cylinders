@@ -29,8 +29,8 @@ MainView::~MainView()
     qDebug() << "MainView destructor";
 
     // CLEAN UP!
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vboCyl);
+    glDeleteVertexArrays(1, &vaoCyl);
 
     makeCurrent();
 }
@@ -77,7 +77,7 @@ void MainView::initializeGL()
 
     // Define the vertices of the cylinder
     cylinder.initCylinder();
-    vertexArr = cylinder.getVertexArr();
+    vertexArrCyl = cylinder.getVertexArr();
 
     initBuffers();
 
@@ -99,12 +99,12 @@ void MainView::initializeGL()
  * TODO: extend for other cylinders and enveloping surfaces.
  */
 void MainView::initBuffers() {
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vaoCyl);
+    glBindVertexArray(vaoCyl);
+    glGenBuffers(1, &vboCyl);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
 
     // Set up the vertex attributes
     glEnableVertexAttribArray(0);
@@ -133,11 +133,11 @@ void MainView::initBuffers() {
  * TODO: extend to update buffer of other cylinders and enveloping surfaces.
  */
 void MainView::updateBuffers(){
-    vertexArr.clear();
-    vertexArr = cylinder.getVertexArr();
+    vertexArrCyl.clear();
+    vertexArrCyl = cylinder.getVertexArr();
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
 }
 
 /**
@@ -172,9 +172,9 @@ void MainView::paintGL()
     // Set the cylinder model
     glUniformMatrix4fv(modelLocation, 1, GL_FALSE, cylinderTransf.data());
     // Bind the vao
-    glBindVertexArray(vao);
+    glBindVertexArray(vaoCyl);
     // Draw the triangles
-    glDrawArrays(GL_TRIANGLES, 0, vertexArr.size());
+    glDrawArrays(GL_TRIANGLES, 0, vertexArrCyl.size());
     shaderProgram.release();
 
 }

@@ -9,15 +9,15 @@
  */
 class Path
 {
-    QVector<QVector3D> pathCoords;
+protected:
     QVector<Vertex> vertexArr;
+    int sectors;
 public:
-    Path();
-    QVector3D getPathAt(float t);
-    void setPathCoords();
-    void setVertexArr();
+    inline Path() : vertexArr() {}
+    virtual QVector3D getPathAt(float t) = 0;
+    virtual void initVertexArr() = 0;
 
-    inline QVector<QVector3D> getPathCoords() { return pathCoords; }
+    inline void setSectors(int s) {sectors = s;}
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 };
 
