@@ -44,7 +44,6 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     QMatrix4x4 cylinderRotation;
     QMatrix4x4 cylinderTranslation;
     QMatrix4x4 modelTranslation;
-    QMatrix4x4 cylinderTimeTranslation;
     QMatrix4x4 cylinderTransf; // cylinderTranslation * modelRotation * modelScaling
     QMatrix4x4 modelTransf;
 

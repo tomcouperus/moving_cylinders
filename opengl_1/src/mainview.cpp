@@ -252,7 +252,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     modelRotation.rotate(rotateZ, 0, 0, 1); // rotate around z axis
 
     // Update the model transformation matrix
-    cylinderTransf = (cylinderTranslation + cylinderTimeTranslation) * modelScaling * modelRotation;
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     modelTransf = modelTranslation * modelScaling * modelRotation;
     update();
 }
@@ -273,7 +273,7 @@ void MainView::setScale(float scale)
     modelScaling.scale(scale);
 
     // Update the model transformation matrix
-    cylinderTransf = (cylinderTranslation + cylinderTimeTranslation) * modelScaling * modelRotation;
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     modelTransf = modelTranslation * modelScaling * modelRotation;
     update();
 }
@@ -282,14 +282,14 @@ void MainView::setTime(float time)
 {
     qDebug() << "Time changed to " << time;
 
-    cylinderTimeTranslation.setToIdentity();
-    cylinderTimeTranslation = modelTranslation;
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
     QVector4D shift = QVector4D(path.getPathAt(time),0);
     shift = modelTransf * shift;
-    cylinderTimeTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     // Update the model transformation matrix
-    cylinderTransf = (cylinderTranslation + cylinderTimeTranslation) * modelScaling * modelRotation;
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     update();
 }
 
