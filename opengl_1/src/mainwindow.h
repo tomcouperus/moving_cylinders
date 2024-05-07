@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow {
   void on_radiusSpinBox_valueChanged(double value);
   void on_angleSpinBox_valueChanged(double value);
   void on_heightSpinBox_valueChanged(double value);
+  void on_TimeSlider_sliderMoved(int value);
 
   void on_ResetRotationButton_clicked(bool checked);
   void on_RotationDialX_sliderMoved(int value);

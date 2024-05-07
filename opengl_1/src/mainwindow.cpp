@@ -47,6 +47,15 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
 }
 
 /**
+ * @brief MainWindow::on_TimeSlider_sliderMoved Updates the time value.
+ * @param value The new time value.
+ */
+void MainWindow::on_TimeSlider_sliderMoved(int value) {
+  ui->mainView->setTime(value / 10.0f);
+}
+
+
+/**
  * @brief MainWindow::on_ResetRotationButton_clicked Resets the rotation.
  * @param checked Unused.
  */

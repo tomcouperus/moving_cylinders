@@ -13,6 +13,7 @@
 #include "model.h"
 #include "vertex.h"
 #include "cylinder.h"
+#include "simplepath.h"
 
 
 /**
@@ -31,11 +32,21 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     QVector<Vertex> vertexArrCyl;
     QOpenGLShaderProgram shader;
 
+    // Path rendering
+    SimplePath path;
+    GLuint vaoPth;
+    GLuint vboPth;
+    QVector<Vertex> vertexArrPth;
+
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
     QMatrix4x4 modelRotation;
+    QMatrix4x4 cylinderRotation;
     QMatrix4x4 cylinderTranslation;
+    QMatrix4x4 modelTranslation;
+    QMatrix4x4 cylinderTimeTranslation;
     QMatrix4x4 cylinderTransf; // cylinderTranslation * modelRotation * modelScaling
+    QMatrix4x4 modelTransf;
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
@@ -50,6 +61,7 @@ public:
     // Functions for widget input events
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
+    void setTime(float time);
     void updateBuffers();
 
 protected:

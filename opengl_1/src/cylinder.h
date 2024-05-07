@@ -26,6 +26,7 @@ public:
     inline float getRadius(){ return r; }
     inline float getAngle(){ return angle; }
     inline float getHeight(){ return height; }
+    inline QVector3D getPosition() {return posit; }
 
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 private:
