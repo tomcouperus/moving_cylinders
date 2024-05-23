@@ -13,6 +13,7 @@
 #include "model.h"
 #include "vertex.h"
 #include "cylinder.h"
+#include "cylindermovement.h"
 #include "simplepath.h"
 
 
@@ -33,6 +34,8 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     QOpenGLShaderProgram shader;
 
     // Path rendering
+    CylinderMovement move;
+    QVector<QVector3D> axisDirections;
     SimplePath path;
     GLuint vaoPth;
     GLuint vboPth;
@@ -88,6 +91,7 @@ private:
     QTimer timer; // timer used for animation
 
     QOpenGLShaderProgram shaderProgram;
+    float time;
 
     void createShaderProgram();
 };

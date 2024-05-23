@@ -18,6 +18,7 @@ public:
     SimplePath(Polynomial x, Polynomial y, Polynomial z);
 
     QVector3D getPathAt(float t) override;
+    int getIdxAtTime(float t);
     void initVertexArr() override;
 
     inline void setX(Polynomial x) {this->x = x;}

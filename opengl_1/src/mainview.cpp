@@ -81,9 +81,16 @@ void MainView::initializeGL()
     cylinder.initCylinder();
     vertexArrCyl = cylinder.getVertexArr();
 
-    path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),Polynomial(0.0,1.0,0.0,0.0),Polynomial());
+    path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
+                      Polynomial(0.0,1.0,0.0,0.0),
+                      Polynomial());
     path.initVertexArr();
     vertexArrPth = path.getVertexArr();
+
+    move = CylinderMovement(path,
+                            QVector3D(0.0,0.0,-1.0),
+                            QVector3D(0.0,1.0,0.0));
+    axisDirections = move.getAxisDirections();
 
     initBuffers();
 
@@ -92,14 +99,18 @@ void MainView::initializeGL()
     cylinderTranslation.translate(-2, 0, -6);
     modelTranslation = cylinderTranslation;
 
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(0,cylinder);
+
     // Set the initial model transformation to
     // just the translation
-    cylinderTransf = cylinderTranslation;
+    cylinderTransf = cylinderTranslation * cylinderRotation;
     modelTransf = modelTranslation;
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
-    projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
+    projTransf.ortho(0.0f,20.0f,0.0f,20.0f,0.2f,20.0f);
+    //projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
 }
 
 /**
@@ -252,8 +263,20 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     modelRotation.rotate(rotateZ, 0, 0, 1); // rotate around z axis
 
     // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     modelTransf = modelTranslation * modelScaling * modelRotation;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(path.getIdxAtTime(time), cylinder);
+    cylinderRotation = cylinderRotation * modelRotation;
+
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * cylinderRotation;
     update();
 }
 
@@ -273,14 +296,7 @@ void MainView::setScale(float scale)
     modelScaling.scale(scale);
 
     // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
     modelTransf = modelTranslation * modelScaling * modelRotation;
-    update();
-}
-
-void MainView::setTime(float time)
-{
-    qDebug() << "Time changed to " << time;
 
     cylinderTranslation.setToIdentity();
     cylinderTranslation = modelTranslation;
@@ -288,8 +304,31 @@ void MainView::setTime(float time)
     shift = modelTransf * shift;
     cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(path.getIdxAtTime(time), cylinder);
+    cylinderRotation = cylinderRotation * modelRotation;
+
     // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
+    cylinderTransf = cylinderTranslation * modelScaling * cylinderRotation;
+    update();
+}
+
+void MainView::setTime(float time)
+{
+    qDebug() << "Time changed to " << time;
+    this->time = time;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(path.getIdxAtTime(time), cylinder);
+    cylinderRotation = cylinderRotation * modelRotation;
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * cylinderRotation;
     update();
 }
 

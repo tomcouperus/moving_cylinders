@@ -23,6 +23,12 @@ QVector3D SimplePath::getPathAt(float t)
     return pt;
 }
 
+int SimplePath::getIdxAtTime(float time)
+{
+    float delta = (t1-t0)/sectors;
+    return (time-t0)/delta;
+}
+
 void SimplePath::initVertexArr()
 {
     vertexArr.clear();

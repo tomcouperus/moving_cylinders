@@ -12,6 +12,8 @@ class Cylinder
     float theta;
     constexpr static float PI = acos(-1.0f);
     QVector3D posit;
+    QVector3D axisVector = QVector3D(0.0,0.0,1.0);
+    QVector3D perpVector = QVector3D(1.0,0.0,0.0); // a vector perpendicular to the axis
     QVector<Vertex> vertexArr;
 public:
     Cylinder();
@@ -27,6 +29,8 @@ public:
     inline float getAngle(){ return angle; }
     inline float getHeight(){ return height; }
     inline QVector3D getPosition() {return posit; }
+    inline QVector3D getAxisVector() {return axisVector; }
+    inline QVector3D getVectorPerpToAxis() {return perpVector; }
 
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 private:
