@@ -302,7 +302,7 @@ void MainView::setScale(float scale)
     cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(path.getIdxAtTime(time));
+    cylinderRotation = move.getMovementRotation(time);
 
     qDebug() << "scale " << cylinderRotation;
     // Update the model transformation matrix
@@ -322,7 +322,7 @@ void MainView::setTime(float time)
     cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(path.getIdxAtTime(time));
+    cylinderRotation = move.getMovementRotation(time);
 
     qDebug() << "time " << cylinderRotation;
     // Update the model transformation matrix

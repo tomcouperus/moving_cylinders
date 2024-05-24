@@ -22,7 +22,7 @@ public:
     inline void setAxisDirections(QVector<QVector3D> axisDirections) {this->axisDirections = axisDirections;}
     inline QVector<QVector3D> getAxisDirections() {return axisDirections;}
 
-    QMatrix4x4 getMovementRotation(int idx);
+    QMatrix4x4 getMovementRotation(float time);
     void rotateAxisDirections(QMatrix4x4 rotation);
 };
 
