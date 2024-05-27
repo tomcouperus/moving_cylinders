@@ -1,72 +1,41 @@
 #include "envelope.h"
 
-/**
- * @brief Envelope::Envelope Default constructor, defines a simple path for the cylinder
- * Uses default cylinder constructor.
- */
-Envelope::Envelope()
-    : cylinder(Cylinder()), path(), axisDirection(QVector3D(0.0,0.0,1.0)), sectors(20)
+Envelope::Envelope() : 
+    cylinderMovement(CylinderMovement()), 
+    cylinder(Cylinder())
 {
-    t0 = -1;
-    t1 = 1;
+    sectorsA = cylinder.getSectors();
+    sectorsT = cylinderMovement.getPath().getSectors();
 }
 
-/**
- * @brief Envelope::Envelope Constructor for the envelope of a cylinder moving along
- * a path P(t) = at³+bt²+ct+d
- * @param cylinder Cylinder that defines the envelope
- * @param path path thraced by the bottom of the cylinder axis
- * @param direction Vector describing the (initial) orientation of the cylinder
- * @param sectors number of sectors in the surface grid
- */
-Envelope::Envelope(Cylinder cylinder, Path* path, QVector3D direction, int sectors)
-    : cylinder(cylinder), path(path), axisDirection(direction), sectors(sectors)
+Envelope::Envelope(CylinderMovement cylinderMovement, Cylinder cylinder) :
+    cylinderMovement(cylinderMovement),
+    cylinder(cylinder)
+{}
+
+void Envelope::initEnvelope()
 {
-    t0 = -1;
-    t1 = 1;
-}
-
-void Envelope::setCylinder(Cylinder cylinder){
-    this->cylinder = cylinder;
-    // recompute envelope
-}
-
-void Envelope::setSectors(int sectors){
-    this->sectors = sectors;
-    // recompute envelope
-}
-
-void Envelope::setPath(Path* path){
-    this->path.reset(path);
-    // recompute envelope
-}
-void Envelope::setAxisDirection(QVector3D direction){
-    axisDirection = direction.normalized();
-    // recompute envelope
-}
-
-void Envelope::initEnvelope(){
     computeEnvelope();
 }
 
-void Envelope::computeEnvelope(){
+void Envelope::computeEnvelope()
+{
     vertexArr.clear();
-    Vertex v1, v2, v3, v4;
-    float tempT0, tempT1 = t0;
-    float a0, a1 = 0;
-    float tDelta = (t1-t0)/sectors;
-    float aDelta = cylinder.getHeight()/cylinder.getSectors();
-    for(size_t i=0;i<sectors;i++){
-        tempT0 = tempT1;
-        tempT1 += tDelta;
 
-        for(size_t j=0;j<cylinder.getSectors();j++){
-            a0 = a1;
-            a1 += aDelta;
-            v1 = calcSurfaceVertex(tempT0, a0);
-            v2 = calcSurfaceVertex(tempT0, a1);
-            v3 = calcSurfaceVertex(tempT1, a0);
-            v4 = calcSurfaceVertex(tempT1, a1);
+    Vertex v1, v2, v3, v4;
+    SimplePath path = cylinderMovement.getPath();
+    float a = cylinder.getA0();
+    float aDelta = (cylinder.getA1()-a)/sectorsA;
+    float t = path.getT0();
+    float tDelta = (path.getT1()-t)/sectorsT;
+    for (int i = 0; i < sectorsT; i++)
+    {
+        for (int j = 0; j < sectorsA; j++)
+        {
+            v1 = calcEnvelopeAt(t, a);
+            v2 = calcEnvelopeAt(t, a+aDelta);
+            v3 = calcEnvelopeAt(t+tDelta, a);
+            v4 = calcEnvelopeAt(t+tDelta, a+aDelta);
 
             // Add vertices to array
             vertexArr.append(v1);
@@ -75,16 +44,44 @@ void Envelope::computeEnvelope(){
             vertexArr.append(v1);
             vertexArr.append(v3);
             vertexArr.append(v4);
+
+            a += aDelta;
         }
+        t += tDelta;
     }
 }
 
-Vertex Envelope::calcSurfaceVertex(float t, float a){
-    //QVector3D pt = path.getPathAt(t); // make a Path surface class?
-    //QVector3D s = pt + a *axisDirection; // a0 = 0?
-    // TODO: make a get r(a) function in cylinder
-    QVector3D n;
-    QVector3D xt; // = s;
-    // xt += cylinder.getR()*n;
-    return Vertex(xt,n);
+Vertex Envelope::calcEnvelopeAt(float t, float a)
+{
+    QVector3D color = QVector3D(1,0,0);
+    
+    float a0 = cylinder.getA0();
+    SimplePath path = cylinderMovement.getPath();
+    int idx = path.getIdxAtTime(t);
+    QVector3D center = path.getPathAt(t) + (a-a0)*cylinderMovement.getAxisDirections()[idx];
+
+    float r = cylinder.getRadiusAt(a);
+    QVector3D normal = computeNormal(t, a);
+    QVector3D posit = center + r*normal;
+
+    return Vertex(posit, color);
 }
+
+QVector3D Envelope::computeNormal(float t, float a)
+{
+    SimplePath path = cylinderMovement.getPath();
+    QVector3D sa = cylinderMovement.getAxisDirections().at(t);
+    float a0 = cylinder.getA0();
+    QVector3D st = path.getTangentAt(t) + (a-a0)*cylinderMovement.getAxisRateOfChange(t);
+    QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
+
+    // Calculate alpha, beta, gamma
+    float alpha, beta, gamma;
+    float ra = cylinder.getRadiusDerivativeWRTa(); 
+    
+
+    QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
+    normal.normalize();
+    return normal;
+}
+    

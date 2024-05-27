@@ -1,34 +1,29 @@
 #ifndef ENVELOPE_H
 #define ENVELOPE_H
 
-#include "cylinder.h"
-#include "simplepath.h"
+#include "vertex.h"
+#include "cylindermovement.h"
 
 class Envelope
 {
+    CylinderMovement cylinderMovement;
     Cylinder cylinder;
-    // TODO: finish abstract class and modify Envelope class accordingly
-    std::unique_ptr<Path> path;
-    // SimplePath path;
-    // TODO: A w.r.t. time t
-    QVector3D axisDirection;
-    float t0, t1;
+
+    int sectorsA;
+    int sectorsT;
+
     QVector<Vertex> vertexArr;
 public:
     Envelope();
-    Envelope(Cylinder cylinder, Path* path, QVector3D direction, int sectors);
+    Envelope(CylinderMovement cylinderMovement, Cylinder cylinder);
 
     void initEnvelope();
-    void setCylinder(Cylinder cylinder);
-    void setSectors(int sectors);
-    void setPath(Path* path);
-    void setAxisDirection(QVector3D direction);
-
-    inline QVector<Vertex> getVertexArr(){ return vertexArr; }
-private:
-    int sectors;
     void computeEnvelope();
-    Vertex calcSurfaceVertex(float t, float a);
+    Vertex calcEnvelopeAt(float t, float a);
+    QVector3D computeNormal(float t, float a);
+    inline QVector<Vertex> getVertexArr(){ return vertexArr; }
+    inline void setCylinder(Cylinder cylinder) {this->cylinder = cylinder;}
+    inline void setCylinderMovement(CylinderMovement cylinderMovement) {this->cylinderMovement = cylinderMovement;}
 };
 
 #endif // ENVELOPE_H

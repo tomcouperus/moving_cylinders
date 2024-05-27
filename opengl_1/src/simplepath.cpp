@@ -77,3 +77,19 @@ void SimplePath::updateVertexArr()
         t += delta;
     }
 }
+
+/**
+ * @brief SimplePath::getTangentAt Returns the tangent at a given time.
+ * @param t
+ * @return
+*/
+QVector3D SimplePath::getTangentAt(float t)
+{
+    QVector3D tangent = QVector3D();
+    tangent.setX(x.getDerivativeAt(t));
+    tangent.setY(y.getDerivativeAt(t));
+    tangent.setZ(z.getDerivativeAt(t));
+    return tangent;
+}
+
+

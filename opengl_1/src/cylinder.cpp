@@ -41,14 +41,19 @@ void Cylinder::setSectors(int sectors){
 }
 void Cylinder::setRadius(float radius){
     r = radius;
+    this->a0 = r*tan(angle);
+    this->a1 = r + height*tan(angle);
     computeCylinder();
 }
 void Cylinder::setAngle(float angle){
     this->angle = angle;
+    this->a0 = r*tan(angle);
+    this->a1 = r + height*tan(angle);
     computeCylinder();
 }
 void Cylinder::setHeight(float height){
     this->height = height;
+    this->a1 = r + height*tan(angle);
     computeCylinder();
 }
 void Cylinder::setPosit(QVector3D position){
@@ -86,7 +91,6 @@ void Cylinder::computeCylinder(){
             vertexArr.append(v4);
         }
     }
-    qDebug() << "done";
 }
 
 /**

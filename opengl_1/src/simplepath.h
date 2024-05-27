@@ -21,6 +21,7 @@ public:
     int getIdxAtTime(float t);
     void initVertexArr() override;
     void updateVertexArr();
+    QVector3D getTangentAt(float t);
 
     inline void setX(Polynomial x) {this->x = x; updateVertexArr();}
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}

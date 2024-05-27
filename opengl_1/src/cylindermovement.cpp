@@ -97,6 +97,26 @@ QMatrix4x4 CylinderMovement::getMovementRotation(float time)
 }
 
 /**
+ * @brief CylinderMovement::getAxisRateOfChange Calculates the rate of change of the axis of the cylinder
+ * @param time time of interest
+ * @return rate of change of the axis
+ */
+QVector3D CylinderMovement::getAxisRateOfChange(float time)
+{
+    int idx = path.getIdxAtTime(time);
+    QVector3D axisRateOfChange;
+    QVector3D nextAxis;
+    if(idx == axisDirections.size()-1) {
+        nextAxis = axisDirections[idx-1];
+        axisRateOfChange = (axisDirections[idx] - nextAxis);
+    } else {
+        nextAxis = axisDirections[idx+1];
+        axisRateOfChange = (nextAxis - axisDirections[idx]);
+    } 
+    return axisRateOfChange;
+}
+
+/**
  * @brief CylinderMovement::rotateAxisDirections rotates the axis directions uniformly
  * @param rotation matrix describing the rotation
  */
