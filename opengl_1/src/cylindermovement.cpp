@@ -5,10 +5,12 @@
  * constructor and defines the directional vector of the movement to always be (0,1,0)
  */
 CylinderMovement::CylinderMovement() :
-    cylinder(Cylinder()), path(SimplePath())
+    path(SimplePath()),
+    cylinderAxis(Cylinder().getAxisVector()),
+    perpToAxis(Cylinder().getVectorPerpToAxis())
 {
     QVector<Vertex> vertices = path.getVertexArr();
-    QVector3D rotationVector = QVector3D::crossProduct(cylinder.getAxisVector(), QVector3D(0, 1, 0));
+    QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis, QVector3D(0, 1, 0));
     for (size_t i = 0; i < vertices.size(); i++)
     {
         axisDirections.append(QVector3D(0, 1, 0));
@@ -22,10 +24,12 @@ CylinderMovement::CylinderMovement() :
  * @param axisDirection1 initial directional vector (direction of the cylinder axis at time 0)
  * @param axisDirection2 final directional vector (direction of the cylinder axis at time 1)
  * @param cylinder cylinder which experiences the movement
- * (this is included for scalability in case cylinder axis directions are later made more diverse)
+ * (this class can be generalized and constructors for other tools can be made)
  */
 CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Cylinder cylinder) :
-    path(path), cylinder(cylinder)
+    path(path),
+    cylinderAxis(cylinder.getAxisVector()),
+    perpToAxis(cylinder.getVectorPerpToAxis())
 {
     QVector<Vertex> vertices = path.getVertexArr();
 
@@ -37,11 +41,11 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
         axisDirections.append(lastDirection); // add interpolated directional vector
 
         // Get (and save) vector perpendicular to both the directional vector of the movement and the axis of the cylinder
-        QVector3D rotationVector = QVector3D::crossProduct(cylinder.getAxisVector(),
+        QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis,
                                                            lastDirection);
         if(rotationVector == QVector3D(0.0,0.0,0.0)) { // rotation vector if vectors are anti-parallel
                                                        // (there are infinitely many)
-            rotationVector = cylinder.getVectorPerpToAxis(); // take the one saved on the cylinder info
+            rotationVector = perpToAxis; // take the one saved on the cylinder info
         }
         rotationVectors.append(rotationVector);
 
@@ -58,15 +62,16 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
 CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder) :
     path(path),
     axisDirections(axisDirections),
-    cylinder(cylinder)
+    cylinderAxis(cylinder.getAxisVector()),
+    perpToAxis(cylinder.getVectorPerpToAxis())
 {
     QVector<Vertex> vertices = path.getVertexArr();
     for (size_t i = 0; i < vertices.size(); i++)
     {
-        QVector3D rotationVector = QVector3D::crossProduct(cylinder.getAxisVector(),
+        QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis,
                                                            axisDirections[i]);
         if(rotationVector == QVector3D(0.0,0.0,0.0)) { // rotation vector if vectors are anti-parallel (there are infinitely many)
-            rotationVector = cylinder.getVectorPerpToAxis(); // take the one saved on the cylinder info
+            rotationVector = perpToAxis; // take the one saved on the cylinder info
         }
         rotationVectors.append(rotationVector);
     }
@@ -83,9 +88,8 @@ QMatrix4x4 CylinderMovement::getMovementRotation(float time)
     int idx = path.getIdxAtTime(time);
     QMatrix4x4 cylinderRotation;
     QVector3D initVector = axisDirections[idx];
-    float angle = acos(QVector3D::dotProduct(initVector.normalized(), cylinder.getAxisVector()));
+    float angle = acos(QVector3D::dotProduct(initVector.normalized(), cylinderAxis));
     angle = qRadiansToDegrees(angle);
-    qDebug() << angle;
     if(angle != 0) {
         cylinderRotation.rotate(angle, rotationVectors[idx]);
     }

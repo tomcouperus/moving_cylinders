@@ -17,6 +17,15 @@ public:
 
     float getValAt(float t);
     void setParameters(float a, float b, float c, float d);
+
+    inline float getA() {return a;}
+    inline float getB() {return b;}
+    inline float getC() {return c;}
+    inline float getD() {return d;}
+    inline void setA(float a) {this->a = a;}
+    inline void setB(float b) {this->b = b;}
+    inline void setC(float c) {this->c = c;}
+    inline void setD(float d) {this->d = d;}
 };
 
 #endif // POLYNOMIAL_H

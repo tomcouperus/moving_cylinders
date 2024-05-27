@@ -38,303 +38,645 @@
       <property name="title">
        <string>Settings</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="Cylinder">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <attribute name="title">
-           <string>Cylinder</string>
-          </attribute>
-          <widget class="QFrame" name="cylinderBox">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>196</width>
-             <height>141</height>
-            </rect>
-           </property>
-           <widget class="QLabel" name="labelRadius">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>30</y>
-              <width>54</width>
-              <height>17</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Radius</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="labelAngle">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>70</y>
-              <width>54</width>
-              <height>17</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Angle</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="labelHeight">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>110</y>
-              <width>54</width>
-              <height>17</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Height</string>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="radiusSpinBox">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>30</y>
-              <width>62</width>
-              <height>26</height>
-             </rect>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.500000000000000</double>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="angleSpinBox">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>70</y>
-              <width>62</width>
-              <height>26</height>
-             </rect>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.500000000000000</double>
-            </property>
-           </widget>
-           <widget class="QDoubleSpinBox" name="heightSpinBox">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>110</y>
-              <width>62</width>
-              <height>26</height>
-             </rect>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>2.000000000000000</double>
-            </property>
-           </widget>
-          </widget>
-          <widget class="QSlider" name="TimeSlider">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>170</y>
-             <width>160</width>
-             <height>16</height>
-            </rect>
-           </property>
-           <property name="maximum">
-            <number>49</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QWidget" name="Path">
-          <attribute name="title">
-           <string>Path</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Tab 2</string>
-          </attribute>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="rotationBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>205</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>205</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Rotation</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
+      <widget class="QGroupBox" name="rotationBox">
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>266</y>
+         <width>205</width>
+         <height>177</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>205</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>205</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Rotation</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QDial" name="RotationDialX">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rotation along the X-axis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="maximum">
-               <number>359</number>
-              </property>
-              <property name="wrapping">
-               <bool>true</bool>
-              </property>
-              <property name="notchTarget">
-               <double>12.000000000000000</double>
-              </property>
-              <property name="notchesVisible">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDial" name="RotationDialY">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rotation along the Y-axis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="maximum">
-               <number>359</number>
-              </property>
-              <property name="wrapping">
-               <bool>true</bool>
-              </property>
-              <property name="notchTarget">
-               <double>12.000000000000000</double>
-              </property>
-              <property name="notchesVisible">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDial" name="RotationDialZ">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rotation along the Z-axis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="maximum">
-               <number>359</number>
-              </property>
-              <property name="wrapping">
-               <bool>true</bool>
-              </property>
-              <property name="notchTarget">
-               <double>12.000000000000000</double>
-              </property>
-              <property name="notchesVisible">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QPushButton" name="ResetRotationButton">
-            <property name="text">
-             <string>Reset Rotation</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="scalingBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>205</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>205</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Scaling</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QSlider" name="ScaleSlider">
-            <property name="minimum">
-             <number>1</number>
+           <widget class="QDial" name="RotationDialX">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rotation along the X-axis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="maximum">
-             <number>200</number>
+             <number>359</number>
             </property>
-            <property name="value">
-             <number>100</number>
+            <property name="wrapping">
+             <bool>true</bool>
             </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+            <property name="notchTarget">
+             <double>12.000000000000000</double>
             </property>
-            <property name="invertedAppearance">
-             <bool>false</bool>
-            </property>
-            <property name="invertedControls">
-             <bool>false</bool>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::NoTicks</enum>
+            <property name="notchesVisible">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="ResetScaleButton">
-            <property name="text">
-             <string>Reset Scaling</string>
+           <widget class="QDial" name="RotationDialY">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rotation along the Y-axis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="maximum">
+             <number>359</number>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchTarget">
+             <double>12.000000000000000</double>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDial" name="RotationDialZ">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rotation along the Z-axis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="maximum">
+             <number>359</number>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchTarget">
+             <double>12.000000000000000</double>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ResetRotationButton">
+          <property name="text">
+           <string>Reset Rotation</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QGroupBox" name="scalingBox">
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>449</y>
+         <width>205</width>
+         <height>90</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>205</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>205</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Scaling</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QSlider" name="ScaleSlider">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+          <property name="invertedControls">
+           <bool>false</bool>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::NoTicks</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ResetScaleButton">
+          <property name="text">
+           <string>Reset Scaling</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>32</y>
+         <width>205</width>
+         <height>190</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>169</width>
+         <height>150</height>
+        </size>
+       </property>
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <widget class="QWidget" name="Cylinder">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <attribute name="title">
+         <string>Cylinder</string>
+        </attribute>
+        <widget class="QFrame" name="cylinderBox">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>196</width>
+           <height>141</height>
+          </rect>
+         </property>
+         <widget class="QLabel" name="labelRadius">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Radius</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelAngle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>70</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Angle</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelHeight">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>110</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Height</string>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="radiusSpinBox">
+          <property name="geometry">
+           <rect>
+            <x>110</x>
+            <y>30</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.500000000000000</double>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="angleSpinBox">
+          <property name="geometry">
+           <rect>
+            <x>110</x>
+            <y>70</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.500000000000000</double>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="heightSpinBox">
+          <property name="geometry">
+           <rect>
+            <x>110</x>
+            <y>110</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>2.000000000000000</double>
+          </property>
+         </widget>
         </widget>
-       </item>
-      </layout>
+       </widget>
+       <widget class="QWidget" name="Path">
+        <attribute name="title">
+         <string>Path</string>
+        </attribute>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>50</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t³+</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>50</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t²+ </string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>50</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t + d</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_a_x">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>40</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_b_x">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>40</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_c_x">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>40</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>50</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> x(t) =</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_a_y">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>80</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_a_z">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>120</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_5">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>130</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> z(t) =</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>90</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> y(t) =</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_7">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>10</y>
+           <width>101</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>P(t) = (x(t),y(t),z(t))</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_b_y">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>80</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_b_z">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>120</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_c_y">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>80</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="spinBox_c_z">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>120</y>
+           <width>31</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-99</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_8">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>90</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t³+</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_9">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>130</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t³+</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_10">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>90</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t²+ </string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_11">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>130</y>
+           <width>21</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t²+ </string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_12">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>90</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t + d</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_13">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>130</y>
+           <width>31</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> t + d</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Tab 2</string>
+        </attribute>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>221</y>
+         <width>205</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Time</string>
+       </property>
+       <widget class="QSlider" name="TimeSlider">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>24</y>
+          <width>196</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>49</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </item>
     <item>

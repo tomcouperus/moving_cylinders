@@ -20,11 +20,12 @@ public:
     QVector3D getPathAt(float t) override;
     int getIdxAtTime(float t);
     void initVertexArr() override;
+    void updateVertexArr();
 
-    inline void setX(Polynomial x) {this->x = x;}
-    inline void setY(Polynomial y) {this->y = y;}
-    inline void setZ(Polynomial z) {this->z = z;}
-    inline void setRange(float t0, float t1){this->t0 = t0; this->t1 = t1;}
+    inline void setX(Polynomial x) {this->x = x; updateVertexArr();}
+    inline void setY(Polynomial y) {this->y = y; updateVertexArr();}
+    inline void setZ(Polynomial z) {this->z = z; updateVertexArr();}
+    inline void setRange(float t0, float t1){this->t0 = t0; this->t1 = t1; updateVertexArr();}
 
     inline Polynomial getX() {return x;}
     inline Polynomial getY() {return y;}

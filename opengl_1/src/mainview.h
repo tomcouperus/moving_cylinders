@@ -71,6 +71,8 @@ protected:
     void initBuffers();
     void resizeGL(int newWidth, int newHeight) override;
     void paintGL() override;
+    void moveModel(float x, float y);
+    QVector2D toNormalizedScreenCoordinates(float x, float y);
 
     // Functions for keyboard input events
     void keyPressEvent(QKeyEvent *ev) override;

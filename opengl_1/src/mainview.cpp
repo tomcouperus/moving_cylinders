@@ -227,6 +227,25 @@ void MainView::paintGL()
 
 }
 
+void MainView::moveModel(float x, float y)
+{
+    qDebug() << "is " << modelTranslation;
+    modelTranslation.translate(-x/500.0f, -y/700.0f, 0);
+    qDebug() << "moved " << modelTranslation;
+
+    modelTransf = modelTranslation * modelScaling * modelRotation;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    update();
+}
+
 /**
  * @brief MainView::resizeGL Called upon resizing of the screen.
  *
@@ -271,7 +290,6 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     shift = modelTransf * shift;
     cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
-    qDebug() << "rot " << cylinderRotation;
     // Update the model transformation matrix
     cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
     update();
@@ -304,7 +322,6 @@ void MainView::setScale(float scale)
     cylinderRotation.setToIdentity();
     cylinderRotation = move.getMovementRotation(time);
 
-    qDebug() << "scale " << cylinderRotation;
     // Update the model transformation matrix
     cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
     update();
@@ -324,7 +341,6 @@ void MainView::setTime(float time)
     cylinderRotation.setToIdentity();
     cylinderRotation = move.getMovementRotation(time);
 
-    qDebug() << "time " << cylinderRotation;
     // Update the model transformation matrix
     cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
     update();

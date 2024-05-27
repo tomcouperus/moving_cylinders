@@ -27,6 +27,19 @@ class MainWindow : public QMainWindow {
   void on_heightSpinBox_valueChanged(double value);
   void on_TimeSlider_sliderMoved(int value);
 
+  void on_spinBox_a_x_valueChanged(int value);
+  void on_spinBox_b_x_valueChanged(int value);
+  void on_spinBox_c_x_valueChanged(int value);
+  void on_spinBox_d_x_valueChanged(int value);
+  void on_spinBox_a_y_valueChanged(int value);
+  void on_spinBox_b_y_valueChanged(int value);
+  void on_spinBox_c_y_valueChanged(int value);
+  void on_spinBox_d_y_valueChanged(int value);
+  void on_spinBox_a_z_valueChanged(int value);
+  void on_spinBox_b_z_valueChanged(int value);
+  void on_spinBox_c_z_valueChanged(int value);
+  void on_spinBox_d_z_valueChanged(int value);
+
   void on_ResetRotationButton_clicked(bool checked);
   void on_RotationDialX_sliderMoved(int value);
   void on_RotationDialY_sliderMoved(int value);

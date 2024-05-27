@@ -40,3 +40,15 @@ void SimplePath::initVertexArr()
         t += delta;
     }
 }
+
+void SimplePath::updateVertexArr()
+{
+    vertexArr.clear();
+    QVector3D color(0,0,1);
+    float delta = (t1-t0)/sectors;
+    float t = t0;
+    for(int i=0; i<=sectors; ++i){
+        vertexArr.append(Vertex(getPathAt(t), color));
+        t += delta;
+    }
+}
