@@ -4,12 +4,9 @@
  * @brief Cylinder::Cylinder Default constructor builds cylinder to preset size
  */
 Cylinder::Cylinder()
+    : r(0.5), angle(0.5), height(2), sectors(25),posit(QVector3D(0.0f,0.0f,0.0f))
+
 {
-    r = 0.5;
-    angle = 0.5;
-    height = 2;
-    sectors = 25;
-    posit = QVector3D(0.0f,0.0f,0.0f);
     theta = 2*PI/sectors;
 }
 
@@ -35,7 +32,7 @@ void Cylinder::initCylinder(){
 }
 
 void Cylinder::setSectors(int sectors){
-    sectors = sectors;
+    this->sectors = sectors;
     theta = 2*PI/sectors;
     computeCylinder();
 }
