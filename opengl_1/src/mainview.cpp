@@ -29,8 +29,10 @@ MainView::~MainView()
     qDebug() << "MainView destructor";
 
     // CLEAN UP!
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vboCyl);
+    glDeleteVertexArrays(1, &vaoCyl);
+    glDeleteBuffers(1, &vboPth);
+    glDeleteVertexArrays(1, &vaoPth);
 
     makeCurrent();
 }
@@ -77,21 +79,38 @@ void MainView::initializeGL()
 
     // Define the vertices of the cylinder
     cylinder.initCylinder();
-    vertexArr = cylinder.getVertexArr();
+    vertexArrCyl = cylinder.getVertexArr();
+
+    path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
+                      Polynomial(0.0,1.0,0.0,0.0),
+                      Polynomial());
+    path.initVertexArr();
+    vertexArrPth = path.getVertexArr();
+
+    move = CylinderMovement(path,
+                            QVector3D(0.0,0.1,-1.0),
+                            QVector3D(0.0,1.0,0.0), cylinder);
+    axisDirections = move.getAxisDirections();
 
     initBuffers();
 
     // First transformation of the cylinder
     cylinderTranslation.setToIdentity();
     cylinderTranslation.translate(-2, 0, -6);
+    modelTranslation = cylinderTranslation;
+
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(0);
 
     // Set the initial model transformation to
     // just the translation
-    cylinderTransf = cylinderTranslation;
+    cylinderTransf = cylinderTranslation * cylinderRotation;
+    modelTransf = modelTranslation;
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
-    projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
+    projTransf.ortho(0.0f,20.0f,0.0f,20.0f,0.2f,20.0f);
+    //projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
 }
 
 /**
@@ -99,12 +118,12 @@ void MainView::initializeGL()
  * TODO: extend for other cylinders and enveloping surfaces.
  */
 void MainView::initBuffers() {
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vaoCyl);
+    glBindVertexArray(vaoCyl);
+    glGenBuffers(1, &vboCyl);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
 
     // Set up the vertex attributes
     glEnableVertexAttribArray(0);
@@ -126,6 +145,20 @@ void MainView::initBuffers() {
         sizeof(Vertex),                // stride (size of object)
         (void *)offsetof(Vertex, rVal) // offset
         );
+
+    glGenVertexArrays(1, &vaoPth);
+    glBindVertexArray(vaoPth);
+    glGenBuffers(1, &vboPth);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
+
+    // Set up the vertex attributes
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 }
 
 /**
@@ -133,11 +166,17 @@ void MainView::initBuffers() {
  * TODO: extend to update buffer of other cylinders and enveloping surfaces.
  */
 void MainView::updateBuffers(){
-    vertexArr.clear();
-    vertexArr = cylinder.getVertexArr();
+    vertexArrCyl.clear();
+    vertexArrCyl = cylinder.getVertexArr();
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(Vertex), vertexArr.data(), GL_STATIC_DRAW);
+    vertexArrPth.clear();
+    vertexArrPth = path.getVertexArr();
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
 }
 
 /**
@@ -169,14 +208,43 @@ void MainView::paintGL()
     // Bind the shader program
     shaderProgram.bind();
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, projTransf.data());
-    // Set the cylinder model
+
+    // Bind cylinder buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
     glUniformMatrix4fv(modelLocation, 1, GL_FALSE, cylinderTransf.data());
-    // Bind the vao
-    glBindVertexArray(vao);
-    // Draw the triangles
-    glDrawArrays(GL_TRIANGLES, 0, vertexArr.size());
+    glBindVertexArray(vaoCyl);
+    // Draw cylinder
+    glDrawArrays(GL_TRIANGLES,0,vertexArrCyl.size());
+
+    // Bind path buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+    glBindVertexArray(vaoPth);
+    // Draw path
+    glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
+
     shaderProgram.release();
 
+}
+
+
+void MainView::moveModel(float x, float y)
+{
+    qDebug() << "is " << modelTranslation;
+    modelTranslation.translate(-x/500.0f, -y/700.0f, 0);
+    qDebug() << "moved " << modelTranslation;
+
+    modelTransf = modelTranslation * modelScaling * modelRotation;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    update();
 }
 
 /**
@@ -215,7 +283,16 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     modelRotation.rotate(rotateZ, 0, 0, 1); // rotate around z axis
 
     // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
+    modelTransf = modelTranslation * modelScaling * modelRotation;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
     update();
 }
 
@@ -235,7 +312,42 @@ void MainView::setScale(float scale)
     modelScaling.scale(scale);
 
     // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation;
+    modelTransf = modelTranslation * modelScaling * modelRotation;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(time);
+
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    update();
+}
+
+/**
+ * @brief MainView::setTime Changes the time of the displayed objects.
+ * @param time The new time value.
+ */
+void MainView::setTime(float time)
+{
+    qDebug() << "Time changed to " << time;
+    this->time = time;
+
+    cylinderTranslation.setToIdentity();
+    cylinderTranslation = modelTranslation;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    shift = modelTransf * shift;
+    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    cylinderRotation.setToIdentity();
+    cylinderRotation = move.getMovementRotation(time);
+
+    // Update the model transformation matrix
+    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
     update();
 }
 

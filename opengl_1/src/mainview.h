@@ -13,6 +13,8 @@
 #include "model.h"
 #include "vertex.h"
 #include "cylinder.h"
+#include "cylindermovement.h"
+#include "simplepath.h"
 
 
 /**
@@ -24,19 +26,29 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
     friend class MainWindow;
 
+    // Cylinder rendering
     Cylinder cylinder;
-
-    GLuint vao;
-    GLuint vbo;
+    GLuint vaoCyl;
+    GLuint vboCyl;
+    QVector<Vertex> vertexArrCyl;
     QOpenGLShaderProgram shader;
-    QVector<Vertex> vertexArr;
 
+    // Path rendering
+    CylinderMovement move;
+    QVector<QVector3D> axisDirections;
+    SimplePath path;
+    GLuint vaoPth;
+    GLuint vboPth;
+    QVector<Vertex> vertexArrPth;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
     QMatrix4x4 modelRotation;
+    QMatrix4x4 cylinderRotation;
     QMatrix4x4 cylinderTranslation;
+    QMatrix4x4 modelTranslation;
     QMatrix4x4 cylinderTransf; // cylinderTranslation * modelRotation * modelScaling
+    QMatrix4x4 modelTransf;
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
@@ -51,6 +63,7 @@ public:
     // Functions for widget input events
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
+    void setTime(float time);
     void updateBuffers();
 
 protected:
@@ -58,6 +71,8 @@ protected:
     void initBuffers();
     void resizeGL(int newWidth, int newHeight) override;
     void paintGL() override;
+    void moveModel(float x, float y);
+    QVector2D toNormalizedScreenCoordinates(float x, float y);
 
     // Functions for keyboard input events
     void keyPressEvent(QKeyEvent *ev) override;
@@ -78,6 +93,7 @@ private:
     QTimer timer; // timer used for animation
 
     QOpenGLShaderProgram shaderProgram;
+    float time;
 
     void createShaderProgram();
 };

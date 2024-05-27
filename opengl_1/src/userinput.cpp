@@ -11,6 +11,18 @@ void MainView::keyPressEvent(QKeyEvent *ev) {
     case 'A':
       qDebug() << "A pressed";
       break;
+    case 16777234: // <-
+      qDebug() << "left pressed";
+      break;
+    case 16777235: // ^
+      qDebug() << "up pressed";
+      break;
+    case 16777236: // ->
+      qDebug() << "right pressed";
+      break;
+    case 16777237: // _
+      qDebug() << "down pressed";
+      break;
     default:
       // ev->key() is an integer. For alpha numeric characters keys it
       // equivalent with the char value ('A' == 65, '1' == 49) Alternatively,
