@@ -26,6 +26,9 @@ public:
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}
     inline void setZ(Polynomial z) {this->z = z; updateVertexArr();}
     inline void setRange(float t0, float t1){this->t0 = t0; this->t1 = t1; updateVertexArr();}
+    inline float getT0() {return t0;}
+    inline float getT1() {return t1;}
+    inline float getRange() {return t1-t0;}
 
     inline Polynomial getX() {return x;}
     inline Polynomial getY() {return y;}

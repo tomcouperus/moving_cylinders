@@ -190,12 +190,31 @@ void MainWindow::on_spinBox_d_z_valueChanged(int value) {
   ui->mainView->update();
 }
 
+void MainWindow::on_spinBox_t_0_valueChanged(int value) {
+  qDebug() << "t0 updated to: " << value;
+
+  ui->mainView->path.setRange(value, ui->mainView->path.getT1());
+  ui->mainView->move.setPath(ui->mainView->path);
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_spinBox_t_1_valueChanged(int value) {
+  qDebug() << "t1 updated to: " << value;
+
+  ui->mainView->path.setRange(ui->mainView->path.getT0(), value);
+  ui->mainView->move.setPath(ui->mainView->path);
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
 /**
  * @brief MainWindow::on_TimeSlider_sliderMoved Updates the time value.
  * @param value The new time value.
  */
 void MainWindow::on_TimeSlider_sliderMoved(int value) {
-  ui->mainView->setTime(value / 10.0f);
+  float divisor = ui->mainView->path.getSectors()/ ui->mainView->path.getRange();
+  ui->mainView->setTime(value / divisor);
 }
 
 

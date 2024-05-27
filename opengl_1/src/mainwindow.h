@@ -39,6 +39,8 @@ class MainWindow : public QMainWindow {
   void on_spinBox_b_z_valueChanged(int value);
   void on_spinBox_c_z_valueChanged(int value);
   void on_spinBox_d_z_valueChanged(int value);
+  void on_spinBox_t_0_valueChanged(int value);
+  void on_spinBox_t_1_valueChanged(int value);
 
   void on_ResetRotationButton_clicked(bool checked);
   void on_RotationDialX_sliderMoved(int value);

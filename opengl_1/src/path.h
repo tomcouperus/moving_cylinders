@@ -18,6 +18,7 @@ public:
     virtual void initVertexArr() = 0;
 
     inline void setSectors(int s) {sectors = s;}
+    inline int getSectors() {return sectors;}
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 };
 
