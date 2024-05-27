@@ -227,6 +227,7 @@ void MainView::paintGL()
 
 }
 
+
 void MainView::moveModel(float x, float y)
 {
     qDebug() << "is " << modelTranslation;
@@ -327,6 +328,10 @@ void MainView::setScale(float scale)
     update();
 }
 
+/**
+ * @brief MainView::setTime Changes the time of the displayed objects.
+ * @param time The new time value.
+ */
 void MainView::setTime(float time)
 {
     qDebug() << "Time changed to " << time;
