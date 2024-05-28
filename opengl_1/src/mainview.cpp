@@ -81,7 +81,8 @@ void MainView::initializeGL()
     cylinder.initCylinder();
     vertexArrCyl = cylinder.getVertexArr();
 
-    path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
+
+    SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
                       Polynomial(0.0,1.0,0.0,0.0),
                       Polynomial());
     path.initVertexArr();
@@ -170,7 +171,7 @@ void MainView::updateBuffers(){
     vertexArrCyl = cylinder.getVertexArr();
 
     vertexArrPth.clear();
-    vertexArrPth = path.getVertexArr();
+    vertexArrPth = move.getPath().getVertexArr();
 
     glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
     glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
@@ -236,6 +237,7 @@ void MainView::moveModel(float x, float y)
 
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
+    SimplePath path = move.getPath();
     cylinderTranslation.setToIdentity();
     cylinderTranslation = modelTranslation;
     QVector4D shift = QVector4D(path.getPathAt(time),0);
@@ -285,6 +287,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
+    SimplePath path = move.getPath();
     cylinderTranslation.setToIdentity();
     cylinderTranslation = modelTranslation;
     QVector4D shift = QVector4D(path.getPathAt(time),0);
@@ -314,6 +317,7 @@ void MainView::setScale(float scale)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
+    SimplePath path = move.getPath();
     cylinderTranslation.setToIdentity();
     cylinderTranslation = modelTranslation;
     QVector4D shift = QVector4D(path.getPathAt(time),0);
@@ -335,16 +339,19 @@ void MainView::setScale(float scale)
 void MainView::setTime(float time)
 {
     qDebug() << "Time changed to " << time;
-    this->time = time;
 
+    this->time = time + move.getPath().getT0();
+
+    SimplePath path = move.getPath();
     cylinderTranslation.setToIdentity();
     cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    QVector4D shift = QVector4D(path.getPathAt(this->time),0);
+    qDebug() << shift;
     shift = modelTransf * shift;
     cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(time);
+    cylinderRotation = move.getMovementRotation(this->time);
 
     // Update the model transformation matrix
     cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;

@@ -36,7 +36,7 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     // Path rendering
     CylinderMovement move;
     QVector<QVector3D> axisDirections;
-    SimplePath path;
+    //SimplePath path;
     GLuint vaoPth;
     GLuint vboPth;
     QVector<Vertex> vertexArrPth;

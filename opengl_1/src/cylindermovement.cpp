@@ -86,6 +86,7 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
 QMatrix4x4 CylinderMovement::getMovementRotation(float time)
 {
     int idx = path.getIdxAtTime(time);
+    qDebug() << "idx: " <<idx;
     QMatrix4x4 cylinderRotation;
     QVector3D initVector = axisDirections[idx];
     float angle = acos(QVector3D::dotProduct(initVector.normalized(), cylinderAxis));

@@ -31,8 +31,8 @@ public:
     void setHeight(float height);
     void setPosit(QVector3D position);
     
-    inline float getRadiusDerivativeWRTa() {return sin(angle);};
-    inline float getRadiusAt(float a) {return r + a*tan(angle);};
+    inline float getRadiusDerivativeWRTa() {return sin(angle);}
+    inline float getRadiusAt(float a) {return r + a*tan(angle);}
 
     inline float getA0(){ return a0; }
     inline float getA1(){ return a1; }
@@ -47,9 +47,6 @@ public:
     inline int getSectors(){ return sectors; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 private:
-    constexpr static float PI = acos(-1.0f);
-    int sectors;
-    float theta;
     void computeCylinder();
     Vertex calcCircleBound(QVector3D posit, float r1, float theta, float h);
 };
