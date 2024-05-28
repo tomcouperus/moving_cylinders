@@ -238,7 +238,7 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
 void MainWindow::on_TimeSlider_sliderMoved(int value) {
   SimplePath path = ui->mainView->move.getPath();
   float divisor = path.getSectors()/ path.getRange();
-  ui->mainView->setTime((value +1) / divisor);
+  ui->mainView->setTime(value / divisor);
 }
 
 
