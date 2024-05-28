@@ -3,6 +3,7 @@
 
 #include "vertex.h"
 #include "cylindermovement.h"
+#include <QMatrix2x2>
 
 class Envelope
 {
@@ -22,8 +23,8 @@ public:
     Vertex calcEnvelopeAt(float t, float a);
     QVector3D computeNormal(float t, float a);
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
-    inline void setCylinder(Cylinder cylinder) {this->cylinder = cylinder;}
-    inline void setCylinderMovement(CylinderMovement cylinderMovement) {this->cylinderMovement = cylinderMovement;}
+    void setCylinder(Cylinder cylinder);
+    void setCylinderMovement(CylinderMovement cylinderMovement);
 };
 
 #endif // ENVELOPE_H

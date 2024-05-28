@@ -13,10 +13,10 @@ class Cylinder
     constexpr static float PI = acos(-1.0f);
     
     QVector3D posit;
-    float a0;
-    float a1;
+    float a0=0;
+    float a1=1;
 
-    int sectors;
+    int sectors = 20;
     QVector3D axisVector = QVector3D(0.0,0.0,1.0);
     QVector3D perpVector = QVector3D(1.0,0.0,0.0); // a vector perpendicular to the axis
     QVector<Vertex> vertexArr;

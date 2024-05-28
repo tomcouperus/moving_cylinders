@@ -15,6 +15,7 @@
 #include "cylinder.h"
 #include "cylindermovement.h"
 #include "simplepath.h"
+#include "envelope.h"
 
 
 /**
@@ -40,6 +41,12 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLuint vaoPth;
     GLuint vboPth;
     QVector<Vertex> vertexArrPth;
+
+    // Envelope rendering
+    Envelope envelope;
+    GLuint vaoEnv;
+    GLuint vboEnv;
+    QVector<Vertex> vertexArrEnv;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
@@ -93,7 +100,7 @@ private:
     QTimer timer; // timer used for animation
 
     QOpenGLShaderProgram shaderProgram;
-    float time;
+    float time = 0.0f;
 
     void createShaderProgram();
 };

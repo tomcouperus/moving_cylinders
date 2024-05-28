@@ -33,6 +33,8 @@ MainView::~MainView()
     glDeleteVertexArrays(1, &vaoCyl);
     glDeleteBuffers(1, &vboPth);
     glDeleteVertexArrays(1, &vaoPth);
+    glDeleteBuffers(1, &vboEnv);
+    glDeleteVertexArrays(1, &vaoEnv);
 
     makeCurrent();
 }
@@ -80,6 +82,7 @@ void MainView::initializeGL()
     // Define the vertices of the cylinder
     cylinder.initCylinder();
     vertexArrCyl = cylinder.getVertexArr();
+    qDebug() << "a0:" << cylinder.getA0() << "a1:" << cylinder.getA1() << "H:" << cylinder.getHeight();
 
 
     SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
@@ -92,6 +95,12 @@ void MainView::initializeGL()
                             QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0), cylinder);
     axisDirections = move.getAxisDirections();
+
+    // Define the vertices of the enveloping surface
+    envelope = Envelope(move, cylinder);
+    envelope.initEnvelope();
+    vertexArrEnv = envelope.getVertexArr();
+    qDebug() << "size" << vertexArrEnv.size();
 
     initBuffers();
 
@@ -160,6 +169,20 @@ void MainView::initBuffers() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+
+    glGenVertexArrays(1, &vaoEnv);
+    glBindVertexArray(vaoEnv);
+    glGenBuffers(1, &vboEnv);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
+
+    // Set up the vertex attributes
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 }
 
 /**
@@ -173,11 +196,17 @@ void MainView::updateBuffers(){
     vertexArrPth.clear();
     vertexArrPth = move.getPath().getVertexArr();
 
+    vertexArrEnv.clear();
+    vertexArrEnv = envelope.getVertexArr();
+
     glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
     glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboPth);
     glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
 }
 
 /**
@@ -223,6 +252,13 @@ void MainView::paintGL()
     glBindVertexArray(vaoPth);
     // Draw path
     glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
+
+    // Bind envelope buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+    glBindVertexArray(vaoEnv);
+    // Draw envelope
+    glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
 
     shaderProgram.release();
 
