@@ -85,16 +85,12 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
  */
 QMatrix4x4 CylinderMovement::getMovementRotation(float time)
 {
-    int idx = path.getIdxAtTime(time);
-    if (idx > axisDirections.size()-1) { // in case of floating point error
-        idx = axisDirections.size()-1;
-    }
     QMatrix4x4 cylinderRotation;
-    QVector3D initVector = axisDirections[idx];
+    QVector3D initVector = getAxisDirectionAt(time);
     float angle = acos(QVector3D::dotProduct(initVector.normalized(), cylinderAxis));
     angle = qRadiansToDegrees(angle);
     if(angle != 0) {
-        cylinderRotation.rotate(angle, rotationVectors[idx]);
+        cylinderRotation.rotate(angle, getRotationVectorAt(time));
     }
     return cylinderRotation;
 }
@@ -129,4 +125,32 @@ void CylinderMovement::rotateAxisDirections(QMatrix4x4 rotation)
         axisDirections[i] = rotation.map(axisDirections[i]);
         rotationVectors[i] = rotation.map(rotationVectors[i]);
     }
+}
+
+/**
+ * @brief CylinderMovement::getAxisDirectionAt returns the axis direction at time time
+ * @param time time of interest
+ * @return axis direction
+ */
+QVector3D CylinderMovement::getAxisDirectionAt(float time)
+{
+    int idx = path.getIdxAtTime(time);
+    if (idx > axisDirections.size()-1) { // in case of floating point error
+        idx = axisDirections.size()-1;
+    }
+    return axisDirections[idx];
+}
+
+/**
+ * @brief CylinderMovement::getRotationVectorAt returns the rotation vector at time time
+ * @param time time of interest
+ * @return rotation vector
+ */
+QVector3D CylinderMovement::getRotationVectorAt(float time)
+{
+    int idx = path.getIdxAtTime(time);
+    if (idx > rotationVectors.size()-1) { // in case of floating point error
+        idx = rotationVectors.size()-1;
+    }
+    return rotationVectors[idx];
 }

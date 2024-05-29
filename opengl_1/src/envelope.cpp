@@ -19,6 +19,8 @@ Envelope::Envelope(CylinderMovement cylinderMovement, Cylinder cylinder) :
 void Envelope::initEnvelope()
 {
     computeEnvelope();
+    computeToolCenters();
+    computeGrazingCurves();
 }
 
 void Envelope::setCylinderMovement(CylinderMovement cylinderMovement)
@@ -26,6 +28,8 @@ void Envelope::setCylinderMovement(CylinderMovement cylinderMovement)
     this->cylinderMovement = cylinderMovement;
     sectorsT = cylinderMovement.getPath().getSectors();
     computeEnvelope();
+    computeToolCenters();
+    computeGrazingCurves();
 }
 
 void Envelope::setCylinder(Cylinder cylinder)
@@ -33,6 +37,60 @@ void Envelope::setCylinder(Cylinder cylinder)
     this->cylinder = cylinder;
     sectorsA = cylinder.getSectors();
     computeEnvelope();
+    computeToolCenters();
+    computeGrazingCurves();
+}
+
+void Envelope::computeToolCenters()
+{
+    vertexArrCenters.clear();
+
+    QVector3D color = QVector3D(0,0,1);
+
+    QVector3D v1, v2;
+    SimplePath path = cylinderMovement.getPath();
+    float a1 = cylinder.getA1();
+    float aDelta = (cylinder.getA1()-cylinder.getA0())/sectorsA;
+    float t1 = path.getT1();
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    for (float t = path.getT0(); t < t1; t+=tDelta)
+    {
+        for (float a = cylinder.getA0(); a < a1; a+=aDelta)
+        {
+            v1 = calcToolCenterAt(t, a);
+            v2 = calcToolCenterAt(t, a+aDelta);
+
+            // Add vertices to array
+            vertexArrCenters.append(Vertex(v1, color));
+            vertexArrCenters.append(Vertex(v2, color));
+        }
+    }
+}
+
+void Envelope::computeGrazingCurves()
+{
+    vertexArrGrazingCurve.clear();
+
+    QVector3D color = QVector3D(0,1,0);
+
+    QVector3D v1, v2;
+    SimplePath path = cylinderMovement.getPath();
+    float a1 = cylinder.getA1();
+    float aDelta = (cylinder.getA1()-cylinder.getA0())/sectorsA;
+    float t1 = path.getT1();
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    for (float t = path.getT0(); t < t1; t+=tDelta)
+    {
+        for (float a = cylinder.getA0(); a < a1; a+=aDelta)
+        {
+            v1 = calcGrazingCurveAt(t, a);
+            v2 = calcGrazingCurveAt(t, a+aDelta);
+
+            // Add vertices to array
+            vertexArrGrazingCurve.append(Vertex(v1, color));
+            vertexArrGrazingCurve.append(Vertex(v2, color));
+        }
+    }
 }
 
 void Envelope::computeEnvelope()
@@ -41,25 +99,20 @@ void Envelope::computeEnvelope()
 
     Vertex v1, v2, v3, v4;
     SimplePath path = cylinderMovement.getPath();
-    float a = cylinder.getA0();
-    float aDelta = (cylinder.getA1()-a)/sectorsA;
-    float t = path.getT0();
-    float tDelta = (path.getT1()-t)/sectorsT;
-    for (int i = 0; i < sectorsT; i++)
+    float a1 = cylinder.getA1();
+    float aDelta = (cylinder.getA1()-cylinder.getA0())/sectorsA;
+    float t1 = path.getT1();
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    qDebug() << "sectorsT: " << sectorsT << " sectorsA: " << sectorsA;
+    for (float t = path.getT0(); t < t1; t+=tDelta)
     {
-        a = cylinder.getA0();
-        for (int j = 0; j < sectorsA; j++)
+        
+        for (float a = cylinder.getA0(); a < a1; a+=aDelta)
         {
-            qDebug() << "t: " << t << " a: " << a;
             v1 = calcEnvelopeAt(t, a);
             v2 = calcEnvelopeAt(t, a+aDelta);
             v3 = calcEnvelopeAt(t+tDelta, a);
             v4 = calcEnvelopeAt(t+tDelta, a+aDelta);
-
-//            qDebug() << "v1: " << v1.getPosition();
-//            qDebug() << "v2: " << v2.getPosition();
-//            qDebug() << "v3: " << v3.getPosition();
-//            qDebug() << "v4: " << v4.getPosition();
 
             // Add vertices to array
             vertexArr.append(v1);
@@ -68,23 +121,28 @@ void Envelope::computeEnvelope()
             vertexArr.append(v1);
             vertexArr.append(v3);
             vertexArr.append(v4);
-
-            a += aDelta;
         }
-        t += tDelta;
     }
+}
+
+QVector3D Envelope::calcToolCenterAt(float t, float a)
+{
+    
+    SimplePath path = cylinderMovement.getPath();
+    // s is offset by a0 wrt formula because path is coded at the base of the cone/tool instead of
+    // at the base of the axis of centers
+    QVector3D center = path.getPathAt(t) + (a)*(cylinderMovement.getAxisDirectionAt(t).normalized());
+
+    return center;
 }
 
 Vertex Envelope::calcEnvelopeAt(float t, float a)
 {
     QVector3D color = QVector3D(1,0,0);
     
-    float a0 = cylinder.getA0();
-    SimplePath path = cylinderMovement.getPath();
-    int idx = path.getIdxAtTime(t);
-    QVector3D center = path.getPathAt(t) + (a-a0)*cylinderMovement.getAxisDirections()[idx];
+    QVector3D center = calcToolCenterAt(t, a);
 
-    float r = cylinder.getRadiusAt(a);
+    float r = cylinder.getRadiusAt(a) + 0.001; // + 0.01 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
@@ -96,13 +154,23 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     return Vertex(posit, color);
 }
 
+QVector3D Envelope::calcGrazingCurveAt(float t, float a)
+{
+    QVector3D center = calcToolCenterAt(t, a);
+    float r = cylinder.getRadiusAt(a) + 0.005; // + 0.01 to avoid floating point weirdness
+    QVector3D normal = computeNormal(t, a);
+    QVector3D posit = center + r*normal;
+
+    return posit;
+}
+
 QVector3D Envelope::computeNormal(float t, float a)
 {
     SimplePath path = cylinderMovement.getPath();
-    QVector3D sa = cylinderMovement.getAxisDirections()[t];
-    float a0 = cylinder.getA0();
+    QVector3D sa = cylinderMovement.getAxisDirectionAt(t).normalized();
 //    qDebug() << "a-a0: " << a-a0;
-    QVector3D st = path.getTangentAt(t) + (a-a0)*cylinderMovement.getAxisRateOfChange(t);
+    float a0 = cylinder.getA0();
+    QVector3D st = path.getTangentAt(t) + (a)*cylinderMovement.getAxisRateOfChange(t).normalized();
 //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 
@@ -114,14 +182,14 @@ QVector3D Envelope::computeNormal(float t, float a)
                               QVector3D::dotProduct(sa,st), QVector3D::dotProduct(st,st),0,0,
                                 0,0,1,0,0,0,0,1);
 //    qDebug() << "m" << m;
-    QMatrix4x4 mInv = m.inverted();
+    QMatrix4x4 mInv = m.inverted(); // inverse of block matrix = matrix of inverse blocks
 //    qDebug() << "mInv: " << mInv;
     QVector4D b = QVector4D(-ra, 0,0,0);
     QVector4D x = mInv*b;
     alpha = x.x();
     beta = x.y();
 //    qDebug() << "A11"<< mInv.column(0).x();
-    gamma = sqrt(1-ra*ra*(mInv.column(0).x()));
+    gamma = sqrt(abs(1-ra*ra*(mInv.column(0).x()))); // abs to solve issue with imaginaries?
 //    qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma;
 
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;

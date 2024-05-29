@@ -32,7 +32,7 @@ public:
     void setPosit(QVector3D position);
     
     inline float getRadiusDerivativeWRTa() {return sin(angle);}
-    inline float getRadiusAt(float a) {return r + a*tan(angle);}
+    inline float getRadiusAt(float a) {return r*cos(angle) + a*sin(angle);}
 
     inline float getA0(){ return a0; }
     inline float getA1(){ return a1; }

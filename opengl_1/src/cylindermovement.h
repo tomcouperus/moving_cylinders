@@ -27,6 +27,8 @@ public:
     QMatrix4x4 getMovementRotation(float time);
     QVector3D getAxisRateOfChange(float time);
     void rotateAxisDirections(QMatrix4x4 rotation);
+    QVector3D getAxisDirectionAt(float time);
+    QVector3D getRotationVectorAt(float time);
 };
 
 #endif // CYLINDERMOVEMENT_H

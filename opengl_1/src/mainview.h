@@ -47,6 +47,12 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLuint vaoEnv;
     GLuint vboEnv;
     QVector<Vertex> vertexArrEnv;
+    GLuint vboCenters;
+    GLuint vaoCenters;
+    QVector<Vertex> vertexArrCenters;
+    GLuint vboGrazingCurve;
+    GLuint vaoGrazingCurve;
+    QVector<Vertex> vertexArrGrazingCurve;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;

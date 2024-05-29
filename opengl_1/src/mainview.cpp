@@ -35,6 +35,10 @@ MainView::~MainView()
     glDeleteVertexArrays(1, &vaoPth);
     glDeleteBuffers(1, &vboEnv);
     glDeleteVertexArrays(1, &vaoEnv);
+    glDeleteBuffers(1, &vboCenters);
+    glDeleteVertexArrays(1, &vaoCenters);
+    glDeleteBuffers(1, &vboGrazingCurve);
+    glDeleteVertexArrays(1, &vaoGrazingCurve);
 
     makeCurrent();
 }
@@ -100,6 +104,8 @@ void MainView::initializeGL()
     envelope = Envelope(move, cylinder);
     envelope.initEnvelope();
     vertexArrEnv = envelope.getVertexArr();
+    vertexArrCenters = envelope.getVertexArrCenters();
+    vertexArrGrazingCurve = envelope.getVertexArrGrazingCurve();
     qDebug() << "size" << vertexArrEnv.size();
 
     initBuffers();
@@ -183,6 +189,34 @@ void MainView::initBuffers() {
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+
+    glGenVertexArrays(1, &vaoCenters);
+    glBindVertexArray(vaoCenters);
+    glGenBuffers(1, &vboCenters);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrCenters.size() * sizeof(Vertex), vertexArrCenters.data(), GL_STATIC_DRAW);
+
+    // Set up the vertex attributes
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+
+    glGenVertexArrays(1, &vaoGrazingCurve);
+    glBindVertexArray(vaoGrazingCurve);
+    glGenBuffers(1, &vboGrazingCurve);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
+
+    // Set up the vertex attributes
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 }
 
 /**
@@ -199,6 +233,12 @@ void MainView::updateBuffers(){
     vertexArrEnv.clear();
     vertexArrEnv = envelope.getVertexArr();
 
+    vertexArrCenters.clear();
+    vertexArrCenters = envelope.getVertexArrCenters();
+
+    vertexArrGrazingCurve.clear();
+    vertexArrGrazingCurve = envelope.getVertexArrGrazingCurve();
+
     glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
     glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
 
@@ -207,6 +247,12 @@ void MainView::updateBuffers(){
 
     glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
     glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrCenters.size() * sizeof(Vertex), vertexArrCenters.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
+    glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
 }
 
 /**
@@ -259,6 +305,27 @@ void MainView::paintGL()
     glBindVertexArray(vaoEnv);
     // Draw envelope
     glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
+
+    // Bind centers buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+    glBindVertexArray(vaoCenters);
+    // Draw centers
+    glDrawArrays(GL_LINES,0,vertexArrCenters.size());
+
+    // Bind grazing curve buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+    glBindVertexArray(vaoGrazingCurve);
+    // Draw grazing curve
+    glLineWidth(5.0);
+    glDrawArrays(GL_LINES,0,vertexArrGrazingCurve.size());
+    GLfloat lineWidthRange[2];
+    glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidthRange);
+
+    qDebug()  << "Supported line width range: " << lineWidthRange[0] << " to " << lineWidthRange[1];
+
+
 
     shaderProgram.release();
 
