@@ -9,6 +9,16 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
+
+  ui->orientVector_1->setValidator(new QRegularExpressionValidator(
+      QRegularExpression("\\(\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+)\\)")));
+  ui->orientVector_2->setValidator(new QRegularExpressionValidator(
+      QRegularExpression("\\(\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+)\\)")));
+
+  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
+  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+
+  ui->mainView->move.setAxisDirections(vector1,vector2);
 }
 
 /**
@@ -52,6 +62,44 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->mainView->update();
 }
 
+void MainWindow::on_orientVector_1_returnPressed(){
+  qDebug() << "orientation vector changed";
+  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
+  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+
+  qDebug() << "to" << vector1 << "and" << vector2;
+
+  bool success = ui->mainView->move.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+      ui->mainView->updateCylinderTransf();
+  } else {
+      error.showMessage("The inputed vector is not a valid orientation 1 vector");
+  }
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_orientVector_2_returnPressed(){
+  qDebug() << "orientation vector changed";
+  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
+  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+
+  qDebug() << "to" << vector1 << "and" << vector2;
+
+  bool success = ui->mainView->move.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+      ui->mainView->updateCylinderTransf();
+  } else {
+      error.showMessage("The inputed vector is not a valid orientation 2 vector");
+  }
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
 /**
  * @brief MainWindow::on_spinBox_a_x_valueChanged Updates the a coefficient of the x(t) polynomial.
  * @param value new a coefficient.
@@ -68,6 +116,8 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -87,6 +137,8 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -106,6 +158,8 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -125,6 +179,8 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -144,6 +200,8 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -163,6 +221,8 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -183,6 +243,8 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -202,6 +264,8 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -221,6 +285,8 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->updateCylinderTransf();
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -233,11 +299,15 @@ void MainWindow::on_spinBox_t_0_valueChanged(int value) {
   qDebug() << "t0 updated to: " << value;
 
   SimplePath path = ui->mainView->move.getPath();
+  float sliderTimePerSector = (ui->mainView->time-path.getT0()) / path.getRange();
 
   path.setRange(value, path.getT1());
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+
+  ui->mainView->setTime(sliderTimePerSector*path.getRange());
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -250,12 +320,37 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   qDebug() << "t1 updated to: " << value;
 
   SimplePath path = ui->mainView->move.getPath();
+  float sliderTimePerSector = (ui->mainView->time-path.getT0()) / path.getRange();
 
   path.setRange(path.getT0(), value);
   ui->mainView->move.setPath(path);
 
   ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+
+  ui->mainView->setTime(sliderTimePerSector*path.getRange());
+
   ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+
+void MainWindow::on_envelopeCheckBox_toggled(bool checked){
+  ui->mainView->settings.showEnvelope = checked;
+  ui->mainView->update();
+}
+
+void MainWindow::on_grazCurveCheckBox_toggled(bool checked){
+  ui->mainView->settings.showGrazingCurve = checked;
+  ui->mainView->update();
+}
+
+void MainWindow::on_pathCheckBox_toggled(bool checked){
+  ui->mainView->settings.showPath = checked;
+  ui->mainView->update();
+}
+
+void MainWindow::on_toolAxisCheckBox_toggled(bool checked){
+  ui->mainView->settings.showToolAxis = checked;
   ui->mainView->update();
 }
 

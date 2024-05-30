@@ -35,6 +35,7 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     polynomial.h polynomial.cpp
     cylindermovement.h cylindermovement.cpp
     envelope.h envelope.cpp
+    settings.h
 
 )
 

@@ -210,8 +210,8 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>12</x>
-         <y>32</y>
+         <x>10</x>
+         <y>20</y>
          <width>205</width>
          <height>231</height>
         </rect>
@@ -231,12 +231,72 @@
        <property name="currentIndex">
         <number>1</number>
        </property>
-       <widget class="QWidget" name="Cylinder">
+       <widget class="QWidget" name="Settings">
+        <attribute name="title">
+         <string>Settings</string>
+        </attribute>
+        <widget class="QCheckBox" name="envelopeCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Envelope</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="grazCurveCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>141</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Grazing curves</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="pathCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Path</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="toolAxisCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Tool axis</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="Tool">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <attribute name="title">
-         <string>Cylinder</string>
+         <string>Tool</string>
         </attribute>
         <widget class="QFrame" name="cylinderBox">
          <property name="geometry">
@@ -244,14 +304,14 @@
            <x>0</x>
            <y>0</y>
            <width>196</width>
-           <height>141</height>
+           <height>151</height>
           </rect>
          </property>
          <widget class="QLabel" name="labelRadius">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>30</y>
+            <y>10</y>
             <width>54</width>
             <height>17</height>
            </rect>
@@ -264,7 +324,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>70</y>
+            <y>40</y>
             <width>54</width>
             <height>17</height>
            </rect>
@@ -277,7 +337,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>110</y>
+            <y>70</y>
             <width>54</width>
             <height>17</height>
            </rect>
@@ -290,7 +350,7 @@
           <property name="geometry">
            <rect>
             <x>110</x>
-            <y>30</y>
+            <y>0</y>
             <width>62</width>
             <height>26</height>
            </rect>
@@ -306,7 +366,7 @@
           <property name="geometry">
            <rect>
             <x>110</x>
-            <y>70</y>
+            <y>30</y>
             <width>62</width>
             <height>26</height>
            </rect>
@@ -315,14 +375,14 @@
            <double>0.100000000000000</double>
           </property>
           <property name="value">
-           <double>0.500000000000000</double>
+           <double>0.000000000000000</double>
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="heightSpinBox">
           <property name="geometry">
            <rect>
             <x>110</x>
-            <y>110</y>
+            <y>60</y>
             <width>62</width>
             <height>26</height>
            </rect>
@@ -332,6 +392,58 @@
           </property>
           <property name="value">
            <double>2.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="orientVector_1">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>90</y>
+            <width>101</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(0.0,0.1,-1.0)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelOrient_1">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>100</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Orientation 1</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="orientVector_2">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>120</y>
+            <width>101</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(0.0,1.0,0.0)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelOrient_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>130</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Orientation 2</string>
           </property>
          </widget>
         </widget>
@@ -713,7 +825,7 @@
           <number>0</number>
          </property>
          <property name="value">
-          <number>5</number>
+          <number>2</number>
          </property>
         </widget>
         <widget class="QLabel" name="label_17">
@@ -735,9 +847,9 @@
          </property>
         </widget>
        </widget>
-       <widget class="QWidget" name="tab_2">
+       <widget class="QWidget" name="tab">
         <attribute name="title">
-         <string>Tab 2</string>
+         <string>tab</string>
         </attribute>
        </widget>
       </widget>

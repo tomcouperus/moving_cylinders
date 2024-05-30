@@ -7,7 +7,7 @@ SimplePath::SimplePath()
     : x(Polynomial()), y(Polynomial()), z(Polynomial())
 {
     t0 = 0;
-    t1 = 5;
+    t1 = 2;
 }
 
 /**
@@ -20,7 +20,7 @@ SimplePath::SimplePath(Polynomial x, Polynomial y, Polynomial z)
     : x(x), y(y), z(z)
 {
     t0 = 0;
-    t1 = 5;
+    t1 = 2;
 }
 
 /**

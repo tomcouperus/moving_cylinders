@@ -16,6 +16,7 @@
 #include "cylindermovement.h"
 #include "simplepath.h"
 #include "envelope.h"
+#include "settings.h"
 
 
 /**
@@ -77,6 +78,7 @@ public:
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
     void setTime(float time);
+    void updateCylinderTransf();
     void updateBuffers();
 
 protected:
@@ -107,6 +109,7 @@ private:
 
     QOpenGLShaderProgram shaderProgram;
     float time = 0.0f;
+    Settings settings;
 
     void createShaderProgram();
 };

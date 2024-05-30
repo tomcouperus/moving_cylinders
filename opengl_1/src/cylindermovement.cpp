@@ -77,6 +77,40 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
     }
 }
 
+
+bool CylinderMovement::setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2){
+
+    if(axisDirection1 == QVector3D(0,0,0) || axisDirection2 == QVector3D(0,0,0)){
+        return false;
+    }
+
+    axisDirections.clear();
+    rotationVectors.clear();
+
+    QVector<Vertex> vertices = path.getVertexArr();
+
+    // interpolation of directional vectors
+    QVector3D lastDirection = axisDirection1;
+    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (vertices.size()-1);
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        axisDirections.append(lastDirection); // add interpolated directional vector
+
+        // Get (and save) vector perpendicular to both the directional vector of the movement and the axis of the cylinder
+        QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis,
+                                                           lastDirection);
+        if(rotationVector == QVector3D(0.0,0.0,0.0)) { // rotation vector if vectors are anti-parallel
+            // (there are infinitely many)
+            rotationVector = perpToAxis; // take the one saved on the cylinder info
+        }
+        rotationVectors.append(rotationVector);
+
+        lastDirection += deltaDirection;
+    }
+
+    return true;
+}
+
 /**
  * @brief CylinderMovement::getMovementRotation Calculates the rotation that the cylinder needs to undergo
  * to be positioned with its axis in the direction described by the movement at time time

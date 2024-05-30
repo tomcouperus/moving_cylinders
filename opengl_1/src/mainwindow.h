@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QErrorMessage>
 
 namespace Ui {
 class MainWindow;
@@ -14,6 +15,7 @@ class MainWindow;
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
+    QErrorMessage error;
  public:
   Ui::MainWindow *ui;
 
@@ -25,7 +27,8 @@ class MainWindow : public QMainWindow {
   void on_radiusSpinBox_valueChanged(double value);
   void on_angleSpinBox_valueChanged(double value);
   void on_heightSpinBox_valueChanged(double value);
-  void on_TimeSlider_sliderMoved(int value);
+  void on_orientVector_1_returnPressed();
+  void on_orientVector_2_returnPressed();
 
   void on_spinBox_a_x_valueChanged(int value);
   void on_spinBox_b_x_valueChanged(int value);
@@ -38,6 +41,13 @@ class MainWindow : public QMainWindow {
   void on_spinBox_c_z_valueChanged(int value);
   void on_spinBox_t_0_valueChanged(int value);
   void on_spinBox_t_1_valueChanged(int value);
+
+  void on_envelopeCheckBox_toggled(bool checked);
+  void on_grazCurveCheckBox_toggled(bool checked);
+  void on_pathCheckBox_toggled(bool checked);
+  void on_toolAxisCheckBox_toggled(bool checked);
+
+  void on_TimeSlider_sliderMoved(int value);
 
   void on_ResetRotationButton_clicked(bool checked);
   void on_RotationDialX_sliderMoved(int value);

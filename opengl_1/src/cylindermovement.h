@@ -21,7 +21,8 @@ public:
     CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder);
     inline void setPath(SimplePath path) {this->path = path;}
     inline SimplePath getPath() {return path;}
-    inline void setAxisDirections(QVector<QVector3D> axisDirections) {this->axisDirections = axisDirections;}
+    inline void setAxisDirections(QVector<QVector3D> axisDirections) {axisDirections.clear(); this->axisDirections = axisDirections;}
+    bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);
     inline QVector<QVector3D> getAxisDirections() {return axisDirections;}
 
     QMatrix4x4 getMovementRotation(float time);

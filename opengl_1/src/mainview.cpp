@@ -292,64 +292,44 @@ void MainView::paintGL()
     // Draw cylinder
     glDrawArrays(GL_TRIANGLES,0,vertexArrCyl.size());
 
-    // Bind path buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-    glBindVertexArray(vaoPth);
-    // Draw path
-    glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
+    if(settings.showPath){
+        // Bind path buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboPth);
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+        glBindVertexArray(vaoPth);
+        // Draw path
+        glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
+    }
 
-    // Bind envelope buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-    glBindVertexArray(vaoEnv);
-    // Draw envelope
-    glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
+    if(settings.showEnvelope){
+        // Bind envelope buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+        glBindVertexArray(vaoEnv);
+        // Draw envelope
+        glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
+    }
 
-    // Bind centers buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-    glBindVertexArray(vaoCenters);
-    // Draw centers
-    glDrawArrays(GL_LINES,0,vertexArrCenters.size());
+    if(settings.showToolAxis){
+        // Bind centers buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+        glBindVertexArray(vaoCenters);
+        // Draw centers
+        glDrawArrays(GL_LINES,0,vertexArrCenters.size());
+    }
 
-    // Bind grazing curve buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-    glBindVertexArray(vaoGrazingCurve);
-    // Draw grazing curve
-    glLineWidth(5.0);
-    glDrawArrays(GL_LINES,0,vertexArrGrazingCurve.size());
-    GLfloat lineWidthRange[2];
-    glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidthRange);
-
-    qDebug()  << "Supported line width range: " << lineWidthRange[0] << " to " << lineWidthRange[1];
-
-
+    if(settings.showGrazingCurve){
+        // Bind grazing curve buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
+        glBindVertexArray(vaoGrazingCurve);
+        // Draw grazing curve
+        glDrawArrays(GL_LINES,0,vertexArrGrazingCurve.size());
+    }
 
     shaderProgram.release();
 
-}
-
-
-void MainView::moveModel(float x, float y)
-{
-    qDebug() << "is " << modelTranslation;
-    modelTranslation.translate(-x/500.0f, -y/700.0f, 0);
-    qDebug() << "moved " << modelTranslation;
-
-    modelTransf = modelTranslation * modelScaling * modelRotation;
-
-    SimplePath path = move.getPath();
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
-    update();
 }
 
 /**
@@ -390,15 +370,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    SimplePath path = move.getPath();
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    updateCylinderTransf();
     update();
 }
 
@@ -420,18 +392,7 @@ void MainView::setScale(float scale)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    SimplePath path = move.getPath();
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(time);
-
-    // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    updateCylinderTransf();
     update();
 }
 
@@ -445,20 +406,24 @@ void MainView::setTime(float time)
 
     this->time = time + move.getPath().getT0();
 
+    updateCylinderTransf();
+    update();
+}
+
+
+void MainView::updateCylinderTransf(){
     SimplePath path = move.getPath();
     cylinderTranslation.setToIdentity();
     cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(this->time),0);
-    qDebug() << shift;
+    QVector4D shift = QVector4D(path.getPathAt(time),0);
     shift = modelTransf * shift;
     cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(this->time);
+    cylinderRotation = move.getMovementRotation(time);
 
     // Update the model transformation matrix
     cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
-    update();
 }
 
 /**
