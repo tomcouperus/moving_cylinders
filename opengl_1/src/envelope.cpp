@@ -142,7 +142,7 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     
     QVector3D center = calcToolCenterAt(t, a);
 
-    float r = cylinder.getRadiusAt(a) + 0.001; // + 0.01 to avoid floating point weirdness
+    float r = cylinder.getRadiusAt(a) + 0.0001; // + 0.01 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
@@ -157,7 +157,7 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
 QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 {
     QVector3D center = calcToolCenterAt(t, a);
-    float r = cylinder.getRadiusAt(a) + 0.005; // + 0.01 to avoid floating point weirdness
+    float r = cylinder.getRadiusAt(a) + 0.002; // + 0.01 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
@@ -168,8 +168,6 @@ QVector3D Envelope::computeNormal(float t, float a)
 {
     SimplePath path = cylinderMovement.getPath();
     QVector3D sa = cylinderMovement.getAxisDirectionAt(t).normalized();
-//    qDebug() << "a-a0: " << a-a0;
-    float a0 = cylinder.getA0();
     QVector3D st = path.getTangentAt(t) + (a)*cylinderMovement.getAxisRateOfChange(t).normalized();
 //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
@@ -189,7 +187,7 @@ QVector3D Envelope::computeNormal(float t, float a)
     alpha = x.x();
     beta = x.y();
 //    qDebug() << "A11"<< mInv.column(0).x();
-    gamma = sqrt(abs(1-ra*ra*(mInv.column(0).x()))); // abs to solve issue with imaginaries?
+    gamma = sqrt(1-ra*ra*(mInv.column(0).normalized().x())); // abs to solve issue with imaginaries?
 //    qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma;
 
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
