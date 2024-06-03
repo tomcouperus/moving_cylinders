@@ -36,6 +36,8 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     cylindermovement.h cylindermovement.cpp
     envelope.h envelope.cpp
     settings.h
+    drum.h drum.cpp
+    tool.h
 
 )
 

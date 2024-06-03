@@ -3,6 +3,7 @@
 
 #include "simplepath.h"
 #include "cylinder.h"
+#include "drum.h"
 #include <QVector>
 #include <QVector3D>
 #include <QOpenGLDebugLogger>
@@ -18,6 +19,7 @@ class CylinderMovement
 public:
     CylinderMovement();
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Cylinder cylinder);
+    CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum drum);
     CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder);
     inline void setPath(SimplePath path) {this->path = path;}
     inline SimplePath getPath() {return path;}

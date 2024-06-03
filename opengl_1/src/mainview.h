@@ -28,11 +28,12 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
     friend class MainWindow;
 
-    // Cylinder rendering
+    // Tool rendering
+    Drum drum;
     Cylinder cylinder;
-    GLuint vaoCyl;
-    GLuint vboCyl;
-    QVector<Vertex> vertexArrCyl;
+    GLuint vaoTool;
+    GLuint vboTool;
+    QVector<Vertex> vertexArrTool;
     QOpenGLShaderProgram shader;
 
     // Path rendering
@@ -58,10 +59,10 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
     QMatrix4x4 modelRotation;
-    QMatrix4x4 cylinderRotation;
-    QMatrix4x4 cylinderTranslation;
+    QMatrix4x4 toolRotation;
+    QMatrix4x4 toolTranslation;
     QMatrix4x4 modelTranslation;
-    QMatrix4x4 cylinderTransf; // cylinderTranslation * modelRotation * modelScaling
+    QMatrix4x4 toolTransf; // toolTranslation * modelRotation * modelScaling
     QMatrix4x4 modelTransf;
 
     // Transformation matrix for the projection
@@ -78,7 +79,7 @@ public:
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
     void setTime(float time);
-    void updateCylinderTransf();
+    void updateToolTransf();
     void updateBuffers();
 
 protected:

@@ -33,7 +33,7 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setRadius(value);
 
-  ui->mainView->envelope.setCylinder(ui->mainView->cylinder);
+  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -45,7 +45,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
 void MainWindow::on_angleSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setAngle(value);
 
-  ui->mainView->envelope.setCylinder(ui->mainView->cylinder);
+  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -57,7 +57,7 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setHeight(value);
 
-  ui->mainView->envelope.setCylinder(ui->mainView->cylinder);
+  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -71,8 +71,8 @@ void MainWindow::on_orientVector_1_returnPressed(){
 
   bool success = ui->mainView->move.setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-      ui->mainView->updateCylinderTransf();
+      ui->mainView->envelope.setToolMovement(ui->mainView->move);
+      ui->mainView->updateToolTransf();
   } else {
       error.showMessage("The inputed vector is not a valid orientation 1 vector");
   }
@@ -90,8 +90,8 @@ void MainWindow::on_orientVector_2_returnPressed(){
 
   bool success = ui->mainView->move.setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-      ui->mainView->updateCylinderTransf();
+      ui->mainView->envelope.setToolMovement(ui->mainView->move);
+      ui->mainView->updateToolTransf();
   } else {
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
@@ -115,8 +115,8 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
   path.setX(x);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -136,8 +136,8 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
   path.setX(x);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -157,8 +157,8 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
   path.setX(x);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -178,8 +178,8 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
   path.setY(y);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -199,8 +199,8 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
   path.setY(y);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -220,8 +220,8 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
   path.setY(y);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -242,8 +242,8 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
   path.setZ(z);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -263,8 +263,8 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
   path.setZ(z);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -284,8 +284,8 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
   path.setZ(z);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
-  ui->mainView->updateCylinderTransf();
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
+  ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -304,7 +304,7 @@ void MainWindow::on_spinBox_t_0_valueChanged(int value) {
   path.setRange(value, path.getT1());
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
 
   ui->mainView->setTime(sliderTimePerSector*path.getRange());
 
@@ -325,7 +325,7 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   path.setRange(path.getT0(), value);
   ui->mainView->move.setPath(path);
 
-  ui->mainView->envelope.setCylinderMovement(ui->mainView->move);
+  ui->mainView->envelope.setToolMovement(ui->mainView->move);
 
   ui->mainView->setTime(sliderTimePerSector*path.getRange());
 

@@ -7,8 +7,8 @@
 
 class Envelope
 {
-    CylinderMovement cylinderMovement;
-    Cylinder cylinder;
+    CylinderMovement toolMovement;
+    Tool *tool;
 
     int sectorsA;
     int sectorsT;
@@ -18,7 +18,7 @@ class Envelope
     QVector<Vertex> vertexArrGrazingCurve;
 public:
     Envelope();
-    Envelope(CylinderMovement cylinderMovement, Cylinder cylinder);
+    Envelope(CylinderMovement toolMovement, Tool *tool);
 
     void initEnvelope();
     void computeEnvelope();
@@ -31,8 +31,8 @@ public:
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
     inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
     inline QVector<Vertex> getVertexArrGrazingCurve(){ return vertexArrGrazingCurve; }
-    void setCylinder(Cylinder cylinder);
-    void setCylinderMovement(CylinderMovement cylinderMovement);
+    void setTool(Tool *tool);
+    void setToolMovement(CylinderMovement toolMovement);
 };
 
 #endif // ENVELOPE_H

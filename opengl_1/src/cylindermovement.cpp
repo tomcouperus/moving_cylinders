@@ -9,6 +9,8 @@ CylinderMovement::CylinderMovement() :
     cylinderAxis(Cylinder().getAxisVector()),
     perpToAxis(Cylinder().getVectorPerpToAxis())
 {
+
+    qDebug() << "CylinderMovement()";
     QVector<Vertex> vertices = path.getVertexArr();
     QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis, QVector3D(0, 1, 0));
     for (size_t i = 0; i < vertices.size(); i++)
@@ -45,6 +47,33 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
                                                            lastDirection);
         if(rotationVector == QVector3D(0.0,0.0,0.0)) { // rotation vector if vectors are anti-parallel
                                                        // (there are infinitely many)
+            rotationVector = perpToAxis; // take the one saved on the cylinder info
+        }
+        rotationVectors.append(rotationVector);
+
+        lastDirection += deltaDirection;
+    }
+}
+
+CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum cylinder) :
+    path(path),
+    cylinderAxis(cylinder.getAxisVector()),
+    perpToAxis(cylinder.getVectorPerpToAxis())
+{
+    QVector<Vertex> vertices = path.getVertexArr();
+
+    // interpolation of directional vectors
+    QVector3D lastDirection = axisDirection1;
+    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (vertices.size()-1);
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        axisDirections.append(lastDirection); // add interpolated directional vector
+
+        // Get (and save) vector perpendicular to both the directional vector of the movement and the axis of the cylinder
+        QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis,
+                                                           lastDirection);
+        if(rotationVector == QVector3D(0.0,0.0,0.0)) { // rotation vector if vectors are anti-parallel
+            // (there are infinitely many)
             rotationVector = perpToAxis; // take the one saved on the cylinder info
         }
         rotationVectors.append(rotationVector);
