@@ -3,7 +3,7 @@
 
 #include <QOpenGLDebugLogger>
 
-#include "vertex.h"
+#include "../vertex.h"
 #include "tool.h"
 
 class Cylinder : public Tool

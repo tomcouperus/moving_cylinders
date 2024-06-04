@@ -2,8 +2,8 @@
 #define CYLINDERMOVEMENT_H
 
 #include "simplepath.h"
-#include "cylinder.h"
-#include "drum.h"
+#include "../tools/cylinder.h"
+#include "../tools/drum.h"
 #include <QVector>
 #include <QVector3D>
 #include <QOpenGLDebugLogger>

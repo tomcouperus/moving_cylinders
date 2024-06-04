@@ -4,7 +4,7 @@
 
 #include <QOpenGLDebugLogger>
 
-#include "vertex.h"
+#include "../vertex.h"
 #include "tool.h"
 
 class Drum : public Tool

@@ -2,7 +2,7 @@
 #define ENVELOPE_H
 
 #include "vertex.h"
-#include "cylindermovement.h"
+#include "movement/cylindermovement.h"
 #include <QMatrix2x2>
 
 class Envelope

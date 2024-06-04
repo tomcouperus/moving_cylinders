@@ -10,11 +10,10 @@
 #include <QTimer>
 #include <QVector3D>
 
-#include "model.h"
 #include "vertex.h"
-#include "cylinder.h"
-#include "cylindermovement.h"
-#include "simplepath.h"
+#include "tools/cylinder.h"
+#include "movement/cylindermovement.h"
+#include "movement/simplepath.h"
 #include "envelope.h"
 #include "settings.h"
 
@@ -59,11 +58,11 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
     QMatrix4x4 modelRotation;
+    QMatrix4x4 modelTranslation;
+    QMatrix4x4 modelTransf;
     QMatrix4x4 toolRotation;
     QMatrix4x4 toolTranslation;
-    QMatrix4x4 modelTranslation;
     QMatrix4x4 toolTransf; // toolTranslation * modelRotation * modelScaling
-    QMatrix4x4 modelTransf;
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;

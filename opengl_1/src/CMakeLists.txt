@@ -24,20 +24,19 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     mainwindow.cpp mainwindow.h
     mainview.cpp mainview.h
     userinput.cpp
-    model.cpp model.h
     vertex.h
     main.cpp
-    pyramid.h pyramid.cpp
-    cylinder.h cylinder.cpp
+    tools/cylinder.h tools/cylinder.cpp
     envelope.h envelope.cpp
-    path.h
-    simplepath.h simplepath.cpp
-    polynomial.h polynomial.cpp
-    cylindermovement.h cylindermovement.cpp
+    movement/path.h
+    movement/simplepath.h movement/simplepath.cpp
+    movement/polynomial.h movement/polynomial.cpp
+    movement/cylindermovement.h movement/cylindermovement.cpp
     envelope.h envelope.cpp
     settings.h
-    drum.h drum.cpp
-    tool.h
+    tools/drum.h tools/drum.cpp
+    tools/tool.h
+    renderers/renderer.h renderers/renderer.cpp
 
 )
 

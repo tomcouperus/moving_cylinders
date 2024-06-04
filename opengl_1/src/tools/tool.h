@@ -2,7 +2,7 @@
 #define TOOL_H
 #include <QOpenGLDebugLogger>
 
-#include "vertex.h"
+#include "../vertex.h"
 
 class Tool
 {
