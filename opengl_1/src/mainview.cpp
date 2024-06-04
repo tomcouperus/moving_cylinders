@@ -90,6 +90,7 @@ void MainView::initializeGL()
 
     // Initialize the drum
     drum.initDrum();
+    qDebug() << "a0:" << drum.getA0() << "a1:" << drum.getA1() << "H:" << drum.getHeight();
 
 
     SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),

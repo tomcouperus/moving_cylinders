@@ -21,14 +21,14 @@ public:
     void setHeight(float height) override;
     void setPosit(QVector3D position) override;
 
-    inline float getRadiusDerivativeWRTa(float a) override {float s = sqrt(((r0-rm)*(r0-rm))-(a*a));  return -a/s;}
-    inline float getRadiusAt(float a) override {return r0-sqrt(abs(((r0-rm)*(r0-rm))-(a*a)));}
+    inline float getRadiusDerivativeWRTa(float a) override {float s = sqrt(((r0-rm)*(r0-rm))+(a*a));  return -a/s;}
+    inline float getRadiusAt(float a) override {return r0-sqrt(((r0-rm)*(r0-rm))+(a*a));}
 
     inline float getRadiusCurvature(){ return r0; }
     inline float getMidRadius(){ return rm; }
 private:
     void computeDrum();
-    Vertex calcCircleBound(float r1, float theta, float h);
+    Vertex calcCircleBound(float theta, float h);
 };
 
 #endif // DRUM_H

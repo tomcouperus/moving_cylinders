@@ -1,12 +1,12 @@
 #include "drum.h"
 
 Drum::Drum()
-    : r0(1.5), rm(0.5)
+    : r0(2), rm(0.5)
 
 {
     qDebug()<< "Drum()";
     float phi = asin(height/(2*r0));
-    this->a1 = rm*tan(phi);
+    this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
 }
 
@@ -16,7 +16,7 @@ Drum::Drum(float curveRadius, float midRadius, float height, int sectors, QVecto
     this->sectors = sectors;
     this->posit = position;
     float phi = asin(height/(2*r0));
-    this->a1 = rm*tan(phi);
+    this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
 }
 
@@ -33,21 +33,21 @@ void Drum::setSectors(int sectors){
 void Drum::setRadius(float radius){
     r0 = radius;
     float phi = asin(height/(2*r0));
-    this->a1 = rm*tan(phi);
+    this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
     computeDrum();
 }
 void Drum::setMidRadius(float radius){
     this->rm = radius;
     float phi = asin(height/(2*r0));
-    this->a1 = rm*tan(phi);
+    this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
     computeDrum();
 }
 void Drum::setHeight(float height){
     this->height = height;
     float phi = asin(height/(2*r0));
-    this->a1 = rm*tan(phi);
+    this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
     computeDrum();
 }
@@ -63,21 +63,18 @@ void Drum::computeDrum(){
     vertexArr.clear();
     Vertex v1, v2, v3, v4;
     float aDelta = (this->a1 - this->a0)/sectors;
-    float r0, r1 = this->r0;
     float a0, a1 = this->a0;
     float theta = 2*PI/sectors;
     for(size_t j=0;j<sectors;j++){
         // transition to next layer
-        r0 = r1;
         a0 = a1;
         a1 += aDelta;
-        r1 = getRadiusAt(a1);
         for(size_t i=0;i<sectors;i++){
-            // Calculate vertices of a quad of the cylinder
-            v1 = calcCircleBound(r0, theta*i, a0);
-            v2 = calcCircleBound(r1, theta*i, a1);
-            v3 = calcCircleBound(r0, theta*(i+1), a0);
-            v4 = calcCircleBound(r1, theta*(i+1), a1);
+            // Calculate vertices of a quad of the drum
+            v1 = calcCircleBound(theta*i, a0);
+            v2 = calcCircleBound(theta*i, a1);
+            v3 = calcCircleBound(theta*(i+1), a0);
+            v4 = calcCircleBound(theta*(i+1), a1);
             // Add vertices to array
             vertexArr.append(v1);
             vertexArr.append(v4);
@@ -91,23 +88,26 @@ void Drum::computeDrum(){
 
 /**
  * @brief Drum::calcCircleBound Calculates a point at a layer (circle) of the drum and its normal
- * @param r radius of sphere at a
  * @param theta rotation angle
- * @param a height
- * @return Vertex of circle at height h and direction of angle
+ * @param a height of sphere
+ * @return Vertex of circle and direction of normal
  */
-Vertex Drum::calcCircleBound(float r1, float theta, float a) {
+Vertex Drum::calcCircleBound(float theta, float a) {
 
-    float b = r0 - rm;
-    QVector3D direction = perpVector;
-    direction.setX(direction.x() + r1*cos(theta));
-    direction.setY(direction.y() + r1*sin(theta));
-    QVector3D curvatureCenter = posit + b*direction;
+    float b = r0 + rm;
+    float phi = atan(a/b);
+    QVector3D direction;
+    direction.setX(getRadiusAt(a)*cos(phi)*cos(theta));
+    direction.setY(getRadiusAt(a)*cos(phi)*sin(theta));
+    direction.setZ(getRadiusAt(a)*sin(phi));
+    qDebug() << getRadiusAt(a) << direction.x();
+//    QVector3D curvatureCenter = posit + b*direction;
     QVector3D spherePosit = a*axisVector;
-    QVector3D n = (spherePosit - curvatureCenter).normalized();
+    qDebug() << spherePosit;
+    QVector3D n = direction.normalized();
 
     // point position
-    QVector3D p = spherePosit + r1*n;
+    QVector3D p = spherePosit + direction;
 
     return Vertex(p, n);
 }
