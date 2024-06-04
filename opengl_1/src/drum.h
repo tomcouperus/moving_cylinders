@@ -21,7 +21,7 @@ public:
     void setHeight(float height) override;
     void setPosit(QVector3D position) override;
 
-    inline float minR0with(float midRadius) { return ((height/2)*(height/2) + midRadius*midRadius)/(2*midRadius);}
+    inline float getMinR0() { return ((height/2)*(height/2) + rm*rm)/(2*rm);}
 
     inline float getRadiusDerivativeWRTa(float a) override {float s = sqrt(((r0-rm)*(r0-rm))+(a*a));  return -a/s;}
     inline float getRadiusAt(float a) override {return r0-sqrt(((r0-rm)*(r0-rm))+(a*a));}

@@ -33,7 +33,7 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setRadius(value);
   ui->mainView->drum.setMidRadius(value);
-  ui->radius0SpinBox->setMinimum(ui->mainView->drum.minR0with(value));
+  ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
 
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
@@ -67,6 +67,7 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setHeight(value);
   ui->mainView->drum.setHeight(value);
+  ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
 
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
