@@ -100,10 +100,7 @@ Vertex Drum::calcCircleBound(float theta, float a) {
     direction.setX(getRadiusAt(a)*cos(phi)*cos(theta));
     direction.setY(getRadiusAt(a)*cos(phi)*sin(theta));
     direction.setZ(getRadiusAt(a)*sin(phi));
-    qDebug() << getRadiusAt(a) << direction.x();
-//    QVector3D curvatureCenter = posit + b*direction;
     QVector3D spherePosit = a*axisVector;
-    qDebug() << spherePosit;
     QVector3D n = direction.normalized();
 
     // point position

@@ -25,10 +25,12 @@ class MainWindow : public QMainWindow {
 
  private slots:
   void on_radiusSpinBox_valueChanged(double value);
+  void on_radius0SpinBox_valueChanged(double value);
   void on_angleSpinBox_valueChanged(double value);
   void on_heightSpinBox_valueChanged(double value);
   void on_orientVector_1_returnPressed();
   void on_orientVector_2_returnPressed();
+  void on_toolBox_currentIndexChanged(int index);
 
   void on_spinBox_a_x_valueChanged(int value);
   void on_spinBox_b_x_valueChanged(int value);

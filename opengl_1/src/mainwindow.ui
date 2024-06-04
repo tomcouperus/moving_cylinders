@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1048</width>
-    <height>600</height>
+    <height>701</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>300</y>
+         <y>400</y>
          <width>205</width>
          <height>177</height>
         </rect>
@@ -143,7 +143,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>480</y>
+         <y>580</y>
          <width>205</width>
          <height>90</height>
         </rect>
@@ -213,7 +213,7 @@
          <x>10</x>
          <y>20</y>
          <width>205</width>
-         <height>231</height>
+         <height>301</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -225,7 +225,7 @@
        <property name="minimumSize">
         <size>
          <width>169</width>
-         <height>150</height>
+         <height>200</height>
         </size>
        </property>
        <property name="currentIndex">
@@ -304,7 +304,7 @@
            <x>0</x>
            <y>0</y>
            <width>196</width>
-           <height>151</height>
+           <height>211</height>
           </rect>
          </property>
          <widget class="QLabel" name="labelRadius">
@@ -349,7 +349,7 @@
          <widget class="QDoubleSpinBox" name="radiusSpinBox">
           <property name="geometry">
            <rect>
-            <x>110</x>
+            <x>130</x>
             <y>0</y>
             <width>62</width>
             <height>26</height>
@@ -365,7 +365,7 @@
          <widget class="QDoubleSpinBox" name="angleSpinBox">
           <property name="geometry">
            <rect>
-            <x>110</x>
+            <x>130</x>
             <y>30</y>
             <width>62</width>
             <height>26</height>
@@ -381,7 +381,7 @@
          <widget class="QDoubleSpinBox" name="heightSpinBox">
           <property name="geometry">
            <rect>
-            <x>110</x>
+            <x>130</x>
             <y>60</y>
             <width>62</width>
             <height>26</height>
@@ -398,7 +398,7 @@
           <property name="geometry">
            <rect>
             <x>90</x>
-            <y>90</y>
+            <y>150</y>
             <width>101</width>
             <height>25</height>
            </rect>
@@ -411,7 +411,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>100</y>
+            <y>160</y>
             <width>81</width>
             <height>17</height>
            </rect>
@@ -424,7 +424,7 @@
           <property name="geometry">
            <rect>
             <x>90</x>
-            <y>120</y>
+            <y>180</y>
             <width>101</width>
             <height>25</height>
            </rect>
@@ -437,7 +437,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>130</y>
+            <y>190</y>
             <width>81</width>
             <height>17</height>
            </rect>
@@ -446,6 +446,83 @@
            <string>Orientation 2</string>
           </property>
          </widget>
+         <widget class="QLabel" name="labelRadius0">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>100</y>
+            <width>111</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Drum curve radius</string>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="radius0SpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>90</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="minimum">
+           <double>1.250000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.500000000000000</double>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QComboBox" name="toolBox">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>230</y>
+           <width>72</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="currentText">
+          <string notr="true">Cylinder</string>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Cylinder</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Drum</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="tooltypeLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>240</y>
+           <width>54</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>tool type</string>
+         </property>
         </widget>
        </widget>
        <widget class="QWidget" name="Path">
@@ -857,7 +934,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>260</y>
+         <y>350</y>
          <width>205</width>
          <height>41</height>
         </rect>

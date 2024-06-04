@@ -32,6 +32,16 @@ MainWindow::~MainWindow() { delete ui; }
  */
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setRadius(value);
+  ui->mainView->drum.setMidRadius(value);
+  ui->radius0SpinBox->setMinimum(ui->mainView->drum.minR0with(value));
+
+  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_radius0SpinBox_valueChanged(double value) {
+  ui->mainView->drum.setRadius(value);
 
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
@@ -56,6 +66,7 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
  */
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setHeight(value);
+  ui->mainView->drum.setHeight(value);
 
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
   ui->mainView->updateBuffers();
@@ -96,6 +107,24 @@ void MainWindow::on_orientVector_2_returnPressed(){
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
 
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_toolBox_currentIndexChanged(int index){
+  qDebug() << "tool index" << index;
+  switch (index) {
+  case 0:
+      ui->mainView->settings.isCylinder = true;
+      ui->angleSpinBox->setEnabled(true);
+      ui->radius0SpinBox->setEnabled(false);
+      break;
+  default:
+      ui->mainView->settings.isCylinder = false;
+      ui->angleSpinBox->setEnabled(false);
+      ui->radius0SpinBox->setEnabled(true);
+      break;
+  }
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
