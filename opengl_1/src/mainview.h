@@ -32,9 +32,7 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     ToolRenderer toolRend;
     Drum drum;
     Cylinder cylinder;
-    GLuint vaoTool;
-    GLuint vboTool;
-    QVector<Vertex> vertexArrTool;
+
     QOpenGLShaderProgram shader;
 
     // Path rendering

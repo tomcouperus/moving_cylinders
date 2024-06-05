@@ -19,9 +19,6 @@ class ToolRenderer : public Renderer
     GLint projLocation;
 
     // Transformation matrices for the tool
-    QMatrix4x4 toolScaling;
-    QMatrix4x4 toolRotation;
-    QMatrix4x4 toolTranslation;
     QMatrix4x4 toolTransf;
 
 public:
@@ -37,9 +34,6 @@ public:
     void paintGL();
 
     inline void setTool(Tool *tool) { this->tool = tool; }
-    inline void setScaling(QMatrix4x4 toolScaling) { this->toolScaling = toolScaling; }
-    inline void setRotation(QMatrix4x4 toolRotation) { this->toolRotation = toolRotation; }
-    inline void setTranslation(QMatrix4x4 toolTranslation) { this->toolTranslation = toolTranslation; }
     inline void setTransf(QMatrix4x4 toolTransf) { this->toolTransf = toolTransf; }
 
 

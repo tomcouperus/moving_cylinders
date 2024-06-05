@@ -83,14 +83,12 @@ void MainView::initializeGL()
     // This is the background color.
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
-
     createShaderProgram();
 
     // TODO: refactor
 
     // Define the vertices of the cylinder
     cylinder.initCylinder();
-    vertexArrTool = cylinder.getVertexArr();
     qDebug() << "a0:" << cylinder.getA0() << "a1:" << cylinder.getA1() << "H:" << cylinder.getHeight();
 
     // Initialize the drum
@@ -119,6 +117,7 @@ void MainView::initializeGL()
     // Define the vertices of the enveloping surface
     envelope = Envelope(move, &cylinder);
     envelope.initEnvelope();
+
     vertexArrEnv = envelope.getVertexArr();
     vertexArrCenters = envelope.getVertexArrCenters();
     vertexArrGrazingCurve = envelope.getVertexArrGrazingCurve();
@@ -137,8 +136,10 @@ void MainView::initializeGL()
     // Set the initial model transformation to
     // just the translation
     toolTransf = toolTranslation * toolRotation;
-    toolRend.setTransf(toolTransf);
     modelTransf = modelTranslation;
+
+    // Pass initial transformations to the renderers;
+    toolRend.setTransf(toolTransf);
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
@@ -215,16 +216,11 @@ void MainView::initBuffers() {
  */
 void MainView::updateBuffers(){
     qDebug() << "main update buffers";
-    vertexArrTool.clear();
     if(settings.isCylinder){
-        vertexArrTool = cylinder.getVertexArr();
-
         envelope = Envelope(move, &cylinder);
         toolRend.updateBuffers(&cylinder);
     } else {
         qDebug() << "is drum";
-        vertexArrTool = drum.getVertexArr();
-
         envelope = Envelope(move, &drum);
         toolRend.updateBuffers(&drum);
     }

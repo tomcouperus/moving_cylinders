@@ -2,27 +2,18 @@
 
 ToolRenderer::ToolRenderer()
 {
-    toolScaling.setToIdentity();
-    toolRotation.setToIdentity();
-    toolTranslation.setToIdentity();
     toolTransf.setToIdentity();
 }
 
 ToolRenderer::ToolRenderer(Cylinder *cyl)
 {
     tool = cyl;
-    toolScaling.setToIdentity();
-    toolRotation.setToIdentity();
-    toolTranslation.setToIdentity();
     toolTransf.setToIdentity();
 }
 
 ToolRenderer::ToolRenderer(Drum *drum)
 {
     tool = drum;
-    toolScaling.setToIdentity();
-    toolRotation.setToIdentity();
-    toolTranslation.setToIdentity();
     toolTransf.setToIdentity();
 }
 
