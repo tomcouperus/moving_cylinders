@@ -17,6 +17,7 @@
 #include "envelope.h"
 #include "settings.h"
 #include "renderers/toolrenderer.h"
+#include "renderers/enveloperenderer.h"
 
 
 /**
@@ -44,16 +45,8 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     QVector<Vertex> vertexArrPth;
 
     // Envelope rendering
+    EnvelopeRenderer envRend;
     Envelope envelope;
-    GLuint vaoEnv;
-    GLuint vboEnv;
-    QVector<Vertex> vertexArrEnv;
-    GLuint vboCenters;
-    GLuint vaoCenters;
-    QVector<Vertex> vertexArrCenters;
-    GLuint vboGrazingCurve;
-    GLuint vaoGrazingCurve;
-    QVector<Vertex> vertexArrGrazingCurve;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;

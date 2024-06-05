@@ -32,12 +32,6 @@ MainView::~MainView()
     // CLEAN UP!
     glDeleteBuffers(1, &vboPth);
     glDeleteVertexArrays(1, &vaoPth);
-    glDeleteBuffers(1, &vboEnv);
-    glDeleteVertexArrays(1, &vaoEnv);
-    glDeleteBuffers(1, &vboCenters);
-    glDeleteVertexArrays(1, &vaoCenters);
-    glDeleteBuffers(1, &vboGrazingCurve);
-    glDeleteVertexArrays(1, &vaoGrazingCurve);
 
     makeCurrent();
 }
@@ -118,10 +112,8 @@ void MainView::initializeGL()
     envelope = Envelope(move, &cylinder);
     envelope.initEnvelope();
 
-    vertexArrEnv = envelope.getVertexArr();
-    vertexArrCenters = envelope.getVertexArrCenters();
-    vertexArrGrazingCurve = envelope.getVertexArrGrazingCurve();
-    qDebug() << "size" << vertexArrEnv.size();
+    envRend.setEnvelope(&envelope);
+    envRend.init(gl,&settings);
 
     initBuffers();
 
@@ -140,6 +132,7 @@ void MainView::initializeGL()
 
     // Pass initial transformations to the renderers;
     toolRend.setTransf(toolTransf);
+    envRend.setTransf(modelTransf);
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
@@ -167,47 +160,7 @@ void MainView::initBuffers() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 
-    glGenVertexArrays(1, &vaoEnv);
-    glBindVertexArray(vaoEnv);
-    glGenBuffers(1, &vboEnv);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
-
-    glGenVertexArrays(1, &vaoCenters);
-    glBindVertexArray(vaoCenters);
-    glGenBuffers(1, &vboCenters);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrCenters.size() * sizeof(Vertex), vertexArrCenters.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
-
-    glGenVertexArrays(1, &vaoGrazingCurve);
-    glBindVertexArray(vaoGrazingCurve);
-    glGenBuffers(1, &vboGrazingCurve);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+    envRend.initBuffers();
 }
 
 /**
@@ -217,39 +170,21 @@ void MainView::initBuffers() {
 void MainView::updateBuffers(){
     qDebug() << "main update buffers";
     if(settings.isCylinder){
-        envelope = Envelope(move, &cylinder);
+        envelope.setTool(&cylinder);
         toolRend.updateBuffers(&cylinder);
     } else {
         qDebug() << "is drum";
-        envelope = Envelope(move, &drum);
+        envelope.setTool(&drum);
         toolRend.updateBuffers(&drum);
     }
 
-    envelope.initEnvelope();
-    vertexArrEnv.clear();
-    vertexArrEnv = envelope.getVertexArr();
+    envRend.updateBuffers(&envelope);
 
     vertexArrPth.clear();
     vertexArrPth = move.getPath().getVertexArr();
 
-    vertexArrCenters.clear();
-    vertexArrCenters = envelope.getVertexArrCenters();
-
-    vertexArrGrazingCurve.clear();
-    vertexArrGrazingCurve = envelope.getVertexArrGrazingCurve();
-
-
     glBindBuffer(GL_ARRAY_BUFFER, vboPth);
     glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrCenters.size() * sizeof(Vertex), vertexArrCenters.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
 }
 
 /**
@@ -297,35 +232,10 @@ void MainView::paintGL()
         glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
     }
 
-    if(settings.showEnvelope){
-        // Bind envelope buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-        glBindVertexArray(vaoEnv);
-        // Draw envelope
-        glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
-    }
-
-    if(settings.showToolAxis){
-        // Bind centers buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-        glBindVertexArray(vaoCenters);
-        // Draw centers
-        glDrawArrays(GL_LINES,0,vertexArrCenters.size());
-    }
-
-    if(settings.showGrazingCurve){
-        // Bind grazing curve buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-        glBindVertexArray(vaoGrazingCurve);
-        // Draw grazing curve
-        glDrawArrays(GL_LINES,0,vertexArrGrazingCurve.size());
-    }
-
     shaderProgram.release();
 
+    envRend.updateUniforms(modelTransf,projTransf);
+    envRend.paintGL();
 }
 
 /**
@@ -342,6 +252,10 @@ void MainView::resizeGL(int newWidth, int newHeight)
     // Set the viewport to the new size
     projTransf.setToIdentity();
     projTransf.perspective(60.0f, aspectRatio, 0.2f, 20.0f);
+
+    // update uniforms
+//    toolRend.updateUniforms(toolTransf,projTransf);
+//    envRend.updateUniforms(modelTransf,projTransf);
 }
 
 /**
@@ -366,6 +280,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
+    envRend.setTransf(modelTransf);
     updateToolTransf();
     update();
 }
@@ -388,6 +303,7 @@ void MainView::setScale(float scale)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
+    envRend.setTransf(modelTransf);
     updateToolTransf();
     update();
 }
