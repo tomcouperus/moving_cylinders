@@ -1,24 +1,24 @@
 #include "moverenderer.h"
 
-PathRenderer::PathRenderer()
+MoveRenderer::MoveRenderer()
 {
     this->move = nullptr;
     pathTransf.setToIdentity();
 }
 
-PathRenderer::PathRenderer(CylinderMovement *move)
+MoveRenderer::MoveRenderer(CylinderMovement *move)
 {
     this->move = move;
     pathTransf.setToIdentity();
 }
 
-PathRenderer::~PathRenderer()
+MoveRenderer::~MoveRenderer()
 {
     gl->glDeleteVertexArrays(1, &vaoPath);
     gl->glDeleteBuffers(1, &vboPath);
 }
 
-void PathRenderer::initShaders()
+void MoveRenderer::initShaders()
 {
     shader.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertshader.glsl");
     shader.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragshader.glsl");
@@ -29,10 +29,10 @@ void PathRenderer::initShaders()
     projLocation = shader.uniformLocation("projTransform");
 }
 
-void PathRenderer::initBuffers()
+void MoveRenderer::initBuffers()
 {
     vertexArrPath.clear();
-    vertexArrPath = move->getVertexArr();
+    vertexArrPath = move->getPath().getVertexArr();
 
     gl->glGenVertexArrays(1, &vaoPath);
     gl->glBindVertexArray(vaoPath);
@@ -48,16 +48,16 @@ void PathRenderer::initBuffers()
     gl->glEnableVertexAttribArray(1);
 }
 
-void PathRenderer::updateBuffers(CylinderMovement *move)
+void MoveRenderer::updateBuffers(CylinderMovement *move)
 {
     vertexArrPath.clear();
-    vertexArrPath = move->getVertexArr();
+    vertexArrPath = move->getPath().getVertexArr();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboPath);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrPath.size() * sizeof(Vertex), vertexArrPath.data(), GL_STATIC_DRAW);
 }
 
-void PathRenderer::updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf)
+void MoveRenderer::updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf)
 {
     shader.bind();
     shader.setUniformValue(modelLocation, pathTransf);
@@ -65,7 +65,7 @@ void PathRenderer::updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf)
     shader.release();
 }
 
-void PathRenderer::paintGL()
+void MoveRenderer::paintGL()
 {
     shader.bind();
     if(settings->showPath)

@@ -4,7 +4,7 @@
 #include "renderer.h"
 #include "../movement/cylindermovement.h"
 
-class PathRenderer  : public Renderer
+class MoveRenderer  : public Renderer
 {
     CylinderMovement *move;
 
@@ -21,9 +21,9 @@ class PathRenderer  : public Renderer
     QMatrix4x4 projTransf;
 
 public:
-    PathRenderer();
-    PathRenderer(CylinderMovement *move);
-    ~PathRenderer();
+    MoveRenderer();
+    MoveRenderer(CylinderMovement *move);
+    ~MoveRenderer();
 
     void initShaders() override;
     void initBuffers() override;
