@@ -4,7 +4,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QOpenGLDebugLogger>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_1_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 #include <QTimer>
@@ -16,18 +16,20 @@
 #include "movement/simplepath.h"
 #include "envelope.h"
 #include "settings.h"
+#include "renderers/toolrenderer.h"
 
 
 /**
  * @brief The MainView class is resonsible for the actual content of the main
  * window.
  */
-class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
+class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 {
     Q_OBJECT
     friend class MainWindow;
 
     // Tool rendering
+    ToolRenderer toolRend;
     Drum drum;
     Cylinder cylinder;
     GLuint vaoTool;
@@ -107,6 +109,7 @@ private:
     QOpenGLDebugLogger debugLogger;
     QTimer timer; // timer used for animation
 
+    QOpenGLFunctions_4_1_Core *gl;
     QOpenGLShaderProgram shaderProgram;
     float time = 0.0f;
     Settings settings;

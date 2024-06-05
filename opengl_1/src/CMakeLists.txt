@@ -37,6 +37,7 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     tools/drum.h tools/drum.cpp
     tools/tool.h
     renderers/renderer.h renderers/renderer.cpp
+    renderers/toolrenderer.h renderers/toolrenderer.cpp
 
 )
 

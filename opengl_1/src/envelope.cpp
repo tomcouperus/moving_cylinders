@@ -4,8 +4,8 @@ Envelope::Envelope() :
     toolMovement(CylinderMovement()),
     tool()
 {
-    sectorsA = 20;
-    sectorsT = 20;
+    sectorsA = 200;
+    sectorsT = 200;
     qDebug() << "Envelope()";
 }
 
@@ -97,6 +97,7 @@ void Envelope::computeGrazingCurves()
 void Envelope::computeEnvelope()
 {
     vertexArr.clear();
+    vertexArrNormal.clear();
 
     Vertex v1, v2, v3, v4;
     SimplePath path = toolMovement.getPath();

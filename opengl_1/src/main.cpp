@@ -13,10 +13,10 @@
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
 
-  // Request OpenGL 3.3 Core
+  // Request OpenGL 4.1 Core
   QSurfaceFormat glFormat;
   glFormat.setProfile(QSurfaceFormat::CoreProfile);
-  glFormat.setVersion(3, 3);
+  glFormat.setVersion(4, 1);
   glFormat.setOption(QSurfaceFormat::DebugContext);
 
   // Some platforms need to explicitly set the depth buffer size (24 bits)

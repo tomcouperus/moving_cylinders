@@ -3,6 +3,7 @@
 #include "vertex.h"
 
 #include <QDateTime>
+#include <QOpenGLVersionFunctionsFactory>
 
 /**
  * @brief MainView::MainView Constructs a new main view.
@@ -29,8 +30,6 @@ MainView::~MainView()
     qDebug() << "MainView destructor";
 
     // CLEAN UP!
-    glDeleteBuffers(1, &vboTool);
-    glDeleteVertexArrays(1, &vaoTool);
     glDeleteBuffers(1, &vboPth);
     glDeleteVertexArrays(1, &vaoPth);
     glDeleteBuffers(1, &vboEnv);
@@ -75,9 +74,15 @@ void MainView::initializeGL()
     // Default is GL_LESS
     glDepthFunc(GL_LEQUAL);
 
+    // grab the opengl context
+    gl =
+        QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_1_Core>(
+            this->context());
+
     // Set the color to be used by glClear.
     // This is the background color.
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
+
 
     createShaderProgram();
 
@@ -91,6 +96,13 @@ void MainView::initializeGL()
     // Initialize the drum
     drum.initDrum();
     qDebug() << "a0:" << drum.getA0() << "a1:" << drum.getA1() << "H:" << drum.getHeight();
+
+    if(settings.isCylinder)
+        toolRend.setTool(&cylinder);
+    else
+        toolRend.setTool(&drum);
+
+    toolRend.init(gl,&settings);
 
 
     SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
@@ -125,12 +137,12 @@ void MainView::initializeGL()
     // Set the initial model transformation to
     // just the translation
     toolTransf = toolTranslation * toolRotation;
+    toolRend.setTransf(toolTransf);
     modelTransf = modelTranslation;
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
     projTransf.ortho(0.0f,20.0f,0.0f,20.0f,0.2f,20.0f);
-    //projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
 }
 
 /**
@@ -138,33 +150,7 @@ void MainView::initializeGL()
  * TODO: extend for other cylinders and enveloping surfaces.
  */
 void MainView::initBuffers() {
-    glGenVertexArrays(1, &vaoTool);
-    glBindVertexArray(vaoTool);
-    glGenBuffers(1, &vboTool);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboTool);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(
-        0,                               // index
-        3,                               // size of part of interest (x,y,z)
-        GL_FLOAT,                        // type
-        GL_FALSE,                        // normalized
-        sizeof(Vertex),                  // stride (size of object)
-        (void *)offsetof(Vertex, xCoord) // offset
-        );
-    glVertexAttribPointer(
-        1,                             // index
-        3,                             // size of part of interest (r,g,b)
-        GL_FLOAT,                      // type
-        GL_FALSE,                      // normalized
-        sizeof(Vertex),                // stride (size of object)
-        (void *)offsetof(Vertex, rVal) // offset
-        );
+    toolRend.initBuffers();
 
     glGenVertexArrays(1, &vaoPth);
     glBindVertexArray(vaoPth);
@@ -228,16 +214,19 @@ void MainView::initBuffers() {
  * TODO: extend to update buffer of other cylinders and enveloping surfaces.
  */
 void MainView::updateBuffers(){
+    qDebug() << "main update buffers";
     vertexArrTool.clear();
     if(settings.isCylinder){
         vertexArrTool = cylinder.getVertexArr();
 
         envelope = Envelope(move, &cylinder);
+        toolRend.updateBuffers(&cylinder);
     } else {
         qDebug() << "is drum";
         vertexArrTool = drum.getVertexArr();
 
         envelope = Envelope(move, &drum);
+        toolRend.updateBuffers(&drum);
     }
 
     envelope.initEnvelope();
@@ -253,8 +242,6 @@ void MainView::updateBuffers(){
     vertexArrGrazingCurve.clear();
     vertexArrGrazingCurve = envelope.getVertexArrGrazingCurve();
 
-    glBindBuffer(GL_ARRAY_BUFFER, vboTool);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboPth);
     glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
@@ -293,19 +280,18 @@ void MainView::createShaderProgram()
 void MainView::paintGL()
 {
     // Clear the screen before rendering
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Bind the shader program
     shaderProgram.bind();
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, projTransf.data());
 
-    // Bind cylinder buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboTool);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, toolTransf.data());
-    glBindVertexArray(vaoTool);
-    // Draw cylinder
-    glDrawArrays(GL_TRIANGLES,0,vertexArrTool.size());
+    gl->glUniformMatrix4fv(projLocation, 1, GL_FALSE, projTransf.data());
+    shaderProgram.release();
 
+    toolRend.updateUniforms(toolTransf, projTransf);
+    toolRend.paintGL();
+
+    shaderProgram.bind();
     if(settings.showPath){
         // Bind path buffer
         glBindBuffer(GL_ARRAY_BUFFER, vboPth);
@@ -438,6 +424,9 @@ void MainView::updateToolTransf(){
 
     // Update the model transformation matrix
     toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation;
+
+    //toolRend.updateUniforms(toolTransf, projTransf);
+    toolRend.setTransf(toolTransf);
 }
 
 /**

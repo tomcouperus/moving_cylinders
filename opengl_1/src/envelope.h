@@ -16,6 +16,7 @@ class Envelope
     QVector<Vertex> vertexArr;
     QVector<Vertex> vertexArrCenters;
     QVector<Vertex> vertexArrGrazingCurve;
+    QVector<Vertex> vertexArrNormal;
 public:
     Envelope();
     Envelope(CylinderMovement toolMovement, Tool *tool);
