@@ -14,7 +14,7 @@ typedef struct Settings {
     bool showPath = false;
     bool showGrazingCurve = false;
     bool showToolAxis = false;
-    bool isCylinder = true;
+    int toolIdx = 0;
 
     inline QVector3D stringToVector3D(const QString& vector)
     {

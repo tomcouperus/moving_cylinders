@@ -29,10 +29,6 @@ MainView::~MainView()
 {
     qDebug() << "MainView destructor";
 
-    // CLEAN UP!
-    glDeleteBuffers(1, &vboPth);
-    glDeleteVertexArrays(1, &vaoPth);
-
     makeCurrent();
 }
 
@@ -81,32 +77,36 @@ void MainView::initializeGL()
 
     // TODO: refactor
 
-    // Define the vertices of the cylinder
+    // Define the vertices of the tools
     cylinder.initCylinder();
     qDebug() << "a0:" << cylinder.getA0() << "a1:" << cylinder.getA1() << "H:" << cylinder.getHeight();
-
-    // Initialize the drum
     drum.initDrum();
     qDebug() << "a0:" << drum.getA0() << "a1:" << drum.getA1() << "H:" << drum.getHeight();
 
-    if(settings.isCylinder)
+    switch (settings.toolIdx) {
+    case 0:
         toolRend.setTool(&cylinder);
-    else
+        break;
+    case 1:
         toolRend.setTool(&drum);
-
+        break;
+    default:
+        break;
+    }
     toolRend.init(gl,&settings);
 
-
+    // Define path for the tool
     SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
                       Polynomial(0.0,1.0,0.0,0.0),
                       Polynomial());
     path.initVertexArr();
-    vertexArrPth = path.getVertexArr();
-
+    // Define orientation(s) of the tool
     move = CylinderMovement(path,
                             QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0), cylinder);
-    axisDirections = move.getAxisDirections();
+
+    movRend.setMovement(&move);
+    movRend.init(gl,&settings);
 
     // Define the vertices of the enveloping surface
     envelope = Envelope(move, &cylinder);
@@ -133,6 +133,7 @@ void MainView::initializeGL()
     // Pass initial transformations to the renderers;
     toolRend.setTransf(toolTransf);
     envRend.setTransf(modelTransf);
+    movRend.setTransf(modelTransf);
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
@@ -146,19 +147,7 @@ void MainView::initializeGL()
 void MainView::initBuffers() {
     toolRend.initBuffers();
 
-    glGenVertexArrays(1, &vaoPth);
-    glBindVertexArray(vaoPth);
-    glGenBuffers(1, &vboPth);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+    movRend.initBuffers();
 
     envRend.initBuffers();
 }
@@ -169,22 +158,23 @@ void MainView::initBuffers() {
  */
 void MainView::updateBuffers(){
     qDebug() << "main update buffers";
-    if(settings.isCylinder){
+    switch (settings.toolIdx) {
+    case 0:
         envelope.setTool(&cylinder);
         toolRend.updateBuffers(&cylinder);
-    } else {
+        break;
+    case 1:
         qDebug() << "is drum";
         envelope.setTool(&drum);
         toolRend.updateBuffers(&drum);
+        break;
+    default:
+        break;
     }
 
     envRend.updateBuffers(&envelope);
 
-    vertexArrPth.clear();
-    vertexArrPth = move.getPath().getVertexArr();
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
+    movRend.updateBuffers(&move);
 }
 
 /**
@@ -222,17 +212,8 @@ void MainView::paintGL()
     toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.paintGL();
 
-    shaderProgram.bind();
-    if(settings.showPath){
-        // Bind path buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-        glBindVertexArray(vaoPth);
-        // Draw path
-        glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
-    }
-
-    shaderProgram.release();
+    movRend.updateUniforms(modelTransf,projTransf);
+    movRend.paintGL();
 
     envRend.updateUniforms(modelTransf,projTransf);
     envRend.paintGL();
@@ -252,10 +233,6 @@ void MainView::resizeGL(int newWidth, int newHeight)
     // Set the viewport to the new size
     projTransf.setToIdentity();
     projTransf.perspective(60.0f, aspectRatio, 0.2f, 20.0f);
-
-    // update uniforms
-//    toolRend.updateUniforms(toolTransf,projTransf);
-//    envRend.updateUniforms(modelTransf,projTransf);
 }
 
 /**
@@ -281,6 +258,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
     envRend.setTransf(modelTransf);
+    movRend.setTransf(modelTransf);
     updateToolTransf();
     update();
 }
@@ -304,6 +282,7 @@ void MainView::setScale(float scale)
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
     envRend.setTransf(modelTransf);
+    movRend.setTransf(modelTransf);
     updateToolTransf();
     update();
 }

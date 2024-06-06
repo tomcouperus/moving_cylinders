@@ -114,16 +114,19 @@ void MainWindow::on_orientVector_2_returnPressed(){
 
 void MainWindow::on_toolBox_currentIndexChanged(int index){
   qDebug() << "tool index" << index;
+  ui->mainView->settings.toolIdx = index;
   switch (index) {
   case 0:
-      ui->mainView->settings.isCylinder = true;
       ui->angleSpinBox->setEnabled(true);
       ui->radius0SpinBox->setEnabled(false);
       break;
-  default:
-      ui->mainView->settings.isCylinder = false;
+  case 1:
       ui->angleSpinBox->setEnabled(false);
       ui->radius0SpinBox->setEnabled(true);
+      break;
+  default:
+      ui->angleSpinBox->setEnabled(false);
+      ui->radius0SpinBox->setEnabled(false);
       break;
   }
   ui->mainView->updateBuffers();

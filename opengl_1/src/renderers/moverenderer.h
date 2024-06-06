@@ -32,6 +32,7 @@ public:
     void paintGL();
 
     inline void setMovement(CylinderMovement *move) { this->move = move; }
+    inline void setTransf(QMatrix4x4 moveTransf) { this->pathTransf = moveTransf; }
 };
 
 #endif // MOVERENDERER_H

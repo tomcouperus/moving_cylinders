@@ -18,6 +18,7 @@
 #include "settings.h"
 #include "renderers/toolrenderer.h"
 #include "renderers/enveloperenderer.h"
+#include "renderers/moverenderer.h"
 
 
 /**
@@ -38,11 +39,7 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 
     // Path rendering
     CylinderMovement move;
-    QVector<QVector3D> axisDirections;
-    //SimplePath path;
-    GLuint vaoPth;
-    GLuint vboPth;
-    QVector<Vertex> vertexArrPth;
+    MoveRenderer movRend;
 
     // Envelope rendering
     EnvelopeRenderer envRend;
