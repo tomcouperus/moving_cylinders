@@ -35,8 +35,6 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     Drum drum;
     Cylinder cylinder;
 
-    QOpenGLShaderProgram shader;
-
     // Path rendering
     CylinderMovement move;
     MoveRenderer movRend;
@@ -101,8 +99,6 @@ private:
     QOpenGLShaderProgram shaderProgram;
     float time = 0.0f;
     Settings settings;
-
-    void createShaderProgram();
 };
 
 #endif // MAINVIEW_H

@@ -177,22 +177,6 @@ void MainView::updateBuffers(){
     movRend.updateBuffers(&move);
 }
 
-/**
- * @brief MainView::createShaderProgram Creates a new shader program with a
- * vertex and fragment shader.
- */
-void MainView::createShaderProgram()
-{
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                          ":/shaders/vertshader.glsl");
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                          ":/shaders/fragshader.glsl");
-    shaderProgram.link();
-
-    // Get the locations of the model and projection matrices
-    modelLocation = shaderProgram.uniformLocation("modelTransform");
-    projLocation = shaderProgram.uniformLocation("projTransform");
-}
 
 /**
  * @brief MainView::paintGL Actual function used for drawing to the screen.
