@@ -174,7 +174,7 @@ QVector3D CylinderMovement::getAxisRateOfChange(float time)
     } else {
         nextAxis = axisDirections[idx+1];
         axisRateOfChange = (nextAxis - axisDirections[idx]);
-    } 
+    }
     return axisRateOfChange;
 }
 

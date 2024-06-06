@@ -273,7 +273,7 @@ void MainView::setTime(float time)
 {
     qDebug() << "Time changed to " << time;
 
-    this->time = time + move.getPath().getT0();
+    settings.time = time + move.getPath().getT0();
 
     updateToolTransf();
     update();
@@ -284,12 +284,12 @@ void MainView::updateToolTransf(){
     SimplePath path = move.getPath();
     toolTranslation.setToIdentity();
     toolTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
+    QVector4D shift = QVector4D(path.getPathAt(settings.time),0);
     shift = modelTransf * shift;
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     toolRotation.setToIdentity();
-    toolRotation = move.getMovementRotation(time);
+    toolRotation = move.getMovementRotation(settings.time);
 
     // Update the model transformation matrix
     toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation;

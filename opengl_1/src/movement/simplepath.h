@@ -3,6 +3,7 @@
 
 #include "path.h"
 #include "polynomial.h"
+#include <QOpenGLDebugLogger>
 
 /**
  * @brief The SimplePath class is a path parameterized by a

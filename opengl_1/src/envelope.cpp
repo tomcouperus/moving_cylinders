@@ -22,6 +22,8 @@ void Envelope::initEnvelope()
     computeEnvelope();
     computeToolCenters();
     computeGrazingCurves();
+    computeNormals();
+    computeAxis();
 }
 
 void Envelope::setToolMovement(CylinderMovement toolMovement)
@@ -31,6 +33,8 @@ void Envelope::setToolMovement(CylinderMovement toolMovement)
     computeEnvelope();
     computeToolCenters();
     computeGrazingCurves();
+    computeNormals();
+    computeAxis();
 }
 
 void Envelope::setTool(Tool *tool)
@@ -40,6 +44,8 @@ void Envelope::setTool(Tool *tool)
     computeEnvelope();
     computeToolCenters();
     computeGrazingCurves();
+    computeNormals();
+    computeAxis();
 }
 
 void Envelope::computeToolCenters()
@@ -65,6 +71,27 @@ void Envelope::computeToolCenters()
             vertexArrCenters.append(Vertex(v1, color));
             vertexArrCenters.append(Vertex(v2, color));
         }
+    }
+}
+
+void Envelope::computeAxis()
+{
+    vertexArrToolAxis.clear();
+
+    QVector3D color = QVector3D(1,1,0);
+
+    QVector3D v1, p1;
+    SimplePath path = toolMovement.getPath();
+    float t1 = path.getT1();
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    for (float t = path.getT0(); t < t1; t+=tDelta)
+    {
+        p1 = path.getPathAt(t);
+        v1 = calcToolAxisAt(t);
+
+        // Add vertices to array
+        vertexArrToolAxis.append(Vertex(p1, color));
+        vertexArrToolAxis.append(Vertex(v1, color));
     }
 }
 
@@ -97,7 +124,6 @@ void Envelope::computeGrazingCurves()
 void Envelope::computeEnvelope()
 {
     vertexArr.clear();
-    vertexArrNormal.clear();
 
     Vertex v1, v2, v3, v4;
     SimplePath path = toolMovement.getPath();
@@ -105,7 +131,6 @@ void Envelope::computeEnvelope()
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float t1 = path.getT1();
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
-    qDebug() << "sectorsT: " << sectorsT << " sectorsA: " << sectorsA;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         
@@ -127,6 +152,38 @@ void Envelope::computeEnvelope()
     }
 }
 
+void Envelope::computeNormals(){
+    vertexArrNormals.clear();
+
+    QVector3D c = QVector3D(0,1,0);
+
+    QVector3D v1, v2, p1, p2;
+    SimplePath path = toolMovement.getPath();
+    float a1 = tool->getA1();
+    float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
+    float t1 = path.getT1();
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    QVector<Vertex> normals;
+    for (float t = path.getT0(); t < t1; t+=tDelta)
+    {
+        normals.clear();
+        for (float a = tool->getA0(); a < a1; a+=aDelta)
+        {
+            p1 = calcToolCenterAt(t,a);
+            p2 = calcToolCenterAt(t, a+aDelta);
+            v1 = p1 + tool->getRadiusAt(a)*computeNormal(t, a);
+            v2 = p2 + tool->getRadiusAt(a)*computeNormal(t, a+aDelta);
+
+            // Add vertices to array
+            normals.append(Vertex(p1,c));
+            normals.append(Vertex(v1,c));
+            normals.append(Vertex(p2,c));
+            normals.append(Vertex(v2,c));
+        }
+        vertexArrNormals.append(normals);
+    }
+}
+
 QVector3D Envelope::calcToolCenterAt(float t, float a)
 {
     
@@ -139,28 +196,30 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
     return center;
 }
 
+QVector3D Envelope::calcToolAxisAt(float t)
+{
+    SimplePath path = toolMovement.getPath();
+    QVector3D axis = tool->getHeight()* toolMovement.getAxisDirectionAt(t).normalized();
+    return path.getPathAt(t) + axis;
+}
+
 Vertex Envelope::calcEnvelopeAt(float t, float a)
 {
     QVector3D color = QVector3D(1,0,0);
     
     QVector3D center = calcToolCenterAt(t, a);
 
-    float r = tool->getRadiusAt(a) + 0.0001; // + 0.01 to avoid floating point weirdness
+    float r = tool->getRadiusAt(a) + 0.000; // + 0.0001 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
-    // qDebug() << "position: " << posit;
-    // qDebug() << "center:" << center;
-    // qDebug() << "normal: " << normal;
-    // qDebug() << "radius: " << r;
-
-    return Vertex(posit, color);
+    return Vertex(posit, normal);
 }
 
 QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 {
     QVector3D center = calcToolCenterAt(t, a);
-    float r = tool->getRadiusAt(a) + 0.002; // + 0.01 to avoid floating point weirdness
+    float r = tool->getRadiusAt(a) + 0.00; // + 0.01 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
@@ -199,4 +258,3 @@ QVector3D Envelope::computeNormal(float t, float a)
     normal.normalize();
     return normal;
 }
-    

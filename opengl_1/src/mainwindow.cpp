@@ -332,7 +332,7 @@ void MainWindow::on_spinBox_t_0_valueChanged(int value) {
   qDebug() << "t0 updated to: " << value;
 
   SimplePath path = ui->mainView->move.getPath();
-  float sliderTimePerSector = (ui->mainView->time-path.getT0()) / path.getRange();
+  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / path.getRange();
 
   path.setRange(value, path.getT1());
   ui->mainView->move.setPath(path);
@@ -353,7 +353,7 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   qDebug() << "t1 updated to: " << value;
 
   SimplePath path = ui->mainView->move.getPath();
-  float sliderTimePerSector = (ui->mainView->time-path.getT0()) / path.getRange();
+  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / path.getRange();
 
   path.setRange(path.getT0(), value);
   ui->mainView->move.setPath(path);
@@ -395,6 +395,8 @@ void MainWindow::on_TimeSlider_sliderMoved(int value) {
   SimplePath path = ui->mainView->move.getPath();
   float divisor = path.getSectors()/ path.getRange();
   ui->mainView->setTime(value / divisor);
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
 }
 
 
