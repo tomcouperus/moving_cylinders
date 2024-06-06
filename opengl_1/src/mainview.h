@@ -96,7 +96,6 @@ private:
     QTimer timer; // timer used for animation
 
     QOpenGLFunctions_4_1_Core *gl;
-    QOpenGLShaderProgram shaderProgram;
     float time = 0.0f;
     Settings settings;
 };

@@ -21,9 +21,7 @@ public:
 protected:
     virtual void initShaders() = 0;
     virtual void initBuffers() = 0;
-    QOpenGLShaderProgram *constructDefaultShader(const QString &name) const;
 
-    QOpenGLShaderProgram * shader;
     QOpenGLFunctions_4_1_Core *gl;
     Settings *settings;
 };

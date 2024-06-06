@@ -73,8 +73,6 @@ void MainView::initializeGL()
     // This is the background color.
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
-    createShaderProgram();
-
     // TODO: refactor
 
     // Define the vertices of the tools
@@ -188,10 +186,6 @@ void MainView::paintGL()
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Bind the shader program
-    shaderProgram.bind();
-
-    gl->glUniformMatrix4fv(projLocation, 1, GL_FALSE, projTransf.data());
-    shaderProgram.release();
 
     toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.paintGL();

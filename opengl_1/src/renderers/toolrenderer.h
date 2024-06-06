@@ -13,6 +13,7 @@ class ToolRenderer : public Renderer
     GLuint vaoTool;
     GLuint vboTool;
     QVector<Vertex> vertexArrTool;
+
     QOpenGLShaderProgram shader;
 
     GLint modelLocation;
