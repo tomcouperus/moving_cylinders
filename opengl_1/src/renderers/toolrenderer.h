@@ -7,6 +7,9 @@
 #include "../tools/drum.h"
 #include "envelope.h"
 
+/**
+ * @brief The ToolRenderer class is a renderer for the tool.
+*/
 class ToolRenderer : public Renderer
 {
     Tool *tool;

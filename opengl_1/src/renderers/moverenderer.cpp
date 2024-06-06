@@ -1,23 +1,36 @@
 #include "moverenderer.h"
 
+/**
+ * @brief MoveRenderer::MoveRenderer Creates a new move renderer.
+ */
 MoveRenderer::MoveRenderer()
 {
     this->move = nullptr;
     pathTransf.setToIdentity();
 }
 
+/**
+ * @brief MoveRenderer::MoveRenderer Creates a new move renderer with a movement.
+ * @param move Movement.
+ */
 MoveRenderer::MoveRenderer(CylinderMovement *move)
 {
     this->move = move;
     pathTransf.setToIdentity();
 }
 
+/**
+ * @brief MoveRenderer::~MoveRenderer Destructor of the move renderer.
+ */
 MoveRenderer::~MoveRenderer()
 {
     gl->glDeleteVertexArrays(1, &vaoPath);
     gl->glDeleteBuffers(1, &vboPath);
 }
 
+/**
+ * @brief MoveRenderer::initShaders Initialises the shaders for the move renderer.
+ */
 void MoveRenderer::initShaders()
 {
     shader.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertshader.glsl");
@@ -29,6 +42,9 @@ void MoveRenderer::initShaders()
     projLocation = shader.uniformLocation("projTransform");
 }
 
+/**
+ * @brief MoveRenderer::initBuffers Initialises the buffers for the move renderer.
+ */
 void MoveRenderer::initBuffers()
 {
     vertexArrPath.clear();
@@ -48,6 +64,10 @@ void MoveRenderer::initBuffers()
     gl->glEnableVertexAttribArray(1);
 }
 
+/**
+ * @brief MoveRenderer::updateBuffers Updates the buffers with the new movement.
+ * @param move Movement.
+ */
 void MoveRenderer::updateBuffers(CylinderMovement *move)
 {
     vertexArrPath.clear();
@@ -57,6 +77,11 @@ void MoveRenderer::updateBuffers(CylinderMovement *move)
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrPath.size() * sizeof(Vertex), vertexArrPath.data(), GL_STATIC_DRAW);
 }
 
+/**
+ * @brief MoveRenderer::updateUniforms Updates the uniforms of the shader.
+ * @param pathTransf Transformation matrix of the movement.
+ * @param projTransf Projection matrix.
+ */
 void MoveRenderer::updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf)
 {
     shader.bind();
@@ -65,6 +90,9 @@ void MoveRenderer::updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf)
     shader.release();
 }
 
+/**
+ * @brief MoveRenderer::paintGL Draws the path that desctibes movement.
+ */
 void MoveRenderer::paintGL()
 {
     shader.bind();

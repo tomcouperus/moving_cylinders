@@ -4,6 +4,9 @@
 
 #include "../vertex.h"
 
+/**
+ * @brief The Tool class is an abstract class that represents a generic tool.
+ */
 class Tool
 {
 protected:

@@ -1,28 +1,45 @@
 #include "toolrenderer.h"
 
+/**
+ * @brief ToolRenderer::ToolRenderer Creates a new tool renderer.
+ */
 ToolRenderer::ToolRenderer()
 {
     toolTransf.setToIdentity();
 }
 
+/**
+ * @brief ToolRenderer::ToolRenderer Creates a new tool renderer with a cylinder.
+ * @param cyl Cylinder.
+ */
 ToolRenderer::ToolRenderer(Cylinder *cyl)
 {
     tool = cyl;
     toolTransf.setToIdentity();
 }
 
+/**
+ * @brief ToolRenderer::ToolRenderer Creates a new tool renderer with a drum.
+ * @param drum Drum.
+ */
 ToolRenderer::ToolRenderer(Drum *drum)
 {
     tool = drum;
     toolTransf.setToIdentity();
 }
 
+/**
+ * @brief ToolRenderer::~ToolRenderer Deconstructs the tool renderer.
+ */
 ToolRenderer::~ToolRenderer()
 {
     gl->glDeleteVertexArrays(1, &vaoTool);
     gl->glDeleteBuffers(1, &vboTool);
 }
 
+/**
+ * @brief ToolRenderer::initShaders Initialises the shaders for the tool renderer.
+ */
 void ToolRenderer::initShaders()
 {
     shader.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertshader.glsl");
@@ -37,6 +54,9 @@ void ToolRenderer::initShaders()
     projLocation = shader.uniformLocation("projTransform");
 }
 
+/**
+ * @brief ToolRenderer::initBuffers Initialises the buffers for the tool renderer.
+ */
 void ToolRenderer::initBuffers()
 {
     vertexArrTool.clear();
@@ -60,6 +80,10 @@ void ToolRenderer::initBuffers()
     gl->glEnableVertexAttribArray(1);
 }
 
+/**
+ * @brief ToolRenderer::updateBuffers Updates the buffers for the tool renderer.
+ * @param tool Tool to update the buffers with.
+ */
 void ToolRenderer::updateBuffers(Tool *tool)
 {
     qDebug()<< "update buffers";
@@ -70,6 +94,11 @@ void ToolRenderer::updateBuffers(Tool *tool)
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
 }
 
+/**
+ * @brief ToolRenderer::updateUniforms Updates the uniforms for the tool renderer.
+ * @param toolTransf Tool transformation matrix.
+ * @param projTransf Projection transformation matrix.
+ */
 void ToolRenderer::updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf)
 {
     shader.bind();
@@ -78,6 +107,9 @@ void ToolRenderer::updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf)
     shader.release();
 }
 
+/**
+ * @brief ToolRenderer::paintGL Draws the tool.
+ */
 void ToolRenderer::paintGL()
 {
     qDebug() << "Drawing tool";

@@ -1,5 +1,8 @@
 #include "drum.h"
 
+/**
+ * @brief Drum::Drum Creates a new drum with default values.
+ */
 Drum::Drum()
     : r0(2), rm(0.5)
 
@@ -10,6 +13,14 @@ Drum::Drum()
     this->a0 = -a1;
 }
 
+/**
+ * @brief Drum::Drum Creates a new drum with the given values.
+ * @param curveRadius Radius of the drum.
+ * @param midRadius Mid radius of the drum.
+ * @param height Height of the drum.
+ * @param sectors Number of sectors of the drum.
+ * @param position Position of the drum.
+ */
 Drum::Drum(float curveRadius, float midRadius, float height, int sectors, QVector3D position)
     : r0(curveRadius), rm(midRadius)
 {
@@ -20,6 +31,9 @@ Drum::Drum(float curveRadius, float midRadius, float height, int sectors, QVecto
     this->a0 = -a1;
 }
 
+/**
+ * @brief Drum::initDrum Initialises the drum.
+*/
 void Drum::initDrum(){
     float phi = asin(height/(2*r0));
     qDebug()<< height/(2*r0);
@@ -30,6 +44,7 @@ void Drum::setSectors(int sectors){
     this->sectors = sectors;
     computeDrum();
 }
+
 void Drum::setRadius(float radius){
     r0 = radius;
     float phi = asin(height/(2*r0));
@@ -37,6 +52,7 @@ void Drum::setRadius(float radius){
     this->a0 = -a1;
     computeDrum();
 }
+
 void Drum::setMidRadius(float radius){
     this->rm = radius;
     float phi = asin(height/(2*r0));
@@ -44,6 +60,7 @@ void Drum::setMidRadius(float radius){
     this->a0 = -a1;
     computeDrum();
 }
+
 void Drum::setHeight(float height){
     this->height = height;
     float phi = asin(height/(2*r0));
@@ -51,6 +68,7 @@ void Drum::setHeight(float height){
     this->a0 = -a1;
     computeDrum();
 }
+
 void Drum::setPosit(QVector3D position){
     posit = position;
     computeDrum();

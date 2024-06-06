@@ -4,6 +4,9 @@
 #include "renderer.h"
 #include "../movement/cylindermovement.h"
 
+/**
+ * @brief The MoveRenderer class is a renderer for the movement of the tool.
+ */
 class MoveRenderer  : public Renderer
 {
     CylinderMovement *move;
@@ -17,8 +20,8 @@ class MoveRenderer  : public Renderer
     GLint modelLocation;
     GLint projLocation;
 
+    // Transformation matrices for the movement
     QMatrix4x4 pathTransf;
-    QMatrix4x4 projTransf;
 
 public:
     MoveRenderer();

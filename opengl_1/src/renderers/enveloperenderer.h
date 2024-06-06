@@ -4,6 +4,9 @@
 #include "../envelope.h"
 #include "renderer.h"
 
+/**
+ * @brief The EnvelopeRenderer class is a renderer for the envelope of the tool.
+ */
 class EnvelopeRenderer : public Renderer
 {
     Envelope *envelope;
@@ -13,16 +16,18 @@ class EnvelopeRenderer : public Renderer
     GLuint vboEnv;
     QVector<Vertex> vertexArrEnv;
 
+    // Centers of the 2-param family od spheres that describe the envelope
     GLuint vboCenters;
     GLuint vaoCenters;
     QVector<Vertex> vertexArrCenters;
 
+    // Grazing curve of the tool that describes the envelope
     GLuint vboGrazingCurve;
     GLuint vaoGrazingCurve;
     QVector<Vertex> vertexArrGrazingCurve;
 
+    // Transformation matrices for the envelope
     QMatrix4x4 envelopeTransf;
-    QMatrix4x4 projTransf;
 
     GLint modelLocation;
     GLint projLocation;

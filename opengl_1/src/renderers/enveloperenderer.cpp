@@ -1,17 +1,27 @@
 #include "enveloperenderer.h"
 
+/**
+ * @brief EnvelopeRenderer::EnvelopeRenderer Creates a new envelope renderer.
+ */
 EnvelopeRenderer::EnvelopeRenderer()
 {
     envelope = nullptr;
     envelopeTransf.setToIdentity();
 }
 
+/**
+ * @brief EnvelopeRenderer::EnvelopeRenderer Creates a new envelope renderer with an envelope.
+ * @param env Envelope.
+ */
 EnvelopeRenderer::EnvelopeRenderer(Envelope *env)
 {
     envelope = env;
     envelopeTransf.setToIdentity();
 }
 
+/**
+ * @brief EnvelopeRenderer::~EnvelopeRenderer Destroys the envelope renderer.
+ */
 EnvelopeRenderer::~EnvelopeRenderer()
 {
     gl->glDeleteVertexArrays(1, &vaoEnv);
@@ -22,6 +32,9 @@ EnvelopeRenderer::~EnvelopeRenderer()
     gl->glDeleteBuffers(1, &vboGrazingCurve);
 }
 
+/**
+ * @brief EnvelopeRenderer::initShaders Initialises the shader for the envelope renderer.
+ */
 void EnvelopeRenderer::initShaders()
 {
     shader.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertshader.glsl");
@@ -34,6 +47,9 @@ void EnvelopeRenderer::initShaders()
     projLocation = shader.uniformLocation("projTransform");
 }
 
+/**
+ * @brief EnvelopeRenderer::initBuffers Initialises the buffers for the envelope renderer.
+ */
 void EnvelopeRenderer::initBuffers()
 {
     vertexArrEnv.clear();
@@ -91,6 +107,10 @@ void EnvelopeRenderer::initBuffers()
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 }
 
+/**
+ * @brief EnvelopeRenderer::updateBuffers Updates the buffers with the new envelope.
+ * @param env Envelope.
+ */
 void EnvelopeRenderer::updateBuffers(Envelope *env)
 {
     envelope = env;
@@ -114,6 +134,11 @@ void EnvelopeRenderer::updateBuffers(Envelope *env)
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
 }
 
+/**
+ * @brief EnvelopeRenderer::updateUniforms Updates the uniforms for the envelope renderer.
+ * @param envelopeTransf Envelope transformation matrix.
+ * @param projTransf Projection transformation matrix.
+ */
 void EnvelopeRenderer::updateUniforms(QMatrix4x4 envelopeTransf, QMatrix4x4 projTransf)
 {
     shader.bind();
@@ -122,6 +147,10 @@ void EnvelopeRenderer::updateUniforms(QMatrix4x4 envelopeTransf, QMatrix4x4 proj
     shader.release();
 }
 
+/**
+ * @brief EnvelopeRenderer::paintGL Draws the envelope, centers and grazing 
+ * curve according to the settings.
+ */
 void EnvelopeRenderer::paintGL()
 {
     shader.bind();
