@@ -9,7 +9,7 @@ CylinderMovement::CylinderMovement() :
     cylinderAxis(Cylinder().getAxisVector()),
     perpToAxis(Cylinder().getVectorPerpToAxis())
 {
-
+    t0 = path.getT0(); t1 = path.getT1();
     qDebug() << "CylinderMovement()";
     QVector<Vertex> vertices = path.getVertexArr();
     QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis, QVector3D(0, 1, 0));
@@ -33,6 +33,7 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     cylinderAxis(cylinder.getAxisVector()),
     perpToAxis(cylinder.getVectorPerpToAxis())
 {
+    t0 = path.getT0(); t1 = path.getT1();
     QVector<Vertex> vertices = path.getVertexArr();
 
     // interpolation of directional vectors
@@ -40,6 +41,7 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (vertices.size()-1);
     for (size_t i = 0; i < vertices.size(); i++)
     {
+        qDebug() << lastDirection;
         axisDirections.append(lastDirection); // add interpolated directional vector
 
         // Get (and save) vector perpendicular to both the directional vector of the movement and the axis of the cylinder
@@ -60,6 +62,7 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     cylinderAxis(cylinder.getAxisVector()),
     perpToAxis(cylinder.getVectorPerpToAxis())
 {
+    t0 = path.getT0(); t1 = path.getT1();
     QVector<Vertex> vertices = path.getVertexArr();
 
     // interpolation of directional vectors
@@ -94,6 +97,8 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
     cylinderAxis(cylinder.getAxisVector()),
     perpToAxis(cylinder.getVectorPerpToAxis())
 {
+    t0 = path.getT0(); t1 = path.getT1();
+
     QVector<Vertex> vertices = path.getVertexArr();
     for (size_t i = 0; i < vertices.size(); i++)
     {
@@ -198,9 +203,6 @@ void CylinderMovement::rotateAxisDirections(QMatrix4x4 rotation)
 QVector3D CylinderMovement::getAxisDirectionAt(float time)
 {
     int idx = path.getIdxAtTime(time);
-    if (idx > axisDirections.size()-1) { // in case of floating point error
-        idx = axisDirections.size()-1;
-    }
     return axisDirections[idx];
 }
 
@@ -212,8 +214,5 @@ QVector3D CylinderMovement::getAxisDirectionAt(float time)
 QVector3D CylinderMovement::getRotationVectorAt(float time)
 {
     int idx = path.getIdxAtTime(time);
-    if (idx > rotationVectors.size()-1) { // in case of floating point error
-        idx = rotationVectors.size()-1;
-    }
     return rotationVectors[idx];
 }

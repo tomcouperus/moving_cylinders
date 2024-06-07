@@ -12,6 +12,9 @@
 class CylinderMovement
 {
     SimplePath path;
+    float t0;
+    float t1;
+
     QVector3D cylinderAxis; // or tool axis
     QVector3D perpToAxis;
     QVector<QVector3D> axisDirections;
@@ -21,7 +24,7 @@ public:
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Cylinder cylinder);
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum drum);
     CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder);
-    inline void setPath(SimplePath path) {this->path = path;}
+    inline void setPath(SimplePath path) {t0 = path.getT0(); t1 = path.getT1(); this->path = path;}
     inline SimplePath getPath() {return path;}
     inline void setAxisDirections(QVector<QVector3D> axisDirections) {axisDirections.clear(); this->axisDirections = axisDirections;}
     bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);

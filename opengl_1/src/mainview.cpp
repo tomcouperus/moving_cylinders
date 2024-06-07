@@ -169,7 +169,6 @@ void MainView::updateBuffers(){
     default:
         break;
     }
-
     envRend.updateBuffers(&envelope);
 
     movRend.updateBuffers(&move);

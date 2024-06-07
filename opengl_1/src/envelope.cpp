@@ -1,6 +1,7 @@
 #include "envelope.h"
 
 Envelope::Envelope() :
+    adjEnv(nullptr),
     toolMovement(CylinderMovement()),
     tool()
 {
@@ -10,6 +11,16 @@ Envelope::Envelope() :
 }
 
 Envelope::Envelope(CylinderMovement toolMovement, Tool *tool) :
+    adjEnv(nullptr),
+    toolMovement(toolMovement),
+    tool(tool)
+{
+    sectorsA = tool->getSectors();
+    sectorsT = toolMovement.getPath().getSectors();
+}
+
+Envelope::Envelope(Envelope *adjEnvelope, CylinderMovement toolMovement, Tool *tool) :
+    adjEnv(adjEnvelope),
     toolMovement(toolMovement),
     tool(tool)
 {
@@ -46,6 +57,11 @@ void Envelope::setTool(Tool *tool)
     computeGrazingCurves();
     computeNormals();
     computeAxis();
+}
+
+void Envelope::setAdjacentEnvelope(Envelope *env){
+    this->adjEnv = env;
+    computeAdjEnvelope();
 }
 
 void Envelope::computeToolCenters()
@@ -121,6 +137,39 @@ void Envelope::computeGrazingCurves()
     }
 }
 
+void Envelope::computeAdjEnvelope()
+{
+    vertexArr.clear();
+
+    Vertex v1, v2, v3, v4;
+    SimplePath path = adjEnv->toolMovement.getPath();
+    QVector<QVector3D> discPath = adjEnv->endCurveArr;
+    int idx = 0;
+    float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
+    float a1 = tool->getA1()-aDelta;
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    float t1 = path.getT1()-tDelta;
+    for (float t = path.getT0(); t < t1; t+=tDelta)
+    {
+        idx++;
+        for (float a = tool->getA0(); a < a1; a+=aDelta)
+        {
+            v1 = calcEnvelopeAt(t, a, discPath[idx]);
+            v2 = calcEnvelopeAt(t, a+aDelta, discPath[idx]);
+            v3 = calcEnvelopeAt(t+tDelta, a, discPath[idx+1]);
+            v4 = calcEnvelopeAt(t+tDelta, a+aDelta, discPath[idx+1]);
+
+            // Add vertices to array
+            vertexArr.append(v1);
+            vertexArr.append(v4);
+            vertexArr.append(v2);
+            vertexArr.append(v1);
+            vertexArr.append(v3);
+            vertexArr.append(v4);
+        }
+    }
+}
+
 void Envelope::computeEnvelope()
 {
     vertexArr.clear();
@@ -162,7 +211,7 @@ void Envelope::computeNormals(){
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
-    float t1 = path.getT1()-tDelta;
+    float t1 = path.getT1();
     QVector<Vertex> normals;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
@@ -216,6 +265,17 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     return Vertex(posit, normal);
 }
 
+Vertex Envelope::calcEnvelopeAt(float t, float a, QVector3D center)
+{
+    QVector3D color = QVector3D(1,0.5,0);
+
+    float r = tool->getRadiusAt(a) + 0.000; // + 0.0001 to avoid floating point weirdness
+    QVector3D normal = computeNormal(t, a, center);
+    QVector3D posit = center + r*normal;
+
+    return Vertex(posit, normal);
+}
+
 QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 {
     QVector3D center = calcToolCenterAt(t, a);
@@ -257,4 +317,14 @@ QVector3D Envelope::computeNormal(float t, float a)
     // qDebug() << "norm: " << normal;
     normal.normalize();
     return normal;
+}
+
+QVector3D Envelope::computeNormal(float t, float a, QVector3D center)
+{
+    SimplePath path = toolMovement.getPath();
+    QVector3D sa = toolMovement.getAxisDirectionAt(t).normalized();
+    float a0 = tool->getA0();
+    QVector3D st = path.getTangentAt(t) + (a-a0)*toolMovement.getAxisRateOfChange(t).normalized();
+
+    return sa;
 }

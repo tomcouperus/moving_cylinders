@@ -156,7 +156,6 @@ void EnvelopeRenderer::updateBuffers(Envelope *env)
     envelope = env;
     vertexArrEnv.clear();
     vertexArrEnv = envelope->getVertexArr();
-    qDebug() << vertexArrEnv.size();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
