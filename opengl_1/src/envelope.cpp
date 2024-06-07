@@ -56,10 +56,10 @@ void Envelope::computeToolCenters()
 
     QVector3D v1, v2;
     SimplePath path = toolMovement.getPath();
-    float a1 = tool->getA1();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
-    float t1 = path.getT1();
+    float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    float t1 = path.getT1()-tDelta;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         for (float a = tool->getA0(); a < a1; a+=aDelta)
@@ -82,8 +82,8 @@ void Envelope::computeAxis()
 
     QVector3D v1, p1;
     SimplePath path = toolMovement.getPath();
-    float t1 = path.getT1();
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    float t1 = path.getT1()-tDelta;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         p1 = path.getPathAt(t);
@@ -103,10 +103,10 @@ void Envelope::computeGrazingCurves()
 
     QVector3D v1, v2;
     SimplePath path = toolMovement.getPath();
-    float a1 = tool->getA1();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
-    float t1 = path.getT1();
+    float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    float t1 = path.getT1()-tDelta;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         for (float a = tool->getA0(); a < a1; a+=aDelta)
@@ -127,10 +127,10 @@ void Envelope::computeEnvelope()
 
     Vertex v1, v2, v3, v4;
     SimplePath path = toolMovement.getPath();
-    float a1 = tool->getA1();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
-    float t1 = path.getT1();
+    float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    float t1 = path.getT1()-tDelta;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         
@@ -159,10 +159,10 @@ void Envelope::computeNormals(){
 
     QVector3D v1, v2, p1, p2;
     SimplePath path = toolMovement.getPath();
-    float a1 = tool->getA1();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
-    float t1 = path.getT1();
+    float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    float t1 = path.getT1()-tDelta;
     QVector<Vertex> normals;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
