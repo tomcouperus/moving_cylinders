@@ -37,7 +37,7 @@ public:
     Vertex calcEnvelopeAt(float t, float a);
     Vertex calcEnvelopeAt(float t, float a, QVector3D center);
     QVector3D calcToolCenterAt(float t, float a);
-    QVector3D calcToolAxisAt(float t);
+    QVector3D calcToolAxisDirecAt(float t);
     QVector3D calcGrazingCurveAt(float t, float a);
     QVector3D computeNormal(float t, float a);
     QVector3D computeNormal(float t, float a, QVector3D center);

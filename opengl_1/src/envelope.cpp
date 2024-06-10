@@ -99,11 +99,11 @@ void Envelope::computeAxis()
     QVector3D v1, p1;
     SimplePath path = toolMovement.getPath();
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
-    float t1 = path.getT1()-tDelta;
+    float t1 = path.getT1();
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
-        p1 = path.getPathAt(t);
-        v1 = calcToolAxisAt(t);
+        p1 = path.getPathAt(t)+tool->getA0()*calcToolAxisDirecAt(t);
+        v1 = p1+ (tool->getA1()-tool->getA0())*calcToolAxisDirecAt(t);
 
         // Add vertices to array
         vertexArrToolAxis.append(Vertex(p1, color));
@@ -122,7 +122,7 @@ void Envelope::computeGrazingCurves()
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
-    float t1 = path.getT1()-tDelta;
+    float t1 = path.getT1();
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         for (float a = tool->getA0(); a < a1; a+=aDelta)
@@ -240,16 +240,15 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
     // s is offset by a0 wrt formula because path is coded at the base of the cone/tool instead of
     // at the base of the axis of centers
     float a0 = tool->getA0();
-    QVector3D center = path.getPathAt(t) + (a)*(toolMovement.getAxisDirectionAt(t).normalized());
+    QVector3D center = path.getPathAt(t) + (a)*(toolMovement.getAxisDirectionAt(t));
 
     return center;
 }
 
-QVector3D Envelope::calcToolAxisAt(float t)
+QVector3D Envelope::calcToolAxisDirecAt(float t)
 {
-    SimplePath path = toolMovement.getPath();
-    QVector3D axis = tool->getHeight()* toolMovement.getAxisDirectionAt(t).normalized();
-    return path.getPathAt(t) + axis;
+    QVector3D axis = toolMovement.getAxisDirectionAt(t);
+    return axis;
 }
 
 Vertex Envelope::calcEnvelopeAt(float t, float a)
@@ -289,9 +288,9 @@ QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 QVector3D Envelope::computeNormal(float t, float a)
 {
     SimplePath path = toolMovement.getPath();
-    QVector3D sa = toolMovement.getAxisDirectionAt(t).normalized();
+    QVector3D sa = toolMovement.getAxisDirectionAt(t);
     float a0 = tool->getA0();
-    QVector3D st = path.getTangentAt(t) + (a-a0)*toolMovement.getAxisRateOfChange(t).normalized();
+    QVector3D st = path.getTangentAt(t).normalized() + (a-a0)*toolMovement.getAxisRateOfChange(t).normalized();
 //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 
@@ -306,11 +305,11 @@ QVector3D Envelope::computeNormal(float t, float a)
     QMatrix4x4 mInv = m.inverted(); // inverse of block matrix = matrix of inverse blocks
 //    qDebug() << "mInv: " << mInv;
     QVector4D b = QVector4D(-ra, 0,0,0);
-    QVector4D x = mInv*b;
+    QVector4D x = (mInv*b);
     alpha = x.x();
     beta = x.y();
-//    qDebug() << "A11"<< mInv.column(0).x();
-    gamma = sqrt(1-ra*ra*(mInv.column(0).normalized().x())); // abs to solve issue with imaginaries?
+//    qDebug() << "A11"<< mInv.column(0).normalized().x();
+    gamma = sqrt(1-ra*ra*(mInv.column(0).x())); // abs to solve issue with imaginaries?
 //    qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma;
 
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
@@ -322,7 +321,7 @@ QVector3D Envelope::computeNormal(float t, float a)
 QVector3D Envelope::computeNormal(float t, float a, QVector3D center)
 {
     SimplePath path = toolMovement.getPath();
-    QVector3D sa = toolMovement.getAxisDirectionAt(t).normalized();
+    QVector3D sa = toolMovement.getAxisDirectionAt(t);
     float a0 = tool->getA0();
     QVector3D st = path.getTangentAt(t) + (a-a0)*toolMovement.getAxisRateOfChange(t).normalized();
 

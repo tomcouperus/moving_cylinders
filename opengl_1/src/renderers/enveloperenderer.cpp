@@ -216,12 +216,12 @@ void EnvelopeRenderer::paintGL()
     }
 
     if(settings->showToolAxis){
-//        // Bind centers buffer
-//        gl->glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-//        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
-//        gl->glBindVertexArray(vaoCenters);
-//        // Draw centers
-//        gl->glDrawArrays(GL_LINES,0,vertexArrCenters.size());
+        // Bind centers buffer
+        gl->glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
+        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
+        gl->glBindVertexArray(vaoCenters);
+        // Draw centers
+        gl->glDrawArrays(GL_LINES,0,vertexArrCenters.size());
 
         // Bind axis buffer
         gl->glBindBuffer(GL_ARRAY_BUFFER, vboAxis);
