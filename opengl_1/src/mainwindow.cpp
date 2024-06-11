@@ -129,6 +129,9 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
       ui->radius0SpinBox->setEnabled(false);
       break;
   }
+  ui->aSlider->setValue(0);
+  ui->mainView->setA(0);
+
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -372,6 +375,11 @@ void MainWindow::on_envelopeCheckBox_toggled(bool checked){
   ui->mainView->update();
 }
 
+void MainWindow::on_toolCheckBox_toggled(bool checked){
+  ui->mainView->settings.showTool = checked;
+  ui->mainView->update();
+}
+
 void MainWindow::on_grazCurveCheckBox_toggled(bool checked){
   ui->mainView->settings.showGrazingCurve = checked;
   ui->mainView->update();
@@ -387,6 +395,16 @@ void MainWindow::on_toolAxisCheckBox_toggled(bool checked){
   ui->mainView->update();
 }
 
+void MainWindow::on_normalsCheckBox_toggled(bool checked){
+  ui->mainView->settings.showNormals = checked;
+  ui->mainView->update();
+}
+
+void MainWindow::on_sphereCheckBox_toggled(bool checked){
+  ui->mainView->settings.showSpheres = checked;
+  ui->mainView->update();
+}
+
 /**
  * @brief MainWindow::on_TimeSlider_sliderMoved Updates the time value.
  * @param value The new time value.
@@ -399,6 +417,17 @@ void MainWindow::on_TimeSlider_sliderMoved(int value) {
   ui->mainView->update();
 }
 
+
+/**
+ * @brief MainWindow::on_aSlider_sliderMoved Updates the time value for the tool axis.
+ * @param value The new a value.
+ */
+void MainWindow::on_aSlider_sliderMoved(int value) {
+  ui->mainView->setA(value);
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
 
 /**
  * @brief MainWindow::on_ResetRotationButton_clicked Resets the rotation.

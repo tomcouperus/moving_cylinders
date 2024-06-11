@@ -40,6 +40,8 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     renderers/toolrenderer.h renderers/toolrenderer.cpp
     renderers/enveloperenderer.h renderers/enveloperenderer.cpp
     renderers/moverenderer.h renderers/moverenderer.cpp
+    tools/sphere.h
+
 
 )
 

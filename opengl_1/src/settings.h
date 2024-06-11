@@ -11,10 +11,13 @@
  */
 typedef struct Settings {
     bool showEnvelope = true;
+    bool showTool = true;
     bool showPath = false;
     bool showGrazingCurve = false;
     bool showToolAxis = false;
-    bool showNormals = true;
+    bool showNormals = false;
+    bool showSpheres = false;
+    float a = 0.0f;
     float time = 0.0f;
     int toolIdx = 0;
 

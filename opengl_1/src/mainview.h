@@ -66,6 +66,7 @@ public:
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
     void setTime(float time);
+    void setA(float a);
     void updateToolTransf();
     void updateBuffers();
 

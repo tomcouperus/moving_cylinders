@@ -3,6 +3,7 @@
 
 #include "renderer.h"
 #include "../tools/tool.h"
+#include "../tools/sphere.h"
 #include "../tools/cylinder.h"
 #include "../tools/drum.h"
 #include "envelope.h"
@@ -16,6 +17,11 @@ class ToolRenderer : public Renderer
     GLuint vaoTool;
     GLuint vboTool;
     QVector<Vertex> vertexArrTool;
+
+    Sphere sphere;
+    GLuint vaoSph;
+    GLuint vboSph;
+    QVector<Vertex> vertexArrSph;
 
     QOpenGLShaderProgram shader;
 

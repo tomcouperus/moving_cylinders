@@ -45,11 +45,15 @@ class MainWindow : public QMainWindow {
   void on_spinBox_t_1_valueChanged(int value);
 
   void on_envelopeCheckBox_toggled(bool checked);
+  void on_toolCheckBox_toggled(bool checked);
   void on_grazCurveCheckBox_toggled(bool checked);
   void on_pathCheckBox_toggled(bool checked);
   void on_toolAxisCheckBox_toggled(bool checked);
+  void on_normalsCheckBox_toggled(bool checked);
+  void on_sphereCheckBox_toggled(bool checked);
 
   void on_TimeSlider_sliderMoved(int value);
+  void on_aSlider_sliderMoved(int value);
 
   void on_ResetRotationButton_clicked(bool checked);
   void on_RotationDialX_sliderMoved(int value);

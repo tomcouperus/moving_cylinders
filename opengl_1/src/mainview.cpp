@@ -278,6 +278,22 @@ void MainView::setTime(float time)
     update();
 }
 
+void MainView::setA(float a)
+{
+    float divisor;
+    switch (settings.toolIdx) {
+    case 0:
+        divisor = cylinder.getSectors() / (cylinder.getA1() - cylinder.getA0());
+        break;
+    case 1:
+        divisor = drum.getSectors() / (drum.getA1() - drum.getA0());
+        break;
+    default:
+        break;
+    }
+
+    settings.a = a / divisor;
+}
 
 void MainView::updateToolTransf(){
     SimplePath path = move.getPath();
