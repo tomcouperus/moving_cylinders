@@ -32,16 +32,21 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 
     // Tool rendering
     ToolRenderer toolRend;
+    ToolRenderer toolRend2;
     Drum drum;
     Cylinder cylinder;
 
     // Path rendering
     CylinderMovement move;
     MoveRenderer movRend;
+    CylinderMovement move2;
+    MoveRenderer movRend2;
 
     // Envelope rendering
     EnvelopeRenderer envRend;
     Envelope envelope;
+    EnvelopeRenderer envRend2;
+    Envelope envelope2;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
@@ -49,8 +54,11 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     QMatrix4x4 modelTranslation;
     QMatrix4x4 modelTransf;
     QMatrix4x4 toolRotation;
+    QMatrix4x4 toolRotation2;
     QMatrix4x4 toolTranslation;
+    QMatrix4x4 toolTranslation2;
     QMatrix4x4 toolTransf; // toolTranslation * modelRotation * modelScaling
+    QMatrix4x4 toolTransf2;
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;

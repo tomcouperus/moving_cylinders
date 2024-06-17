@@ -24,7 +24,7 @@ class Envelope
 public:
     Envelope();
     Envelope(CylinderMovement toolMovement, Tool *tool);
-    Envelope(Envelope *adjEnvelope, CylinderMovement toolMovement, Tool *tool);
+    Envelope(CylinderMovement toolMovement, Tool *tool, Envelope *adjEnvelope);
 
     void initEnvelope();
     void computeEnvelope();
@@ -39,9 +39,10 @@ public:
     QVector3D calcToolCenterAt(float t, float a);
     QVector3D calcToolAxisDirecAt(float t);
     QVector3D calcGrazingCurveAt(float t, float a);
-    QVector3D computeNormal(float t, float a);
-    QVector3D computeNormal(float t, float a, QVector3D center);
+    QVector3D computeNormal(float t, float a, Envelope* env);
+    QVector3D getPathAt(float t);
 
+    inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
     inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
     inline QVector<Vertex> getVertexArrToolAxis(){ return vertexArrToolAxis; }

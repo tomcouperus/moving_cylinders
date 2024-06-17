@@ -84,14 +84,17 @@ void MainView::initializeGL()
     switch (settings.toolIdx) {
     case 0:
         toolRend.setTool(&cylinder);
+        toolRend2.setTool(&cylinder);
         break;
     case 1:
         toolRend.setTool(&drum);
+        toolRend2.setTool(&drum);
         break;
     default:
         break;
     }
     toolRend.init(gl,&settings);
+    toolRend2.init(gl,&settings);
 
     // Define path for the tool
     SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
@@ -102,36 +105,57 @@ void MainView::initializeGL()
     move = CylinderMovement(path,
                             QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0), cylinder);
+    move2 = CylinderMovement(path,
+                            QVector3D(0.0,0.1,-1.0),
+                            QVector3D(0.0,1.0,0.0), cylinder);
 
     movRend.setMovement(&move);
     movRend.init(gl,&settings);
+    movRend2.setMovement(&move2);
+    movRend2.init(gl,&settings);
 
     // Define the vertices of the enveloping surface
     envelope = Envelope(move, &cylinder);
     envelope.initEnvelope();
 
+    qDebug() << "env2";
+    envelope2 = Envelope(move2, &cylinder, &envelope);
+    envelope2.initEnvelope();
+
     envRend.setEnvelope(&envelope);
     envRend.init(gl,&settings);
+    envRend2.setEnvelope(&envelope2);
+    envRend2.init(gl,&settings);
 
     initBuffers();
 
     // First transformation of the cylinder
     toolTranslation.setToIdentity();
     toolTranslation.translate(-2, 0, -6);
+    QVector3D tool2Posit = envelope.getEndCurveArrAt(0);
+    toolTranslation2 = toolTranslation;
+    toolTranslation2.translate(tool2Posit);
     modelTranslation = toolTranslation;
 
     toolRotation.setToIdentity();
     toolRotation = move.getMovementRotation(0);
 
+    toolRotation2.setToIdentity();
+    toolRotation2 = move2.getMovementRotation(0);
+
     // Set the initial model transformation to
     // just the translation
     toolTransf = toolTranslation * toolRotation;
+    toolTransf2 = toolTranslation2 * toolRotation2;
     modelTransf = modelTranslation;
 
     // Pass initial transformations to the renderers;
     toolRend.setTransf(toolTransf);
+    toolRend2.setTransf(toolTransf2);
     envRend.setTransf(modelTransf);
+    envRend2.setTransf(modelTransf);
     movRend.setTransf(modelTransf);
+    movRend2.setTransf(modelTransf);
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
@@ -144,10 +168,13 @@ void MainView::initializeGL()
  */
 void MainView::initBuffers() {
     toolRend.initBuffers();
+    toolRend2.initBuffers();
 
     movRend.initBuffers();
+    movRend2.initBuffers();
 
     envRend.initBuffers();
+    envRend2.initBuffers();
 }
 
 /**
@@ -159,19 +186,27 @@ void MainView::updateBuffers(){
     switch (settings.toolIdx) {
     case 0:
         envelope.setTool(&cylinder);
+        envelope2.setAdjacentEnvelope(&envelope);
+        envelope2.setTool(&cylinder);
         toolRend.updateBuffers(&cylinder);
+        toolRend2.updateBuffers(&cylinder);
         break;
     case 1:
         qDebug() << "is drum";
         envelope.setTool(&drum);
+        envelope2.setAdjacentEnvelope(&envelope);
+        envelope2.setTool(&drum);
         toolRend.updateBuffers(&drum);
+        toolRend2.updateBuffers(&drum);
         break;
     default:
         break;
     }
     envRend.updateBuffers(&envelope);
+    envRend2.updateBuffers(&envelope2);
 
     movRend.updateBuffers(&move);
+    movRend2.updateBuffers(&move2);
 }
 
 
@@ -188,12 +223,18 @@ void MainView::paintGL()
 
     toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.paintGL();
+    toolRend2.updateUniforms(toolTransf, projTransf);
+    toolRend2.paintGL();
 
     movRend.updateUniforms(modelTransf,projTransf);
     movRend.paintGL();
+    movRend2.updateUniforms(modelTransf,projTransf);
+    movRend2.paintGL();
 
     envRend.updateUniforms(modelTransf,projTransf);
     envRend.paintGL();
+    envRend2.updateUniforms(modelTransf,projTransf);
+    envRend2.paintGL();
 }
 
 /**
@@ -235,7 +276,9 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
     envRend.setTransf(modelTransf);
+    envRend2.setTransf(modelTransf);
     movRend.setTransf(modelTransf);
+    movRend2.setTransf(modelTransf);
     updateToolTransf();
     update();
 }
@@ -259,7 +302,9 @@ void MainView::setScale(float scale)
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
     envRend.setTransf(modelTransf);
+    envRend2.setTransf(modelTransf);
     movRend.setTransf(modelTransf);
+    movRend2.setTransf(modelTransf);
     updateToolTransf();
     update();
 }
@@ -299,18 +344,30 @@ void MainView::updateToolTransf(){
     SimplePath path = move.getPath();
     toolTranslation.setToIdentity();
     toolTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(settings.time),0);
+    QVector4D shift = QVector4D(envelope.getPathAt(settings.time),0);
     shift = modelTransf * shift;
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
+    toolTranslation2.setToIdentity();
+    toolTranslation2 = modelTranslation;
+    QVector4D shift2 = QVector4D(envelope2.getPathAt(settings.time),0);
+    shift2 = modelTransf * shift2;
+    toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+
     toolRotation.setToIdentity();
     toolRotation = move.getMovementRotation(settings.time);
+    toolRotation2.setToIdentity();
+    toolRotation2 = move2.getMovementRotation(settings.time);
 
     // Update the model transformation matrix
     toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation;
 
+
+    toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2;
+
     //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.setTransf(toolTransf);
+    toolRend2.setTransf(toolTransf2);
 }
 
 /**
