@@ -334,6 +334,8 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
 void MainWindow::on_spinBox_t_0_valueChanged(int value) {
   qDebug() << "t0 updated to: " << value;
 
+  ui->spinBox_t_1->setMinimum(value+1);
+
   SimplePath path = ui->mainView->move.getPath();
   float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / path.getRange();
 
@@ -354,6 +356,8 @@ void MainWindow::on_spinBox_t_0_valueChanged(int value) {
  */
 void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   qDebug() << "t1 updated to: " << value;
+
+  ui->spinBox_t_0->setMaximum(value-1);
 
   SimplePath path = ui->mainView->move.getPath();
   float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / path.getRange();
