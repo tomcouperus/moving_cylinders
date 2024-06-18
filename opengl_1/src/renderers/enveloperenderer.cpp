@@ -32,8 +32,6 @@ EnvelopeRenderer::~EnvelopeRenderer()
     gl->glDeleteBuffers(1, &vboGrazingCurve);
     gl->glDeleteVertexArrays(1, &vaoNormals);
     gl->glDeleteBuffers(1, &vboNormals);
-    gl->glDeleteVertexArrays(1, &vaoAxis);
-    gl->glDeleteBuffers(1, &vboAxis);
 }
 
 /**
@@ -127,24 +125,6 @@ void EnvelopeRenderer::initBuffers()
 
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
-
-    vertexArrAxis.clear();
-    vertexArrAxis = envelope->getVertexArrToolAxis();
-
-    // Create a vertex array object and a vertex buffer object for the axis
-    gl->glGenVertexArrays(1, &vaoAxis);
-    gl->glBindVertexArray(vaoAxis);
-    gl->glGenBuffers(1, &vboAxis);
-
-    gl->glBindBuffer(GL_ARRAY_BUFFER, vboAxis);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrAxis.size() * sizeof(Vertex), vertexArrAxis.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    gl->glEnableVertexAttribArray(0);
-    gl->glEnableVertexAttribArray(1);
-
-    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
-    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 }
 
 /**
@@ -177,12 +157,6 @@ void EnvelopeRenderer::updateBuffers(Envelope *env)
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrNormals.size() * sizeof(Vertex), vertexArrNormals.data(), GL_STATIC_DRAW);
-
-    vertexArrAxis.clear();
-    vertexArrAxis = envelope->getVertexArrToolAxis();
-
-    gl->glBindBuffer(GL_ARRAY_BUFFER, vboAxis);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrAxis.size() * sizeof(Vertex), vertexArrAxis.data(), GL_STATIC_DRAW);
 }
 
 /**
@@ -222,13 +196,6 @@ void EnvelopeRenderer::paintGL()
         gl->glBindVertexArray(vaoCenters);
         // Draw centers
         gl->glDrawArrays(GL_LINES,0,vertexArrCenters.size());
-
-        // Bind axis buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboAxis);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
-        gl->glBindVertexArray(vaoAxis);
-        // Draw axis
-        gl->glDrawArrays(GL_LINES,0,vertexArrAxis.size());
     }
 
     if(settings->showGrazingCurve){

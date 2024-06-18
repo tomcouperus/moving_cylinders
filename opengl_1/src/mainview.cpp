@@ -103,10 +103,12 @@ void MainView::initializeGL()
     path.initVertexArr();
     // Define orientation(s) of the tool
     move = CylinderMovement(path,
-                            QVector3D(0.0,0.1,-1.0),
+                            //QVector3D(0.0,0.1,-1.0),
+                            QVector3D(0.0,1.0,0.0),
                             QVector3D(0.0,1.0,0.0), cylinder);
     move2 = CylinderMovement(path,
-                            QVector3D(0.0,0.1,-1.0),
+                            //QVector3D(0.0,0.1,-1.0),
+                            QVector3D(0.0,1.0,0.0),
                             QVector3D(0.0,1.0,0.0), cylinder);
 
     movRend.setMovement(&move);
@@ -341,7 +343,6 @@ void MainView::setA(float a)
 }
 
 void MainView::updateToolTransf(){
-    SimplePath path = move.getPath();
     toolTranslation.setToIdentity();
     toolTranslation = modelTranslation;
     QVector4D shift = QVector4D(envelope.getPathAt(settings.time),0);
@@ -357,13 +358,11 @@ void MainView::updateToolTransf(){
     toolRotation.setToIdentity();
     toolRotation = move.getMovementRotation(settings.time);
     toolRotation2.setToIdentity();
-    toolRotation2 = move2.getMovementRotation(settings.time);
+    toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
 
     // Update the model transformation matrix
     toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation;
-
-
-    toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2;
+    toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation;
 
     //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.setTransf(toolTransf);

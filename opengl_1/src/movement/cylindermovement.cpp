@@ -154,8 +154,9 @@ bool CylinderMovement::setAxisDirections(QVector3D axisDirection1, QVector3D axi
 QMatrix4x4 CylinderMovement::getMovementRotation(float time)
 {
     QMatrix4x4 cylinderRotation;
+    cylinderRotation.setToIdentity();
     QVector3D initVector = getAxisDirectionAt(time);
-    float angle = acos(QVector3D::dotProduct(initVector.normalized(), cylinderAxis));
+    float angle = acos(QVector3D::dotProduct(initVector.normalized(), cylinderAxis.normalized()));
     angle = qRadiansToDegrees(angle);
     if(angle != 0) {
         cylinderRotation.rotate(angle, getRotationVectorAt(time));

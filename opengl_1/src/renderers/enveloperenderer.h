@@ -31,10 +31,6 @@ class EnvelopeRenderer : public Renderer
     GLuint vaoNormals;
     QVector<Vertex> vertexArrNormals;
 
-    // Axis for debugging
-    GLuint vboAxis;
-    GLuint vaoAxis;
-    QVector<Vertex> vertexArrAxis;
 
     // Transformation matrices for the envelope
     QMatrix4x4 envelopeTransf;

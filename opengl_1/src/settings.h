@@ -17,6 +17,7 @@ typedef struct Settings {
     bool showToolAxis = false;
     bool showNormals = false;
     bool showSpheres = false;
+    bool continuous = true;
     float a = 0.0f;
     float time = 0.0f;
     int toolIdx = 0;
