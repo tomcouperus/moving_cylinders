@@ -204,7 +204,7 @@ void CylinderMovement::rotateAxisDirections(QMatrix4x4 rotation)
 QVector3D CylinderMovement::getAxisDirectionAt(float time)
 {
     int idx = path.getIdxAtTime(time);
-    return axisDirections[idx].normalized();
+    return axisDirections[idx];
 }
 
 /**

@@ -228,7 +228,7 @@ QVector3D Envelope::calcToolAxisDirecAt(float t)
 
 QVector3D Envelope::calcAxisRateOfChange(float t)
 {
-    QVector3D axis = toolMovement.getAxisRateOfChange(t).normalized();
+    QVector3D axis = toolMovement.getAxisRateOfChange(t);
     if (adjEnv != nullptr && contToAdj){
         QMatrix4x4 rotation = getAdjMovementRotation(t);
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
@@ -279,7 +279,7 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     SimplePath path = toolMovement.getPath();
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
-    QVector3D st = path.getTangentAt(t).normalized() + (a-a0)*calcAxisRateOfChange(t);
+    QVector3D st = path.getTangentAt(t).normalized() + (a-a0)*calcAxisRateOfChange(t).normalized();
     //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 
