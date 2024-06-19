@@ -229,7 +229,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="Settings">
         <attribute name="title">
@@ -1209,6 +1209,9 @@
           </property>
          </widget>
          <widget class="QCheckBox" name="tanContCheckBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -1219,6 +1222,9 @@
           </property>
           <property name="text">
            <string>Tangentially Continuous</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="angleOrient_1_SpinBox">

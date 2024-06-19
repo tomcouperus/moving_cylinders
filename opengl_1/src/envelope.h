@@ -8,7 +8,7 @@
 class Envelope
 {
     Envelope *adjEnv;
-    bool contToAdj = false;
+    bool contToAdj = true;
     CylinderMovement toolMovement;
     Tool *tool;
 
