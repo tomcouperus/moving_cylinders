@@ -426,6 +426,9 @@
             <height>26</height>
            </rect>
           </property>
+          <property name="maximum">
+           <double>62.000000000000000</double>
+          </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
           </property>
@@ -1056,6 +1059,9 @@
             <height>26</height>
            </rect>
           </property>
+          <property name="maximum">
+           <double>6.200000000000000</double>
+          </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
           </property>
@@ -1080,6 +1086,9 @@
           </property>
          </widget>
          <widget class="QLineEdit" name="orientVector_1_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -1106,6 +1115,9 @@
           </property>
          </widget>
          <widget class="QLineEdit" name="orientVector_2_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>110</x>
@@ -1229,7 +1241,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="angleOrient_1_SpinBox">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="geometry">
            <rect>
@@ -1238,6 +1250,12 @@
             <width>62</width>
             <height>26</height>
            </rect>
+          </property>
+          <property name="minimum">
+           <double>-3.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>3.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
@@ -1248,7 +1266,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="angleOrient_2_SpinBox">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="geometry">
            <rect>
@@ -1257,6 +1275,12 @@
             <width>62</width>
             <height>26</height>
            </rect>
+          </property>
+          <property name="minimum">
+           <double>-3.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>3.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.100000000000000</double>

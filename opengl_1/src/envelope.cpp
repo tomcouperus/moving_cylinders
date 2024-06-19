@@ -242,7 +242,9 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     QVector3D n = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
     QMatrix4x4 rotation;
     rotation.setToIdentity();
-    float angle = 0; // qRadiansToDegrees(0.5);
+    double angleDelta = (qRadiansToDegrees(adjAxisAngle2) - qRadiansToDegrees(adjAxisAngle1))/sectorsT;
+    int i = toolMovement.getPath().getIdxAtTime(time);
+    double angle = qRadiansToDegrees(adjAxisAngle1) + angleDelta*i;
     if(angle != 0) {
         rotation.rotate(angle, n);
     }

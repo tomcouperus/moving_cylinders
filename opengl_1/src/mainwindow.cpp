@@ -319,6 +319,28 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
 
 void MainWindow::on_tanContCheckBox_toggled(bool checked){
   ui->mainView->envelope2.setIsTanContinuous(checked);
+
+  ui->angleOrient_1_SpinBox->setEnabled(checked);
+  ui->angleOrient_2_SpinBox->setEnabled(checked);
+  ui->orientVector_1_2->setEnabled(!checked);
+  ui->orientVector_2_2->setEnabled(!checked);
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
+  ui->mainView->envelope2.setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
+
+  ui->mainView->updateToolTransf();
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
+  ui->mainView->envelope2.setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
+
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }

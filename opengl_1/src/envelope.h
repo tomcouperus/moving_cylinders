@@ -11,6 +11,8 @@ class Envelope
     bool contToAdj = true;
     CylinderMovement toolMovement;
     Tool *tool;
+    double adjAxisAngle1;
+    double adjAxisAngle2;
 
     int sectorsA;
     int sectorsT;
@@ -45,6 +47,7 @@ public:
     QMatrix4x4 getAdjMovementRotation(float time);
 
     inline void setIsTanContinuous(bool value){ contToAdj = value; }
+    inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
     inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
