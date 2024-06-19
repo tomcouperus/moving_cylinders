@@ -40,6 +40,11 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->drum.setMidRadius(value);
   ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
 
+  ui->mainView->cylinder2.setRadius(value);
+  ui->radiusSpinBox_2->setValue(value);
+  ui->mainView->drum2.setMidRadius(value);
+  ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -47,6 +52,9 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
 
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
   ui->mainView->drum.setRadius(value);
+
+  ui->mainView->drum2.setRadius(value);
+  ui->radius0SpinBox_2->setValue(value);
 
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
@@ -59,8 +67,12 @@ void MainWindow::on_radius0SpinBox_valueChanged(double value) {
  */
 void MainWindow::on_angleSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setAngle(value);
-
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+
+  ui->mainView->cylinder2.setAngle(value);
+  ui->angleSpinBox_2->setValue(value);
+  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -75,7 +87,14 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->mainView->drum.setHeight(value);
   ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
 
+  ui->mainView->cylinder2.setHeight(value);
+  ui->heightSpinBox_2->setValue(value);
+  ui->mainView->drum2.setHeight(value);
+  ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -91,11 +110,24 @@ void MainWindow::on_orientVector_1_returnPressed(){
   bool success = ui->mainView->move.setAxisDirections(vector1,vector2);
   if (success){
       ui->mainView->envelope.setToolMovement(ui->mainView->move);
-      ui->mainView->updateToolTransf();
   } else {
       error.showMessage("The inputed vector is not a valid orientation 1 vector");
   }
 
+  ui->orientVector_1_2->setText(ui->orientVector_1->text());
+  ui->orientVector_2_2->setText(ui->orientVector_2->text());
+
+  vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
+  vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
+
+  success = ui->mainView->move2.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope2.setToolMovement(ui->mainView->move2);
+  } else {
+      error.showMessage("The inputed vector is not a valid orientation 1 vector");
+  }
+
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -110,11 +142,24 @@ void MainWindow::on_orientVector_2_returnPressed(){
   bool success = ui->mainView->move.setAxisDirections(vector1,vector2);
   if (success){
       ui->mainView->envelope.setToolMovement(ui->mainView->move);
-      ui->mainView->updateToolTransf();
   } else {
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
 
+  ui->orientVector_1_2->setText(ui->orientVector_1->text());
+  ui->orientVector_2_2->setText(ui->orientVector_2->text());
+
+  vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
+  vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
+
+  success = ui->mainView->move2.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope2.setToolMovement(ui->mainView->move2);
+  } else {
+      error.showMessage("The inputed vector is not a valid orientation 2 vector");
+  }
+
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -138,6 +183,23 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
   }
   ui->aSlider->setValue(0);
   ui->mainView->setA(0);
+
+  ui->toolBox_2->setCurrentIndex(index);
+
+  switch (index) {
+  case 0:
+      ui->angleSpinBox_2->setEnabled(true);
+      ui->radius0SpinBox_2->setEnabled(false);
+      break;
+  case 1:
+      ui->angleSpinBox_2->setEnabled(false);
+      ui->radius0SpinBox_2->setEnabled(true);
+      break;
+  default:
+      ui->angleSpinBox_2->setEnabled(false);
+      ui->radius0SpinBox_2->setEnabled(false);
+      break;
+  }
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
