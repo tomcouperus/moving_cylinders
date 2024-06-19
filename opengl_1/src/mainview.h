@@ -35,6 +35,8 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     ToolRenderer toolRend2;
     Drum drum;
     Cylinder cylinder;
+    Drum drum2;
+    Cylinder cylinder2;
 
     // Path rendering
     CylinderMovement move;

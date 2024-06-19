@@ -77,18 +77,18 @@ void MainView::initializeGL()
 
     // Define the vertices of the tools
     cylinder.initCylinder();
-    qDebug() << "a0:" << cylinder.getA0() << "a1:" << cylinder.getA1() << "H:" << cylinder.getHeight();
+    cylinder2.initCylinder();
     drum.initDrum();
-    qDebug() << "a0:" << drum.getA0() << "a1:" << drum.getA1() << "H:" << drum.getHeight();
+    drum2.initDrum();
 
     switch (settings.toolIdx) {
     case 0:
         toolRend.setTool(&cylinder);
-        toolRend2.setTool(&cylinder);
+        toolRend2.setTool(&cylinder2);
         break;
     case 1:
         toolRend.setTool(&drum);
-        toolRend2.setTool(&drum);
+        toolRend2.setTool(&drum2);
         break;
     default:
         break;
@@ -109,7 +109,7 @@ void MainView::initializeGL()
     move2 = CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0),
-                            QVector3D(0.0,1.0,0.0), cylinder);
+                            QVector3D(0.0,1.0,0.0), cylinder2);
 
     movRend.setMovement(&move);
     movRend.init(gl,&settings);
@@ -121,7 +121,7 @@ void MainView::initializeGL()
     envelope.initEnvelope();
 
     qDebug() << "env2";
-    envelope2 = Envelope(move2, &cylinder, &envelope);
+    envelope2 = Envelope(move2, &cylinder2, &envelope);
     envelope2.initEnvelope();
 
     envRend.setEnvelope(&envelope);
@@ -189,17 +189,26 @@ void MainView::updateBuffers(){
     case 0:
         envelope.setTool(&cylinder);
         envelope2.setAdjacentEnvelope(&envelope);
-        envelope2.setTool(&cylinder);
         toolRend.updateBuffers(&cylinder);
-        toolRend2.updateBuffers(&cylinder);
         break;
     case 1:
         qDebug() << "is drum";
         envelope.setTool(&drum);
         envelope2.setAdjacentEnvelope(&envelope);
-        envelope2.setTool(&drum);
         toolRend.updateBuffers(&drum);
-        toolRend2.updateBuffers(&drum);
+        break;
+    default:
+        break;
+    }
+    switch (settings.tool2Idx) {
+    case 0:
+        envelope2.setTool(&cylinder2);
+        toolRend2.updateBuffers(&cylinder2);
+        break;
+    case 1:
+        qDebug() << "is drum";
+        envelope2.setTool(&drum2);
+        toolRend2.updateBuffers(&drum2);
         break;
     default:
         break;
@@ -225,18 +234,23 @@ void MainView::paintGL()
 
     toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.paintGL();
-    toolRend2.updateUniforms(toolTransf, projTransf);
-    toolRend2.paintGL();
 
     movRend.updateUniforms(modelTransf,projTransf);
     movRend.paintGL();
-    movRend2.updateUniforms(modelTransf,projTransf);
-    movRend2.paintGL();
 
     envRend.updateUniforms(modelTransf,projTransf);
     envRend.paintGL();
-    envRend2.updateUniforms(modelTransf,projTransf);
-    envRend2.paintGL();
+
+    if (settings.secondEnv) {
+        toolRend2.updateUniforms(toolTransf, projTransf);
+        toolRend2.paintGL();
+
+        movRend2.updateUniforms(modelTransf,projTransf);
+        movRend2.paintGL();
+
+        envRend2.updateUniforms(modelTransf,projTransf);
+        envRend2.paintGL();
+    }
 }
 
 /**

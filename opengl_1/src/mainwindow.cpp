@@ -26,6 +26,11 @@ MainWindow::MainWindow(QWidget *parent)
  */
 MainWindow::~MainWindow() { delete ui; }
 
+void MainWindow::on_secondPassCheckBox_toggled(bool checked){
+  ui->mainView->settings.secondEnv = checked;
+  ui->mainView->update();
+}
+
 /**
  * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the cylinder.
  * @param value new radius.
@@ -35,7 +40,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->drum.setMidRadius(value);
   ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
 
-  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -43,7 +48,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
   ui->mainView->drum.setRadius(value);
 
-  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -56,6 +61,7 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setAngle(value);
 
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -70,6 +76,7 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
 
   ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -132,6 +139,124 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
   ui->aSlider->setValue(0);
   ui->mainView->setA(0);
 
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the cylinder.
+ * @param value new radius.
+ */
+void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
+  ui->mainView->cylinder2.setRadius(value);
+  ui->mainView->drum2.setMidRadius(value);
+  ui->radius0SpinBox->setMinimum(ui->mainView->drum2.getMinR0());
+
+  ui->mainView->updateToolTransf();
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
+  ui->mainView->drum2.setRadius(value);
+
+  ui->mainView->updateToolTransf();
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_angleSpinBox_valueChanged Updates the opening angle of the cylinder.
+ * @param value new opening angle.
+ */
+void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
+  ui->mainView->cylinder2.setAngle(value);
+
+  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+  ui->mainView->updateToolTransf();
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the cylinder.
+ * @param value new height.
+ */
+void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
+  ui->mainView->cylinder2.setHeight(value);
+  ui->mainView->drum2.setHeight(value);
+  ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+
+  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+  ui->mainView->updateToolTransf();
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_orientVector_1_2_returnPressed(){
+  qDebug() << "orientation vector changed";
+  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
+  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
+
+  qDebug() << "to" << vector1 << "and" << vector2;
+
+  bool success = ui->mainView->move2.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope2.setToolMovement(ui->mainView->move2);
+      ui->mainView->updateToolTransf();
+  } else {
+      error.showMessage("The inputed vector is not a valid orientation 1 vector");
+  }
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_orientVector_2_2_returnPressed(){
+  qDebug() << "orientation vector changed";
+  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
+  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
+
+  qDebug() << "to" << vector1 << "and" << vector2;
+
+  bool success = ui->mainView->move2.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope2.setToolMovement(ui->mainView->move2);
+      ui->mainView->updateToolTransf();
+  } else {
+      error.showMessage("The inputed vector is not a valid orientation 2 vector");
+  }
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_toolBox_2_currentIndexChanged(int index){
+  qDebug() << "tool index" << index;
+  ui->mainView->settings.tool2Idx = index;
+  switch (index) {
+  case 0:
+      ui->angleSpinBox_2->setEnabled(true);
+      ui->radius0SpinBox_2->setEnabled(false);
+      break;
+  case 1:
+      ui->angleSpinBox_2->setEnabled(false);
+      ui->radius0SpinBox_2->setEnabled(true);
+      break;
+  default:
+      ui->angleSpinBox_2->setEnabled(false);
+      ui->radius0SpinBox_2->setEnabled(false);
+      break;
+  }
+  ui->aSlider->setValue(0);
+  ui->mainView->setA(0);
+
+  ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+void MainWindow::on_tanContCheckBox_toggled(bool checked){
+  ui->mainView->envelope2.setIsTanContinuous(checked);
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }

@@ -17,10 +17,11 @@ typedef struct Settings {
     bool showToolAxis = false;
     bool showNormals = false;
     bool showSpheres = false;
-    bool continuous = true;
+    bool secondEnv = false;
     float a = 0.0f;
     float time = 0.0f;
     int toolIdx = 0;
+    int tool2Idx = 0;
 
     inline QVector3D stringToVector3D(const QString& vector)
     {

@@ -8,7 +8,7 @@
 class Envelope
 {
     Envelope *adjEnv;
-    bool contToAdj = true;
+    bool contToAdj = false;
     CylinderMovement toolMovement;
     Tool *tool;
 
@@ -44,6 +44,7 @@ public:
 
     QMatrix4x4 getAdjMovementRotation(float time);
 
+    inline void setIsTanContinuous(bool value){ contToAdj = value; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
     inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
