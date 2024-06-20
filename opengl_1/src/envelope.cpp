@@ -304,11 +304,21 @@ QVector3D Envelope::calcAxisRateOfChange(float t)
  */
 QMatrix4x4 Envelope::getAdjMovementRotation(float time)
 {
-    QVector3D n = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
     QMatrix4x4 rotation;
     rotation.setToIdentity();
-    double angleDelta = (qRadiansToDegrees(adjAxisAngle2) - qRadiansToDegrees(adjAxisAngle1))/sectorsT;
+    // rotation for continuity
+    QVector3D rotationAxis = adjEnv->toolMovement.getPath().getTangentAt(time);
     int i = toolMovement.getPath().getIdxAtTime(time);
+    double ra = qRadiansToDegrees(-adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0()) + tool->getRadiusDerivativeWRTa(tool->getA0()));
+    if(ra != 0) {
+        rotation.rotate(ra, rotationAxis);
+    }
+
+    QMatrix4x4 rotation2;
+    rotation2.setToIdentity();
+    QVector3D n = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
+    // rotation w.r.t input
+    double angleDelta = (qRadiansToDegrees(adjAxisAngle2) - qRadiansToDegrees(adjAxisAngle1))/sectorsT;
     double angle = qRadiansToDegrees(adjAxisAngle1) + angleDelta*i;
     if(angle != 0) {
         rotation.rotate(angle, n);
