@@ -223,7 +223,7 @@ void Envelope::computeNormals(){
  */
 QVector3D Envelope::calcToolCenterAt(float t, float a)
 {
-    QVector3D axis = calcToolAxisDirecAt(t);
+    QVector3D axis = calcToolAxisDirecAt(t).normalized();
     // s is offset by a0 wrt formula because path is coded at the base of the cone/tool instead of
     // at the base of the axis of centers
     float a0 = tool->getA0();
@@ -363,7 +363,7 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     SimplePath path = toolMovement.getPath();
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
-    QVector3D st = path.getTangentAt(t).normalized() + (a-a0)*calcAxisRateOfChange(t).normalized();
+    QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());
     //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 

@@ -1035,6 +1035,9 @@
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="radiusSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>130</x>
@@ -1051,6 +1054,9 @@
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="angleSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>130</x>
@@ -1070,6 +1076,9 @@
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="heightSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>130</x>
@@ -1179,6 +1188,9 @@
           </property>
          </widget>
          <widget class="QComboBox" name="toolBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>90</x>
@@ -1222,7 +1234,7 @@
          </widget>
          <widget class="QCheckBox" name="tanContCheckBox">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="geometry">
            <rect>
@@ -1241,7 +1253,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="angleOrient_1_SpinBox">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="geometry">
            <rect>
@@ -1266,7 +1278,7 @@
          </widget>
          <widget class="QDoubleSpinBox" name="angleOrient_2_SpinBox">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="geometry">
            <rect>

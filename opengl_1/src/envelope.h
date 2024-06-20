@@ -47,6 +47,7 @@ public:
     QMatrix4x4 getAdjMovementRotation(float time);
 
     inline void setIsTanContinuous(bool value){ contToAdj = value; }
+    inline bool isTanContinuous() { return contToAdj; }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }

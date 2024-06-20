@@ -199,25 +199,27 @@ void MainView::updateBuffers(){
         break;
     default:
         break;
-    }
-    switch (settings.tool2Idx) {
-    case 0:
-        envelope2.setTool(&cylinder2);
-        toolRend2.updateBuffers(&cylinder2);
-        break;
-    case 1:
-        qDebug() << "is drum";
-        envelope2.setTool(&drum2);
-        toolRend2.updateBuffers(&drum2);
-        break;
-    default:
-        break;
-    }
+    }    
     envRend.updateBuffers(&envelope);
-    envRend2.updateBuffers(&envelope2);
-
     movRend.updateBuffers(&move);
-    movRend2.updateBuffers(&move2);
+
+    if (settings.secondEnv) {
+        switch (settings.tool2Idx) {
+        case 0:
+            envelope2.setTool(&cylinder2);
+            toolRend2.updateBuffers(&cylinder2);
+            break;
+        case 1:
+            qDebug() << "is drum";
+            envelope2.setTool(&drum2);
+            toolRend2.updateBuffers(&drum2);
+            break;
+        default:
+            break;
+        }
+        envRend2.updateBuffers(&envelope2);
+        movRend2.updateBuffers(&move2);
+    }
 }
 
 
@@ -370,24 +372,47 @@ void MainView::updateToolTransf(){
     shift = modelTransf * shift;
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
-    toolTranslation2.setToIdentity();
-    toolTranslation2 = modelTranslation;
-    QVector4D shift2 = QVector4D(envelope2.getPathAt(settings.time),0);
-    shift2 = modelTransf * shift2;
-    toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
-
     toolRotation.setToIdentity();
     toolRotation = move.getMovementRotation(settings.time);
-    toolRotation2.setToIdentity();
-    toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
 
     // Update the model transformation matrix
     toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation;
-    toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation;
 
     //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.setTransf(toolTransf);
+
+    if (settings.secondEnv) {
+        updateAdjToolTransf();
+    }
+}
+
+/**
+ * @brief MainView::updateAdjToolTransf Updates the tools transformation matrices of a second tool.
+ */
+void MainView::updateAdjToolTransf(){
+
+    toolTranslation2.setToIdentity();
+    toolTranslation2 = modelTranslation;
+    QVector4D shift2 = QVector4D(envelope2.getPathAt(settings.time), 0);
+    shift2 = modelTransf * shift2;
+    toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+
+    toolRotation2.setToIdentity();
+    if (envelope2.isTanContinuous()) {
+        toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
+
+        // Update the model transformation matrix
+        toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation;
+    } else {
+        toolRotation2 = move2.getMovementRotation(settings.time);
+
+        // Update the model transformation matrix
+        toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2;
+    }
+
+    //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend2.setTransf(toolTransf2);
+
 }
 
 /**

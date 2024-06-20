@@ -78,6 +78,7 @@ public:
     void setTime(float time);
     void setA(float a);
     void updateToolTransf();
+    void updateAdjToolTransf();
     void updateBuffers();
 
 protected:
