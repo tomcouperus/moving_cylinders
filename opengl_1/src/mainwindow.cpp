@@ -32,7 +32,7 @@ void MainWindow::on_secondPassCheckBox_toggled(bool checked){
 }
 
 /**
- * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the cylinder.
+ * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the tool.
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
@@ -50,6 +50,10 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_radius0SpinBox_valueChanged Updates the inner radius of the drum.
+ * @param value new inner radius.
+ */
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
   ui->mainView->drum.setRadius(value);
 
@@ -79,7 +83,7 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the cylinder.
+ * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the tool.
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
@@ -100,6 +104,9 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_orientVector_1_returnPressed Updates the orientation vector of the tool.
+ */
 void MainWindow::on_orientVector_1_returnPressed(){
   qDebug() << "orientation vector changed";
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
@@ -132,6 +139,9 @@ void MainWindow::on_orientVector_1_returnPressed(){
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_orientVector_2_returnPressed Updates the orientation vector of the tool.
+ */
 void MainWindow::on_orientVector_2_returnPressed(){
   qDebug() << "orientation vector changed";
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
@@ -164,6 +174,10 @@ void MainWindow::on_orientVector_2_returnPressed(){
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_toolBox_currentIndexChanged Updates the tool type. Activates/Deactivates their corresponding input fields.
+ * @param index The index of the tool.
+ */
 void MainWindow::on_toolBox_currentIndexChanged(int index){
   qDebug() << "tool index" << index;
   ui->mainView->settings.toolIdx = index;
@@ -201,12 +215,13 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
       break;
   }
 
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
 /**
- * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the cylinder.
+ * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the second tool.
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
@@ -219,6 +234,10 @@ void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_radius0SpinBox_valueChanged Updates the inner radius of the second drum.
+ * @param value new inner radius.
+ */
 void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
   ui->mainView->drum2.setRadius(value);
 
@@ -228,20 +247,21 @@ void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_angleSpinBox_valueChanged Updates the opening angle of the cylinder.
+ * @brief MainWindow::on_angleSpinBox_valueChanged Updates the opening angle of the second cylinder.
  * @param value new opening angle.
  */
 void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
   ui->mainView->cylinder2.setAngle(value);
 
   ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
 /**
- * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the cylinder.
+ * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the second tool.
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
@@ -250,11 +270,15 @@ void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
   ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
 
   ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_orientVector_1_2_returnPressed Updates the orientation vector of the second tool.
+ */
 void MainWindow::on_orientVector_1_2_returnPressed(){
   qDebug() << "orientation vector changed";
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
@@ -270,10 +294,14 @@ void MainWindow::on_orientVector_1_2_returnPressed(){
       error.showMessage("The inputed vector is not a valid orientation 1 vector");
   }
 
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_orientVector_2_2_returnPressed Updates the orientation vector of the second tool.
+ */
 void MainWindow::on_orientVector_2_2_returnPressed(){
   qDebug() << "orientation vector changed";
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
@@ -289,10 +317,16 @@ void MainWindow::on_orientVector_2_2_returnPressed(){
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
 
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_toolBox_2_currentIndexChanged Updates the second tool type. 
+ * Activates/Deactivates their corresponding input fields.
+ * @param index The index of the tool.
+ */
 void MainWindow::on_toolBox_2_currentIndexChanged(int index){
   qDebug() << "tool index" << index;
   ui->mainView->settings.tool2Idx = index;
@@ -313,10 +347,15 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
   ui->aSlider->setValue(0);
   ui->mainView->setA(0);
 
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_tanContCheckBox_toggled Updates the tangetial continuity settings of the envelopes.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_tanContCheckBox_toggled(bool checked){
   ui->mainView->envelope2.setIsTanContinuous(checked);
 
@@ -325,10 +364,16 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
   ui->orientVector_1_2->setEnabled(!checked);
   ui->orientVector_2_2->setEnabled(!checked);
 
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_radiusSpinBox_2_valueChanged Updates the angle of the axis initial orientation of the 
+ * second tool with respect to the one of the first tool.
+ * @param value new angle.
+ */ 
 void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
   ui->mainView->envelope2.setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
 
@@ -337,6 +382,11 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_radiusSpinBox_2_valueChanged Updates the angle of the axis final orientation of the 
+ * second tool with respect to the one of the first tool.
+ * @param value new angle.
+ */
 void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
   ui->mainView->envelope2.setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
 
@@ -582,37 +632,64 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   ui->mainView->update();
 }
 
-
+/**
+ * @brief MainWindow::on_envelopeCheckBox_toggled Updates the envelope(s) visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_envelopeCheckBox_toggled(bool checked){
   ui->mainView->settings.showEnvelope = checked;
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_toolCheckBox_toggled Updates the tool(s) visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_toolCheckBox_toggled(bool checked){
   ui->mainView->settings.showTool = checked;
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_grazCurveCheckBox_toggled Updates the grazing curves visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_grazCurveCheckBox_toggled(bool checked){
   ui->mainView->settings.showGrazingCurve = checked;
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_pathCheckBox_toggled Updates the path visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_pathCheckBox_toggled(bool checked){
   ui->mainView->settings.showPath = checked;
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_toolAxisCheckBox_toggled Updates the tool axis visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_toolAxisCheckBox_toggled(bool checked){
   ui->mainView->settings.showToolAxis = checked;
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_normalsCheckBox_toggled Updates the normals visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_normalsCheckBox_toggled(bool checked){
   ui->mainView->settings.showNormals = checked;
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_sphereCheckBox_toggled Updates the spheres visibility.
+ * @param checked The new value of the checkbox.
+ */
 void MainWindow::on_sphereCheckBox_toggled(bool checked){
   ui->mainView->settings.showSpheres = checked;
   ui->mainView->update();

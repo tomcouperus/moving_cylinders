@@ -339,6 +339,10 @@ void MainView::setTime(float time)
     update();
 }
 
+/**
+ * @brief MainView::setA Changes the position value a of the displayed objects.
+ * @param a The new a value.
+ */
 void MainView::setA(float a)
 {
     float divisor;
@@ -356,6 +360,9 @@ void MainView::setA(float a)
     settings.a = a / divisor;
 }
 
+/**
+ * @brief MainView::updateToolTransf Updates the tools transformation matrices.
+ */
 void MainView::updateToolTransf(){
     toolTranslation.setToIdentity();
     toolTranslation = modelTranslation;

@@ -25,8 +25,8 @@ SimplePath::SimplePath(Polynomial x, Polynomial y, Polynomial z)
 
 /**
  * @brief SimplePath::getPathAt Returns the path at a given time.
- * @param t
- * @return
+ * @param t Time.
+ * @return Path at time t.
 */
 QVector3D SimplePath::getPathAt(float t)
 {
@@ -39,8 +39,8 @@ QVector3D SimplePath::getPathAt(float t)
 
 /**
  * @brief SimplePath::getIdxAtTime Returns the index of the vertex array at a given time.
- * @param time
- * @return
+ * @param time Time.
+ * @return Index of the vertex array at time.
 */
 int SimplePath::getIdxAtTime(float time)
 {
@@ -80,8 +80,8 @@ void SimplePath::updateVertexArr()
 
 /**
  * @brief SimplePath::getTangentAt Returns the tangent at a given time.
- * @param t
- * @return
+ * @param t Time.
+ * @return Tangent at time t.
 */
 QVector3D SimplePath::getTangentAt(float t)
 {

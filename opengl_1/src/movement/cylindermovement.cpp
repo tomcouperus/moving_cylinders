@@ -57,10 +57,17 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     }
 }
 
-CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum cylinder) :
+/**
+ * @brief CylinderMovement::CylinderMovement Constructor
+ * @param path Path that describes the cylinder (bottom) location through time
+ * @param axisDirection1 initial directional vector (direction of the cylinder axis at time 0)
+ * @param axisDirection2 final directional vector (direction of the cylinder axis at time 1)
+ * @param drum drum which experiences the movement
+ */
+CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum drum) :
     path(path),
-    cylinderAxis(cylinder.getAxisVector()),
-    perpToAxis(cylinder.getVectorPerpToAxis())
+    cylinderAxis(drum.getAxisVector()),
+    perpToAxis(drum.getVectorPerpToAxis())
 {
     t0 = path.getT0(); t1 = path.getT1();
     QVector<Vertex> vertices = path.getVertexArr();
@@ -111,7 +118,12 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
     }
 }
 
-
+/**
+ * @brief CylinderMovement::setAxisDirections Sets the axis directions of the cylinder through time
+ * @param axisDirection1 initial directional vector (direction of the cylinder axis at time 0)
+ * @param axisDirection2 final directional vector (direction of the cylinder axis at time 1)
+ * @return true if the vectors are valid, false otherwise
+ */
 bool CylinderMovement::setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2){
 
     if(axisDirection1 == QVector3D(0,0,0) || axisDirection2 == QVector3D(0,0,0)){

@@ -1,5 +1,8 @@
 #include "envelope.h"
 
+/**
+ * @brief Envelope::Envelope Creates a new envelope with default values.
+ */
 Envelope::Envelope() :
     adjEnv(nullptr),
     toolMovement(CylinderMovement()),
@@ -10,6 +13,11 @@ Envelope::Envelope() :
     qDebug() << "Envelope()";
 }
 
+/**
+ * @brief Envelope::Envelope Creates a new envelope with the given values.
+ * @param toolMovement Tool movement.
+ * @param tool Tool pointer.
+ */
 Envelope::Envelope(CylinderMovement toolMovement, Tool *tool) :
     adjEnv(nullptr),
     toolMovement(toolMovement),
@@ -19,6 +27,12 @@ Envelope::Envelope(CylinderMovement toolMovement, Tool *tool) :
     sectorsT = toolMovement.getPath().getSectors();
 }
 
+/**
+ * @brief Envelope::Envelope Creates a new envelope with the given values.
+ * @param toolMovement Tool movement.
+ * @param tool Tool pointer.
+ * @param adjEnvelope Adjacent envelope.
+ */
 Envelope::Envelope(CylinderMovement toolMovement, Tool *tool, Envelope *adjEnvelope) :
     adjEnv(adjEnvelope),
     toolMovement(toolMovement),
@@ -28,6 +42,9 @@ Envelope::Envelope(CylinderMovement toolMovement, Tool *tool, Envelope *adjEnvel
     sectorsT = toolMovement.getPath().getSectors();
 }
 
+/**
+ * @brief Envelope::initEnvelope Initialises the envelope.
+ */
 void Envelope::initEnvelope()
 {
     computeEnvelope();
@@ -51,6 +68,7 @@ void Envelope::setTool(Tool *tool)
 {
     this->tool = tool;
     sectorsA = tool->getSectors();
+
     computeEnvelope();
     computeToolCenters();
     computeGrazingCurves();
@@ -59,9 +77,16 @@ void Envelope::setTool(Tool *tool)
 
 void Envelope::setAdjacentEnvelope(Envelope *env){
     this->adjEnv = env;
+
     computeEnvelope();
+    computeToolCenters();
+    computeGrazingCurves();
+    computeNormals();
 }
 
+/**
+ * @brief Envelope::computeToolCenters Computes the vertex array of tool centers.
+ */
 void Envelope::computeToolCenters()
 {
     vertexArrCenters.clear();
@@ -93,6 +118,9 @@ void Envelope::computeToolCenters()
     }
 }
 
+/**
+ * @brief Envelope::computeGrazingCurves Computes the vertex array of the grazing curves.
+ */
 void Envelope::computeGrazingCurves()
 {
     vertexArrGrazingCurve.clear();
@@ -119,6 +147,9 @@ void Envelope::computeGrazingCurves()
     }
 }
 
+/**
+ * @brief Envelope::computeEnvelope Computes the vertex array of the envelope.
+ */
 void Envelope::computeEnvelope()
 {
     vertexArr.clear();
@@ -149,6 +180,9 @@ void Envelope::computeEnvelope()
     }
 }
 
+/**
+ * @brief Envelope::computeNormals Computes the vertex array of the normals.
+ */
 void Envelope::computeNormals(){
     vertexArrNormals.clear();
 
@@ -181,6 +215,12 @@ void Envelope::computeNormals(){
     }
 }
 
+/**
+ * @brief Envelope::calcToolCenterAt Calculates the tool center at a given time and axis height a.
+ * @param t Time.
+ * @param a Axis height.
+ * @return Tool center.
+ */
 QVector3D Envelope::calcToolCenterAt(float t, float a)
 {
     QVector3D axis = calcToolAxisDirecAt(t);
@@ -192,6 +232,11 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
     return center;
 }
 
+/**
+ * @brief Envelope::getPathAt Returns the path of the tool movement at a given time.
+ * @param t Time.
+ * @return Path at time t.
+ */
 QVector3D Envelope::getPathAt(float t){
     if (adjEnv != nullptr && contToAdj){
         QVector3D adjCenter = adjEnv->endCurveArr[adjEnv->toolMovement.getPath().getIdxAtTime(t)];
@@ -206,6 +251,11 @@ QVector3D Envelope::getPathAt(float t){
     }
 }
 
+/**
+ * @brief Envelope::getPathDirecAt Returns the path direction of the tool movement at a given time.
+ * @param t Time.
+ * @return Path direction at time t.
+ */
 QVector3D Envelope::getPathDirecAt(float t){
     int idx = toolMovement.getPath().getIdxAtTime(t);
     if(idx = adjEnv->endCurveArr.size()-1) {
@@ -215,6 +265,11 @@ QVector3D Envelope::getPathDirecAt(float t){
     }
 }
 
+/**
+ * @brief Envelope::calcToolAxisDirecAt Calculates the tool axis direction at a given time.
+ * @param t Time.
+ * @return Tool axis direction.
+ */
 QVector3D Envelope::calcToolAxisDirecAt(float t)
 {
     QVector3D axis = toolMovement.getAxisDirectionAt(t);
@@ -226,6 +281,11 @@ QVector3D Envelope::calcToolAxisDirecAt(float t)
     return axis;
 }
 
+/**
+ * @brief Envelope::calcAxisRateOfChange Calculates the rate of change of the axis of the tool at a given time.
+ * @param t Time.
+ * @return Rate of change of the axis.
+ */
 QVector3D Envelope::calcAxisRateOfChange(float t)
 {
     QVector3D axis = toolMovement.getAxisRateOfChange(t);
@@ -237,6 +297,11 @@ QVector3D Envelope::calcAxisRateOfChange(float t)
     return axis;
 }
 
+/**
+ * @brief Envelope::getAdjMovementRotation Calculates the rotation matrix of the adjacent tool at a given time.
+ * @param time Time.
+ * @return Rotation matrix.
+ */
 QMatrix4x4 Envelope::getAdjMovementRotation(float time)
 {
     QVector3D n = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
@@ -251,6 +316,12 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     return rotation;
 }
 
+/**
+ * @brief Envelope::calcEnvelopeAt Calculates the envelope at a given time and axis height.
+ * @param t Time.
+ * @param a Axis height.
+ * @return The vertex of the envelope.
+ */
 Vertex Envelope::calcEnvelopeAt(float t, float a)
 {
     QVector3D color = QVector3D(1,0,0);
@@ -264,6 +335,12 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     return Vertex(posit, normal);
 }
 
+/**
+ * @brief Envelope::calcGrazingCurveAt Calculates the grazing curve at a given time and axis height.
+ * @param t Time.
+ * @param a Axis height.
+ * @return The point of the grazing curve.
+ */
 QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 {
     QVector3D center = calcToolCenterAt(t, a);
@@ -274,6 +351,13 @@ QVector3D Envelope::calcGrazingCurveAt(float t, float a)
     return posit;
 }
 
+/**
+ * @brief Envelope::computeNormal Computes the normal at a given time and axis height.
+ * @param t Time.
+ * @param a Axis height.
+ * @param cont True if the envelope is continuous to the adjacent envelope.
+ * @return The normal.
+ */
 QVector3D Envelope::computeNormal(float t, float a, bool cont)
 {
     SimplePath path = toolMovement.getPath();
