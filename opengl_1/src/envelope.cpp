@@ -249,7 +249,7 @@ QVector3D Envelope::getPathAt(float t){
         float rEnv = tool->getRadiusAt(tool->getA0());
         float a0 = tool->getA0();
         QVector3D axis = calcToolAxisDirecAt(t);
-        return adjCenter + (rAdjEnv - rEnv)*computeNormal(t,adjEnv->tool->getA1(),adjEnv) - a0 * axis;
+        return adjCenter + (rAdjEnv - rEnv)*computeNormal(t,adjEnv->tool->getA1(),adjEnv);
     } else {
         SimplePath path = toolMovement->getPath();
         return path.getPathAt(t);
