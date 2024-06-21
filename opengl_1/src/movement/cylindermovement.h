@@ -19,15 +19,17 @@ class CylinderMovement
     QVector3D perpToAxis;
     QVector<QVector3D> axisDirections;
     QVector<QVector3D> rotationVectors;
-    QVector<QVector3D> discPath;
+    QVector<Vertex> discPath;
 public:
     CylinderMovement();
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Cylinder cylinder);
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum drum);
     CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder);
 
-    inline void setDiscPath(QVector<QVector3D> discPath) {this->discPath = discPath;}
-    inline void setPath(SimplePath path) {t0 = path.getT0(); t1 = path.getT1(); this->path = path;}
+    inline QVector<Vertex> getPathVertexArr() { return this->discPath; }
+    inline void setDiscPath(QVector<Vertex> discPath) { this->discPath.clear(); this->discPath = discPath;
+        qDebug() << this->discPath.size();}
+    inline void setPath(SimplePath path) { t0 = path.getT0(); t1 = path.getT1(); this->path = path; discPath = path.getVertexArr(); }
     inline SimplePath getPath() {return path;}
     inline void setAxisDirections(QVector<QVector3D> axisDirections) {axisDirections.clear(); this->axisDirections = axisDirections;}
     bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);

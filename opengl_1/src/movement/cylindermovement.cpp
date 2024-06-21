@@ -7,7 +7,8 @@
 CylinderMovement::CylinderMovement() :
     path(SimplePath()),
     cylinderAxis(Cylinder().getAxisVector()),
-    perpToAxis(Cylinder().getVectorPerpToAxis())
+    perpToAxis(Cylinder().getVectorPerpToAxis()),
+    discPath(path.getVertexArr())
 {
     t0 = path.getT0(); t1 = path.getT1();
     qDebug() << "CylinderMovement()";
@@ -31,7 +32,8 @@ CylinderMovement::CylinderMovement() :
 CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Cylinder cylinder) :
     path(path),
     cylinderAxis(cylinder.getAxisVector()),
-    perpToAxis(cylinder.getVectorPerpToAxis())
+    perpToAxis(cylinder.getVectorPerpToAxis()),
+    discPath(path.getVertexArr())
 {
     t0 = path.getT0(); t1 = path.getT1();
     QVector<Vertex> vertices = path.getVertexArr();
@@ -67,7 +69,8 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
 CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum drum) :
     path(path),
     cylinderAxis(drum.getAxisVector()),
-    perpToAxis(drum.getVectorPerpToAxis())
+    perpToAxis(drum.getVectorPerpToAxis()),
+    discPath(path.getVertexArr())
 {
     t0 = path.getT0(); t1 = path.getT1();
     QVector<Vertex> vertices = path.getVertexArr();
@@ -102,7 +105,8 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
     path(path),
     axisDirections(axisDirections),
     cylinderAxis(cylinder.getAxisVector()),
-    perpToAxis(cylinder.getVectorPerpToAxis())
+    perpToAxis(cylinder.getVectorPerpToAxis()),
+    discPath(path.getVertexArr())
 {
     t0 = path.getT0(); t1 = path.getT1();
 

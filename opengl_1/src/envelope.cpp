@@ -5,7 +5,7 @@
  */
 Envelope::Envelope() :
     adjEnv(nullptr),
-    toolMovement(CylinderMovement()),
+    toolMovement(nullptr),
     tool()
 {
     sectorsA = 200;
@@ -18,13 +18,13 @@ Envelope::Envelope() :
  * @param toolMovement Tool movement.
  * @param tool Tool pointer.
  */
-Envelope::Envelope(CylinderMovement toolMovement, Tool *tool) :
+Envelope::Envelope(CylinderMovement *toolMovement, Tool *tool) :
     adjEnv(nullptr),
     toolMovement(toolMovement),
     tool(tool)
 {
     sectorsA = tool->getSectors();
-    sectorsT = toolMovement.getPath().getSectors();
+    sectorsT = toolMovement->getPath().getSectors();
 }
 
 /**
@@ -33,13 +33,13 @@ Envelope::Envelope(CylinderMovement toolMovement, Tool *tool) :
  * @param tool Tool pointer.
  * @param adjEnvelope Adjacent envelope.
  */
-Envelope::Envelope(CylinderMovement toolMovement, Tool *tool, Envelope *adjEnvelope) :
+Envelope::Envelope(CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope) :
     adjEnv(adjEnvelope),
     toolMovement(toolMovement),
     tool(tool)
 {
     sectorsA = tool->getSectors();
-    sectorsT = toolMovement.getPath().getSectors();
+    sectorsT = toolMovement->getPath().getSectors();
 }
 
 /**
@@ -53,10 +53,10 @@ void Envelope::initEnvelope()
     computeNormals();
 }
 
-void Envelope::setToolMovement(CylinderMovement toolMovement)
+void Envelope::setToolMovement(CylinderMovement *toolMovement)
 {
     this->toolMovement = toolMovement;
-    sectorsT = toolMovement.getPath().getSectors();
+    sectorsT = toolMovement->getPath().getSectors();
 
     computeEnvelope();
     computeToolCenters();
@@ -91,11 +91,14 @@ void Envelope::computeToolCenters()
 {
     vertexArrCenters.clear();
     endCurveArr.clear();
+    QVector<Vertex> pathArr = toolMovement->getPath().getVertexArr();
+    if(adjEnv != nullptr && contToAdj)
+        pathArr.clear();
 
     QVector3D color = QVector3D(0,0,1);
 
     QVector3D v1, v2;
-    SimplePath path = toolMovement.getPath();
+    SimplePath path = toolMovement->getPath();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
@@ -111,11 +114,15 @@ void Envelope::computeToolCenters()
             vertexArrCenters.append(Vertex(v1, color));
             vertexArrCenters.append(Vertex(v2, color));
 
+            if(adjEnv != nullptr && contToAdj && a == tool->getA0()){
+                pathArr.append(Vertex(v1, color));
+            }
             if(a >= a1-aDelta){
                 endCurveArr.append(v2);
             }
         }
     }
+    toolMovement->setDiscPath(pathArr);
 }
 
 /**
@@ -128,7 +135,7 @@ void Envelope::computeGrazingCurves()
     QVector3D color = QVector3D(0,1,0);
 
     QVector3D v1, v2;
-    SimplePath path = toolMovement.getPath();
+    SimplePath path = toolMovement->getPath();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
@@ -155,7 +162,7 @@ void Envelope::computeEnvelope()
     vertexArr.clear();
 
     Vertex v1, v2, v3, v4;
-    SimplePath path = toolMovement.getPath();
+    SimplePath path = toolMovement->getPath();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
@@ -189,7 +196,7 @@ void Envelope::computeNormals(){
     QVector3D c = QVector3D(0,1,0);
 
     QVector3D v1, v2, p1, p2;
-    SimplePath path = toolMovement.getPath();
+    SimplePath path = toolMovement->getPath();
     float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
@@ -224,10 +231,8 @@ void Envelope::computeNormals(){
 QVector3D Envelope::calcToolCenterAt(float t, float a)
 {
     QVector3D axis = calcToolAxisDirecAt(t).normalized();
-    // s is offset by a0 wrt formula because path is coded at the base of the cone/tool instead of
-    // at the base of the axis of centers
     float a0 = tool->getA0();
-    QVector3D center = getPathAt(t) + (a)*(axis);
+    QVector3D center = getPathAt(t) + (a-a0)*(axis);
 
     return center;
 }
@@ -239,14 +244,14 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
  */
 QVector3D Envelope::getPathAt(float t){
     if (adjEnv != nullptr && contToAdj){
-        QVector3D adjCenter = adjEnv->endCurveArr[adjEnv->toolMovement.getPath().getIdxAtTime(t)];
+        QVector3D adjCenter = adjEnv->endCurveArr[adjEnv->toolMovement->getPath().getIdxAtTime(t)];
         float rAdjEnv = adjEnv->tool->getRadiusAt(adjEnv->tool->getA1());
         float rEnv = tool->getRadiusAt(tool->getA0());
         float a0 = tool->getA0();
         QVector3D axis = calcToolAxisDirecAt(t);
-        return adjCenter + (rAdjEnv - rEnv)*computeNormal(t,adjEnv->tool->getA1(),adjEnv) - (a0)*(axis);
+        return adjCenter + (rAdjEnv - rEnv)*computeNormal(t,adjEnv->tool->getA1(),adjEnv) - a0 * axis;
     } else {
-        SimplePath path = toolMovement.getPath();
+        SimplePath path = toolMovement->getPath();
         return path.getPathAt(t);
     }
 }
@@ -257,8 +262,8 @@ QVector3D Envelope::getPathAt(float t){
  * @return Path direction at time t.
  */
 QVector3D Envelope::getPathDirecAt(float t){
-    int idx = toolMovement.getPath().getIdxAtTime(t);
-    if(idx = adjEnv->endCurveArr.size()-1) {
+    int idx = toolMovement->getPath().getIdxAtTime(t);
+    if(idx == adjEnv->endCurveArr.size()-1) {
         return (adjEnv->endCurveArr[idx] - adjEnv->endCurveArr[idx-1]);
     } else {
         return (adjEnv->endCurveArr[idx+1] - adjEnv->endCurveArr[idx]);
@@ -272,7 +277,7 @@ QVector3D Envelope::getPathDirecAt(float t){
  */
 QVector3D Envelope::calcToolAxisDirecAt(float t)
 {
-    QVector3D axis = toolMovement.getAxisDirectionAt(t);
+    QVector3D axis = toolMovement->getAxisDirectionAt(t);
     if (adjEnv != nullptr && contToAdj){
         QMatrix4x4 rotation = getAdjMovementRotation(t);
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
@@ -288,7 +293,7 @@ QVector3D Envelope::calcToolAxisDirecAt(float t)
  */
 QVector3D Envelope::calcAxisRateOfChange(float t)
 {
-    QVector3D axis = toolMovement.getAxisRateOfChange(t);
+    QVector3D axis = toolMovement->getAxisRateOfChange(t);
     if (adjEnv != nullptr && contToAdj){
         QMatrix4x4 rotation = getAdjMovementRotation(t);
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
@@ -307,8 +312,8 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     QMatrix4x4 rotation;
     rotation.setToIdentity();
     // rotation for continuity
-    QVector3D rotationAxis = adjEnv->toolMovement.getPath().getTangentAt(time);
-    int i = toolMovement.getPath().getIdxAtTime(time);
+    QVector3D rotationAxis = adjEnv->toolMovement->getPath().getTangentAt(time);
+    int i = toolMovement->getPath().getIdxAtTime(time);
     double ra = qRadiansToDegrees(-adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0()) + tool->getRadiusDerivativeWRTa(tool->getA0()));
     if(ra != 0) {
         rotation.rotate(ra, rotationAxis);
@@ -370,7 +375,7 @@ QVector3D Envelope::calcGrazingCurveAt(float t, float a)
  */
 QVector3D Envelope::computeNormal(float t, float a, bool cont)
 {
-    SimplePath path = toolMovement.getPath();
+    SimplePath path = toolMovement->getPath();
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
     QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());

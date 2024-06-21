@@ -117,11 +117,11 @@ void MainView::initializeGL()
     movRend2.init(gl,&settings);
 
     // Define the vertices of the enveloping surface
-    envelope = Envelope(move, &cylinder);
+    envelope = Envelope(&move, &cylinder);
     envelope.initEnvelope();
 
     qDebug() << "env2";
-    envelope2 = Envelope(move2, &cylinder2, &envelope);
+    envelope2 = Envelope(&move2, &cylinder2, &envelope);
     envelope2.initEnvelope();
 
     envRend.setEnvelope(&envelope);
@@ -132,23 +132,12 @@ void MainView::initializeGL()
     initBuffers();
 
     // First transformation of the cylinder
-    toolTranslation.setToIdentity();
-    toolTranslation.translate(-2, 0, -6);
-    QVector3D tool2Posit = envelope.getEndCurveArrAt(0);
-    toolTranslation2 = toolTranslation;
-    toolTranslation2.translate(tool2Posit);
-    modelTranslation = toolTranslation;
-
-    toolRotation.setToIdentity();
-    toolRotation = move.getMovementRotation(0);
-
-    toolRotation2.setToIdentity();
-    toolRotation2 = move2.getMovementRotation(0);
+    modelTranslation.setToIdentity();
+    modelTranslation.translate(-2, 0, -6);
+    updateToolTransf();
 
     // Set the initial model transformation to
     // just the translation
-    toolTransf = toolTranslation * toolRotation;
-    toolTransf2 = toolTranslation2 * toolRotation2;
     modelTransf = modelTranslation;
 
     // Pass initial transformations to the renderers;
@@ -246,6 +235,7 @@ void MainView::paintGL()
     if (settings.secondEnv) {
         toolRend2.updateUniforms(toolTransf, projTransf);
         toolRend2.paintGL();
+        qDebug() << "pft";
 
         movRend2.updateUniforms(modelTransf,projTransf);
         movRend2.paintGL();
@@ -368,7 +358,8 @@ void MainView::setA(float a)
 void MainView::updateToolTransf(){
     toolTranslation.setToIdentity();
     toolTranslation = modelTranslation;
-    QVector4D shift = QVector4D(envelope.getPathAt(settings.time),0);
+    QVector3D toolPosit = envelope.getPathAt(settings.time)-envelope.getTool()->getA0()*envelope.calcToolAxisDirecAt(settings.time);
+    QVector4D shift = QVector4D(toolPosit,0);
     shift = modelTransf * shift;
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
@@ -390,10 +381,11 @@ void MainView::updateToolTransf(){
  * @brief MainView::updateAdjToolTransf Updates the tools transformation matrices of a second tool.
  */
 void MainView::updateAdjToolTransf(){
-
     toolTranslation2.setToIdentity();
     toolTranslation2 = modelTranslation;
-    QVector4D shift2 = QVector4D(envelope2.getPathAt(settings.time), 0);
+    QVector3D toolPosit = envelope2.getPathAt(settings.time)
+                          -envelope2.getTool()->getA0()*envelope2.calcToolAxisDirecAt(settings.time);
+    QVector4D shift2 = QVector4D(toolPosit,0);
     shift2 = modelTransf * shift2;
     toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 

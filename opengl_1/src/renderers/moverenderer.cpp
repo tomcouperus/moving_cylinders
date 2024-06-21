@@ -48,7 +48,8 @@ void MoveRenderer::initShaders()
 void MoveRenderer::initBuffers()
 {
     vertexArrPath.clear();
-    vertexArrPath = move->getPath().getVertexArr();
+    vertexArrPath = move->getPathVertexArr();
+    qDebug() << this->move->getPathVertexArr().size();
 
     gl->glGenVertexArrays(1, &vaoPath);
     gl->glBindVertexArray(vaoPath);
@@ -71,7 +72,7 @@ void MoveRenderer::initBuffers()
 void MoveRenderer::updateBuffers(CylinderMovement *move)
 {
     vertexArrPath.clear();
-    vertexArrPath = move->getPath().getVertexArr();
+    vertexArrPath = move->getPathVertexArr();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboPath);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrPath.size() * sizeof(Vertex), vertexArrPath.data(), GL_STATIC_DRAW);

@@ -9,7 +9,7 @@ class Envelope
 {
     Envelope *adjEnv;
     bool contToAdj = true;
-    CylinderMovement toolMovement;
+    CylinderMovement *toolMovement;
     Tool *tool;
     double adjAxisAngle1;
     double adjAxisAngle2;
@@ -25,8 +25,8 @@ class Envelope
     QVector<QVector3D> endCurveArr;
 public:
     Envelope();
-    Envelope(CylinderMovement toolMovement, Tool *tool);
-    Envelope(CylinderMovement toolMovement, Tool *tool, Envelope *adjEnvelope);
+    Envelope(CylinderMovement *toolMovement, Tool *tool);
+    Envelope(CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope);
 
     void initEnvelope();
     void computeEnvelope();
@@ -54,10 +54,11 @@ public:
     inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
     inline QVector<Vertex> getVertexArrGrazingCurve(){ return vertexArrGrazingCurve; }
     inline QVector<Vertex> getVertexArrNormalsAt(int idx){ return vertexArrNormals[idx]; }
-    inline QVector<Vertex> getVertexArrNormalsAt(float t){ SimplePath path = toolMovement.getPath(); return vertexArrNormals[path.getIdxAtTime(t)]; }
+    inline QVector<Vertex> getVertexArrNormalsAt(float t){ SimplePath path = toolMovement->getPath(); return vertexArrNormals[path.getIdxAtTime(t)]; }
     
+    inline Tool* getTool(){ return tool; }
     void setTool(Tool *tool);
-    void setToolMovement(CylinderMovement toolMovement);
+    void setToolMovement(CylinderMovement *toolMovement);
     void setAdjacentEnvelope(Envelope *env);
 };
 
