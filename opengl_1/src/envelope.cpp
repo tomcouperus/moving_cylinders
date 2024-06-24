@@ -314,14 +314,14 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     // rotation for continuity
     QVector3D axis = toolMovement->getAxisDirectionAt(time);
     QVector3D normal = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
-    QVector3D rotationAxis = adjEnv->toolMovement->getPath().getTangentAt(time); // QVector3D::crossProduct(axis,normal);
-    int i = toolMovement->getPath().getIdxAtTime(time);
-    double ra = qRadiansToDegrees(-adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0()) + tool->getRadiusDerivativeWRTa(tool->getA0()));
+    QVector3D rotationAxis = QVector3D::crossProduct(normal, adjEnv->toolMovement->getAxisDirectionAt(time)); // adjEnv->toolMovement->getPath().getTangentAt(time);
+    double ra = qRadiansToDegrees((tool->getRadiusDerivativeWRTa(tool->getA0()) - adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0())));
     if(ra != 0) {
         rotation.rotate(ra, rotationAxis);
     }
 
     // rotation w.r.t input
+    int i = toolMovement->getPath().getIdxAtTime(time);
     double angleDelta = (qRadiansToDegrees(adjAxisAngle2) - qRadiansToDegrees(adjAxisAngle1))/sectorsT;
     double angle = qRadiansToDegrees(adjAxisAngle1) + angleDelta*i;
     if(angle != 0) {
@@ -377,7 +377,7 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     SimplePath path = toolMovement->getPath();
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
-    QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());
+    QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t)); //.normalized());
     //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 
