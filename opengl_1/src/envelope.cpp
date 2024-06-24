@@ -386,19 +386,19 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     float alpha, beta, gamma;
     float ra = tool->getRadiusDerivativeWRTa(a);
     //    qDebug() << "ra: " << ra;
-    QMatrix4x4 m(QVector3D::dotProduct(sa,sa), QVector3D::dotProduct(st,sa),0,0,
-                 QVector3D::dotProduct(sa,st), QVector3D::dotProduct(st,st),0,0,
-                 0,0,1,0,0,0,0,1);
-    //    qDebug() << "m" << m;
-    QMatrix4x4 mInv = m.inverted(); // inverse of block matrix = matrix of inverse blocks
+    double matDet = (QVector3D::dotProduct(sa,sa) * QVector3D::dotProduct(st,st))
+                    - (QVector3D::dotProduct(sa,st) * QVector3D::dotProduct(st,sa));
+    if (matDet < 0.1)
+        qDebug() << "small determinant at (" << a << ", " << t <<")" ;
     //    qDebug() << "mInv: " << mInv;
-    QVector4D b = QVector4D(-ra, 0,0,0);
-    QVector4D x = (mInv*b);
-    alpha = x.x();
-    beta = x.y();
+    double a11 = 1/matDet * QVector3D::dotProduct(st,st);
+    alpha = a11 * (-ra);
+    double a21 = -1/matDet * QVector3D::dotProduct(st,sa);
+    beta = a21 * (-ra);
     //    qDebug() << "A11"<< mInv.column(0).normalized().x();
-    gamma = sqrt(1-ra*ra*(mInv.column(0).x())); // abs to solve issue with imaginaries?
-    //    qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma;
+    gamma = sqrt(1-ra*ra*a11); // abs to solve issue with imaginaries?
+    if (gamma != gamma)
+        qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma << " det: " << matDet;
 
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
     // qDebug() << "norm: " << normal;
