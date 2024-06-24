@@ -393,23 +393,15 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
   QVector3D vector1;
   QVector3D vector2;
   if(checked) {
-//      ui->orientVector_1_2->setText(ui->orientVector_1->text());
-//      ui->orientVector_2_2->setText(ui->orientVector_2->text());
       vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
       vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
-
-      bool success = ui->mainView->move2.setAxisDirections(vector1,vector2);
-      if (success){
-          ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
-      }
   } else {
       vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
       vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-
-      bool success = ui->mainView->move2.setAxisDirections(vector1,vector2);
-      if (success){
-          ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
-      }
+  }
+  bool success = ui->mainView->move2.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   }
 
   ui->mainView->updateAdjToolTransf();

@@ -312,9 +312,9 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     QMatrix4x4 rotation;
     rotation.setToIdentity();
     // rotation for continuity
-    QVector3D axis = adjEnv->toolMovement->getAxisDirectionAt(time);
+    QVector3D axis = toolMovement->getAxisDirectionAt(time);
     QVector3D normal = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
-    QVector3D rotationAxis = QVector3D::crossProduct(axis,normal) ; // adjEnv->toolMovement->getPath().getTangentAt(time);
+    QVector3D rotationAxis = adjEnv->toolMovement->getPath().getTangentAt(time); // QVector3D::crossProduct(axis,normal);
     int i = toolMovement->getPath().getIdxAtTime(time);
     double ra = qRadiansToDegrees(-adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0()) + tool->getRadiusDerivativeWRTa(tool->getA0()));
     if(ra != 0) {

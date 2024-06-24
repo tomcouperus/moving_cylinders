@@ -358,9 +358,8 @@ void MainView::setA(float a)
 void MainView::updateToolTransf(){
     // tool translation towards path
     toolToPathTranslation.setToIdentity();
-    QVector3D toolPosit = -envelope.getTool()->getA0()*envelope.calcToolAxisDirecAt(settings.time);
+    QVector3D toolPosit = -envelope.getTool()->getA0()*envelope.getTool()->getAxisVector();
     QVector4D shift = QVector4D(toolPosit,0);
-    shift = modelTransf * shift;
     toolToPathTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     // tool translation w.r.t path
@@ -375,7 +374,7 @@ void MainView::updateToolTransf(){
     toolRotation = move.getMovementRotation(settings.time);
 
     // Update the model transformation matrix
-    toolTransf = toolTranslation * toolToPathTranslation * modelScaling * modelRotation * toolRotation;
+    toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation * toolToPathTranslation;
 
     //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.setTransf(toolTransf);
@@ -391,9 +390,8 @@ void MainView::updateToolTransf(){
 void MainView::updateAdjToolTransf(){
     // tool translation towards path
     toolToPathTranslation2.setToIdentity();
-    QVector3D toolPosit = -envelope2.getTool()->getA0()*envelope2.calcToolAxisDirecAt(settings.time);
+    QVector3D toolPosit = -envelope2.getTool()->getA0()*envelope2.getTool()->getAxisVector();
     QVector4D shift2 = QVector4D(toolPosit,0);
-    shift2 = modelTransf * shift2;
     toolToPathTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
     toolTranslation2.setToIdentity();
@@ -408,12 +406,12 @@ void MainView::updateAdjToolTransf(){
         toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
 
         // Update the model transformation matrix
-        toolTransf2 = toolTranslation2 * toolToPathTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation;
+        toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation * toolToPathTranslation2;
     } else {
         toolRotation2 = move2.getMovementRotation(settings.time);
 
         // Update the model transformation matrix
-        toolTransf2 = toolTranslation2 * toolToPathTranslation2 * modelScaling * modelRotation * toolRotation2;
+        toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2 * toolToPathTranslation2;
     }
 
     //toolRend.updateUniforms(toolTransf, projTransf);
