@@ -57,6 +57,8 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     QMatrix4x4 modelTransf;
     QMatrix4x4 toolRotation;
     QMatrix4x4 toolRotation2;
+    QMatrix4x4 toolToPathTranslation;
+    QMatrix4x4 toolToPathTranslation2;
     QMatrix4x4 toolTranslation;
     QMatrix4x4 toolTranslation2;
     QMatrix4x4 toolTransf; // toolTranslation * modelRotation * modelScaling

@@ -356,10 +356,18 @@ void MainView::setA(float a)
  * @brief MainView::updateToolTransf Updates the tools transformation matrices.
  */
 void MainView::updateToolTransf(){
+    // tool translation towards path
+    toolToPathTranslation.setToIdentity();
+    QVector3D toolPosit = -envelope.getTool()->getA0()*envelope.calcToolAxisDirecAt(settings.time);
+    QVector4D shift = QVector4D(toolPosit,0);
+    shift = modelTransf * shift;
+    toolToPathTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    // tool translation w.r.t path
     toolTranslation.setToIdentity();
     toolTranslation = modelTranslation;
-    QVector3D toolPosit = envelope.getPathAt(settings.time)-envelope.getTool()->getA0()*envelope.calcToolAxisDirecAt(settings.time);
-    QVector4D shift = QVector4D(toolPosit,0);
+    toolPosit = envelope.getPathAt(settings.time); //-envelope.getTool()->getA0()*envelope.calcToolAxisDirecAt(settings.time);
+    shift = QVector4D(toolPosit,0);
     shift = modelTransf * shift;
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
@@ -367,7 +375,7 @@ void MainView::updateToolTransf(){
     toolRotation = move.getMovementRotation(settings.time);
 
     // Update the model transformation matrix
-    toolTransf = toolTranslation * modelScaling * modelRotation * toolRotation;
+    toolTransf = toolTranslation * toolToPathTranslation * modelScaling * modelRotation * toolRotation;
 
     //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.setTransf(toolTransf);
@@ -381,11 +389,17 @@ void MainView::updateToolTransf(){
  * @brief MainView::updateAdjToolTransf Updates the tools transformation matrices of a second tool.
  */
 void MainView::updateAdjToolTransf(){
+    // tool translation towards path
+    toolToPathTranslation2.setToIdentity();
+    QVector3D toolPosit = -envelope2.getTool()->getA0()*envelope2.calcToolAxisDirecAt(settings.time);
+    QVector4D shift2 = QVector4D(toolPosit,0);
+    shift2 = modelTransf * shift2;
+    toolToPathTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+
     toolTranslation2.setToIdentity();
     toolTranslation2 = modelTranslation;
-    QVector3D toolPosit = envelope2.getPathAt(settings.time)
-                          -envelope2.getTool()->getA0()*envelope2.calcToolAxisDirecAt(settings.time);
-    QVector4D shift2 = QVector4D(toolPosit,0);
+    toolPosit = envelope2.getPathAt(settings.time); // -envelope2.getTool()->getA0()*envelope2.calcToolAxisDirecAt(settings.time);
+    shift2 = QVector4D(toolPosit,0);
     shift2 = modelTransf * shift2;
     toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
@@ -394,12 +408,12 @@ void MainView::updateAdjToolTransf(){
         toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
 
         // Update the model transformation matrix
-        toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation;
+        toolTransf2 = toolTranslation2 * toolToPathTranslation2 * modelScaling * modelRotation * toolRotation2 * toolRotation;
     } else {
         toolRotation2 = move2.getMovementRotation(settings.time);
 
         // Update the model transformation matrix
-        toolTransf2 = toolTranslation2 * modelScaling * modelRotation * toolRotation2;
+        toolTransf2 = toolTranslation2 * toolToPathTranslation2 * modelScaling * modelRotation * toolRotation2;
     }
 
     //toolRend.updateUniforms(toolTransf, projTransf);
