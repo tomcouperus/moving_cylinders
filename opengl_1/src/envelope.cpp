@@ -325,9 +325,9 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     if(ra != 0) {
         rotation.rotate(ra, rotationAxis);
     }
-    // then we can rotate the axis to its place
-    rotationAxis = QVector3D::crossProduct(normal, adjEnv->toolMovement->getAxisDirectionAt(time)); // adjEnv->toolMovement->getPath().getTangentAt(time);
-    ra = qRadiansToDegrees(acos(-(tool->getRadiusDerivativeWRTa(tool->getA0()))));// - adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0())));
+    // then we can rotate the axis to its place according to our formula A(t) dot n1(a1,t) = ra(a0)
+    rotationAxis = QVector3D::crossProduct(normal, adjEnv->toolMovement->getAxisDirectionAt(time));
+    ra = qRadiansToDegrees(acos(-(tool->getRadiusDerivativeWRTa(tool->getA0()))));
     if(ra != 0) {
         rotation.rotate(ra, rotationAxis);
     }
