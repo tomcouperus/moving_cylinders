@@ -449,8 +449,10 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
 
   path.setX(x);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -470,8 +472,10 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
 
   path.setX(x);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -491,8 +495,10 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
 
   path.setX(x);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -512,8 +518,10 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
 
   path.setY(y);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -533,8 +541,10 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
 
   path.setY(y);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -554,8 +564,10 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
 
   path.setY(y);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -576,8 +588,10 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
 
   path.setZ(z);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -597,8 +611,10 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
 
   path.setZ(z);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -618,8 +634,10 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
 
   path.setZ(z);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -636,12 +654,14 @@ void MainWindow::on_spinBox_t_0_valueChanged(int value) {
   ui->spinBox_t_1->setMinimum(value+1);
 
   SimplePath path = ui->mainView->move.getPath();
-  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / path.getRange();
+  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / (path.getRange());
 
   path.setRange(value, path.getT1());
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
 
   ui->mainView->setTime(sliderTimePerSector*path.getRange());
 
@@ -659,12 +679,14 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   ui->spinBox_t_0->setMaximum(value-1);
 
   SimplePath path = ui->mainView->move.getPath();
-  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / path.getRange();
+  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / (path.getRange());
 
   path.setRange(path.getT0(), value);
   ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
 
   ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
 
   ui->mainView->setTime(sliderTimePerSector*path.getRange());
 
@@ -741,7 +763,7 @@ void MainWindow::on_sphereCheckBox_toggled(bool checked){
  */
 void MainWindow::on_TimeSlider_sliderMoved(int value) {
   SimplePath path = ui->mainView->move.getPath();
-  float divisor = path.getSectors()/ path.getRange();
+  float divisor = path.getSectors() / (path.getRange());
   ui->mainView->setTime(value / divisor);
   ui->mainView->updateBuffers();
   ui->mainView->update();

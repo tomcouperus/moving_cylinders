@@ -40,8 +40,8 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
 
     // interpolation of directional vectors
     QVector3D lastDirection = axisDirection1.normalized();
-    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (vertices.size()-1);
-    for (size_t i = 0; i < vertices.size(); i++)
+    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (path.getSectors());
+    for (size_t i = 0; i <= path.getSectors(); i++)
     {
         qDebug() << lastDirection;
         axisDirections.append(lastDirection.normalized()); // add interpolated directional vector
@@ -77,8 +77,8 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
 
     // interpolation of directional vectors
     QVector3D lastDirection = axisDirection1;
-    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (vertices.size()-1);
-    for (size_t i = 0; i < vertices.size(); i++)
+    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (path.getSectors());
+    for (size_t i = 0; i <= path.getSectors(); i++)
     {
         axisDirections.append(lastDirection); // add interpolated directional vector
 
@@ -110,8 +110,7 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector<QVector3D> axisDirec
 {
     t0 = path.getT0(); t1 = path.getT1();
 
-    QVector<Vertex> vertices = path.getVertexArr();
-    for (size_t i = 0; i < vertices.size(); i++)
+    for (size_t i = 0; i < path.getSectors(); i++)
     {
         QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis,
                                                            axisDirections[i]);
@@ -137,12 +136,10 @@ bool CylinderMovement::setAxisDirections(QVector3D axisDirection1, QVector3D axi
     axisDirections.clear();
     rotationVectors.clear();
 
-    QVector<Vertex> vertices = path.getVertexArr();
-
     // interpolation of directional vectors
     QVector3D lastDirection = axisDirection1;
-    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (vertices.size()-1);
-    for (size_t i = 0; i < vertices.size(); i++)
+    QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (path.getSectors());
+    for (size_t i = 0; i <= path.getSectors(); i++)
     {
         axisDirections.append(lastDirection); // add interpolated directional vector
 

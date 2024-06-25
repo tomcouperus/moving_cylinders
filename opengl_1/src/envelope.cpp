@@ -103,9 +103,9 @@ void Envelope::computeToolCenters()
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1();
-    for (float t = path.getT0(); t < t1; t+=tDelta)
+    for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
-        for (float a = tool->getA0(); a <= a1; a+=aDelta)
+        for (float a = tool->getA0(); a < a1; a+=aDelta)
         {
             v1 = calcToolCenterAt(t, a);
             v2 = calcToolCenterAt(t, a+aDelta);
@@ -119,6 +119,7 @@ void Envelope::computeToolCenters()
             }
             if(a >= a1-aDelta){
                 endCurveArr.append(v2);
+                // qDebug() << "appended endpoint at (" << a+aDelta << ", " << t << ")";
             }
         }
     }
@@ -167,6 +168,7 @@ void Envelope::computeEnvelope()
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1()-tDelta;
+    qDebug()<< "t1" << t1;
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         for (float a = tool->getA0(); a < a1; a+=aDelta)
@@ -205,7 +207,7 @@ void Envelope::computeNormals(){
     for (float t = path.getT0(); t < t1; t+=tDelta)
     {
         normals.clear();
-        for (float a = tool->getA0(); a <= a1; a+=aDelta)
+        for (float a = tool->getA0(); a < a1; a+=aDelta)
         {
             p1 = calcToolCenterAt(t,a);
             p2 = calcToolCenterAt(t, a+aDelta);
@@ -278,6 +280,8 @@ QVector3D Envelope::getPathDirecAt(float t){
 QVector3D Envelope::calcToolAxisDirecAt(float t)
 {
     QVector3D axis = toolMovement->getAxisDirectionAt(t);
+    if (axis != axis)
+        qDebug() << "Problem with axis at time " << t;
     if (adjEnv != nullptr && contToAdj){
         QMatrix4x4 rotation = getAdjMovementRotation(t);
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
@@ -377,10 +381,15 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     SimplePath path = toolMovement->getPath();
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
-    QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t)); //.normalized());
+    // the paper doesn't compute st, if AxisRateOfChange is not normalized then the grazing curves are ruled
+    QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());
     //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 
+    //if (st != st)
+    //    qDebug() << "Problem with st at (" << a << ", " << t <<")" ;
+    //if (sa != sa)
+        //qDebug() << "Problem with sa at (" << a << ", " << t <<")" ;
 
     // Calculate alpha, beta, gamma
     float alpha, beta, gamma;
@@ -388,8 +397,11 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     //    qDebug() << "ra: " << ra;
     double matDet = (QVector3D::dotProduct(sa,sa) * QVector3D::dotProduct(st,st))
                     - (QVector3D::dotProduct(sa,st) * QVector3D::dotProduct(st,sa));
-    if (matDet < 0.1)
+    // didn't find determinant problems for the first envelope
+    if (matDet < 0.001)
         qDebug() << "small determinant at (" << a << ", " << t <<")" ;
+    if (1/matDet != 1/matDet && adjEnv != adjEnv)
+        qDebug() << "determinant problem at (" << a << ", " << t <<"): det = " << matDet <<", st = " << st <<", sa = " << sa;
     //    qDebug() << "mInv: " << mInv;
     double a11 = 1/matDet * QVector3D::dotProduct(st,st);
     alpha = a11 * (-ra);
@@ -397,10 +409,13 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     beta = a21 * (-ra);
     //    qDebug() << "A11"<< mInv.column(0).normalized().x();
     gamma = sqrt(1-ra*ra*a11); // abs to solve issue with imaginaries?
-    if (gamma != gamma)
+    // adjEnv != adjEnv to focus on the first envelope only
+    if (gamma != gamma && adjEnv != adjEnv)
         qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma << " det: " << matDet;
 
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
+    if (normal != normal && adjEnv != adjEnv)
+        qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma << " det: " << matDet;
     // qDebug() << "norm: " << normal;
     normal.normalize();
     return normal;
