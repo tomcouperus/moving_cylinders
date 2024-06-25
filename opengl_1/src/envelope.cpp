@@ -316,10 +316,18 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     QMatrix4x4 rotation;
     rotation.setToIdentity();
     // rotation for continuity
+
     QVector3D axis = toolMovement->getAxisDirectionAt(time);
     QVector3D normal = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
-    QVector3D rotationAxis = QVector3D::crossProduct(normal, adjEnv->toolMovement->getAxisDirectionAt(time)); // adjEnv->toolMovement->getPath().getTangentAt(time);
-    double ra = qRadiansToDegrees((tool->getRadiusDerivativeWRTa(tool->getA0()) - adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0())));
+    QVector3D rotationAxis = QVector3D::crossProduct(normal, axis);
+    // I first compute the rotation such that the axis aligns with the normal
+    double ra = qRadiansToDegrees(-acos(QVector3D::dotProduct(normal, toolMovement->getAxisDirectionAt(time))));
+    if(ra != 0) {
+        rotation.rotate(ra, rotationAxis);
+    }
+    // then we can rotate the axis to its place
+    rotationAxis = QVector3D::crossProduct(normal, adjEnv->toolMovement->getAxisDirectionAt(time)); // adjEnv->toolMovement->getPath().getTangentAt(time);
+    ra = qRadiansToDegrees(acos(-(tool->getRadiusDerivativeWRTa(tool->getA0()))));// - adjEnv->tool->getRadiusDerivativeWRTa(adjEnv->tool->getA0())));
     if(ra != 0) {
         rotation.rotate(ra, rotationAxis);
     }
