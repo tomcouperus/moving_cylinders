@@ -188,11 +188,11 @@ QVector3D CylinderMovement::getAxisRateOfChange(float time)
     QVector3D axisRateOfChange;
     QVector3D nextAxis;
     if(idx == axisDirections.size()-1) {
-        nextAxis = axisDirections[idx-1].normalized();
-        axisRateOfChange = (axisDirections[idx].normalized() - nextAxis);
+        nextAxis = axisDirections[idx-1];
+        axisRateOfChange = (axisDirections[idx] - nextAxis);
     } else {
-        nextAxis = axisDirections[idx+1].normalized();
-        axisRateOfChange = (nextAxis - axisDirections[idx].normalized());
+        nextAxis = axisDirections[idx+1];
+        axisRateOfChange = (nextAxis - axisDirections[idx]);
     }
     return axisRateOfChange;
 }
