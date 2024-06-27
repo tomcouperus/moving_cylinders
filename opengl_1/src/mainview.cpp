@@ -101,6 +101,11 @@ void MainView::initializeGL()
                       Polynomial(0.0,1.0,0.0,0.0),
                       Polynomial());
     path.initVertexArr();
+
+    float tDelta = (path.getT1()-path.getT0())/path.getSectors();
+    for(float i=path.getT0(); i<path.getT1(); i+=tDelta)
+        qDebug()<< i << "gives" << path.getIdxAtTime(i);
+
     // Define orientation(s) of the tool
     move = CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
@@ -370,7 +375,7 @@ void MainView::updateToolTransf(){
 
     toolRotation.setToIdentity();
     toolRotation = move.getMovementRotation(settings.time);
-
+qDebug() << "here";
     // Update the model transformation matrix
     toolTransf = modelTransf * toolTranslation * toolRotation * toolToPathTranslation;
 
@@ -412,7 +417,6 @@ void MainView::updateAdjToolTransf(){
 
     //toolRend.updateUniforms(toolTransf, projTransf);
     toolRend2.setTransf(toolTransf2);
-
 }
 
 /**

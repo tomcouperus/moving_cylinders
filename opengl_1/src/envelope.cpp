@@ -105,7 +105,7 @@ void Envelope::computeToolCenters()
     float t1 = path.getT1();
     for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
-        for (float a = tool->getA0(); a < a1; a+=aDelta)
+        for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             v1 = calcToolCenterAt(t, a);
             v2 = calcToolCenterAt(t, a+aDelta);
@@ -141,9 +141,9 @@ void Envelope::computeGrazingCurves()
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1();
-    for (float t = path.getT0(); t < t1; t+=tDelta)
+    for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
-        for (float a = tool->getA0(); a < a1; a+=aDelta)
+        for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             v1 = calcGrazingCurveAt(t, a);
             v2 = calcGrazingCurveAt(t, a+aDelta);
@@ -168,10 +168,9 @@ void Envelope::computeEnvelope()
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1()-tDelta;
-    qDebug()<< "t1" << t1;
-    for (float t = path.getT0(); t < t1; t+=tDelta)
+    for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
-        for (float a = tool->getA0(); a < a1; a+=aDelta)
+        for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             v1 = calcEnvelopeAt(t, a);
             v2 = calcEnvelopeAt(t, a+aDelta);
@@ -204,10 +203,10 @@ void Envelope::computeNormals(){
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1();
     QVector<Vertex> normals;
-    for (float t = path.getT0(); t < t1; t+=tDelta)
+    for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
         normals.clear();
-        for (float a = tool->getA0(); a < a1; a+=aDelta)
+        for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             p1 = calcToolCenterAt(t,a);
             p2 = calcToolCenterAt(t, a+aDelta);

@@ -44,7 +44,9 @@ QVector3D SimplePath::getPathAt(float t)
 */
 int SimplePath::getIdxAtTime(float time)
 {
-    float delta = (t1-t0)/sectors;
+    float delta = (t1-t0)/(sectors+1);
+    if ((time-t0)/delta > vertexArr.size()-1)
+        return vertexArr.size()-1;
     return (time-t0)/delta;
 }
 
@@ -59,6 +61,7 @@ void SimplePath::initVertexArr()
     float t = t0;
     for(int i=0; i<=sectors; ++i){
         vertexArr.append(Vertex(getPathAt(t), color));
+        qDebug() << t;
         t += delta;
     }
 }
