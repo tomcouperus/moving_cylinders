@@ -243,19 +243,19 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
       }
   }
 
-  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
+  ui->mainView->updateToolTransf();
   ui->mainView->update();
 }
 
 /**
- * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the second tool.
+ * @brief MainWindow::on_radiusSpinBox_2_valueChanged Updates the radius of the second tool.
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
   ui->mainView->cylinder2.setRadius(value);
   ui->mainView->drum2.setMidRadius(value);
-  ui->radius0SpinBox->setMinimum(ui->mainView->drum2.getMinR0());
+  ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -263,7 +263,7 @@ void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_radius0SpinBox_valueChanged Updates the inner radius of the second drum.
+ * @brief MainWindow::on_radius0SpinBox_2_valueChanged Updates the inner radius of the second drum.
  * @param value new inner radius.
  */
 void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
@@ -275,7 +275,7 @@ void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_angleSpinBox_valueChanged Updates the opening angle of the second cylinder.
+ * @brief MainWindow::on_angleSpinBox_2_valueChanged Updates the opening angle of the second cylinder.
  * @param value new opening angle.
  */
 void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
@@ -289,7 +289,7 @@ void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_heightSpinBox_valueChanged Updates the height (length) of the second tool.
+ * @brief MainWindow::on_heightSpinBox_2_valueChanged Updates the height (length) of the second tool.
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
@@ -373,8 +373,8 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
   ui->aSlider->setValue(0);
   ui->mainView->setA(0);
 
-  ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
+  ui->mainView->updateAdjToolTransf();
   ui->mainView->update();
 }
 
@@ -410,7 +410,7 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
 }
 
 /**
- * @brief MainWindow::on_radiusSpinBox_2_valueChanged Updates the angle of the axis initial orientation of the 
+ * @brief MainWindow::on_angleOrient_1_SpinBox_valueChanged Updates the angle of the axis initial orientation of the
  * second tool with respect to the one of the first tool.
  * @param value new angle.
  */ 
@@ -423,7 +423,7 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_radiusSpinBox_2_valueChanged Updates the angle of the axis final orientation of the 
+ * @brief MainWindow::on_angleOrient_2_SpinBox_valueChanged Updates the angle of the axis final orientation of the
  * second tool with respect to the one of the first tool.
  * @param value new angle.
  */

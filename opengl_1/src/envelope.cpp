@@ -210,8 +210,8 @@ void Envelope::computeNormals(){
         {
             p1 = calcToolCenterAt(t,a);
             p2 = calcToolCenterAt(t, a+aDelta);
-            v1 = p1 + tool->getRadiusAt(a)*computeNormal(t, a, contToAdj);
-            v2 = p2 + tool->getRadiusAt(a)*computeNormal(t, a+aDelta, contToAdj);
+            v1 = p1 + tool->getRadiusAt(a)*computeNormal(t, a);
+            v2 = p2 + tool->getRadiusAt(a)*computeNormal(t, a+aDelta);
 
             // Add vertices to array
             normals.append(Vertex(p1,c));
@@ -250,10 +250,26 @@ QVector3D Envelope::getPathAt(float t){
         float rEnv = tool->getRadiusAt(tool->getA0());
         float a0 = tool->getA0();
         QVector3D axis = calcToolAxisDirecAt(t);
-        return adjCenter + (rAdjEnv - rEnv)*computeNormal(t,adjEnv->tool->getA1(),adjEnv);
+        return adjCenter + rAdjEnv*adjEnv->computeNormal(t,adjEnv->tool->getA1()) - rEnv*computeNormal(t,tool->getA0());
     } else {
         SimplePath path = toolMovement->getPath();
         return path.getPathAt(t);
+    }
+}
+
+
+QVector3D Envelope::getPathTangentAt(float t){
+    if (adjEnv != nullptr && contToAdj){
+        SimplePath path = adjEnv->toolMovement->getPath();
+        float tDelta = (path.getT1()-path.getT0())/sectorsT;
+        if(t == path.getT1()) {
+            return (adjEnv->getPathAt(t) - adjEnv->getPathAt(t-tDelta));
+        } else {
+            return (adjEnv->getPathAt(t+tDelta) - adjEnv->getPathAt(t));
+        }
+    } else {
+        SimplePath path = toolMovement->getPath();
+        return path.getTangentAt(t);
     }
 }
 
@@ -317,7 +333,7 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
     // rotation for continuity
 
     QVector3D axis = toolMovement->getAxisDirectionAt(time);
-    QVector3D normal = adjEnv->computeNormal(time,adjEnv->tool->getA1(),false);
+    QVector3D normal = adjEnv->computeNormal(time,adjEnv->tool->getA1());
     QVector3D rotationAxis = QVector3D::crossProduct(normal, axis);
     // I first compute the rotation such that the axis aligns with the normal
     double ra = qRadiansToDegrees(-acos(QVector3D::dotProduct(normal, toolMovement->getAxisDirectionAt(time))));
@@ -354,7 +370,7 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     QVector3D center = calcToolCenterAt(t, a);
 
     float r = tool->getRadiusAt(a) + 0.0001; // + 0.0001 to avoid floating point weirdness
-    QVector3D normal = computeNormal(t, a, contToAdj);
+    QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
     return Vertex(posit, normal);
@@ -370,7 +386,7 @@ QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 {
     QVector3D center = calcToolCenterAt(t, a);
     float r = tool->getRadiusAt(a) + 0.0002; // + 0.0002 to avoid floating point weirdness
-    QVector3D normal = computeNormal(t, a, contToAdj);
+    QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
     return posit;
@@ -383,13 +399,12 @@ QVector3D Envelope::calcGrazingCurveAt(float t, float a)
  * @param cont True if the envelope is continuous to the adjacent envelope.
  * @return The normal.
  */
-QVector3D Envelope::computeNormal(float t, float a, bool cont)
+QVector3D Envelope::computeNormal(float t, float a)
 {
-    SimplePath path = toolMovement->getPath();
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
-    // the paper doesn't compute st, if AxisRateOfChange is not normalized then the grazing curves are ruled
-    QVector3D st = path.getTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());
+    // AxisRateOfChange is a direction, if AxisRateOfChange is not normalized then the grazing curves are ruled
+    QVector3D st = getPathTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());
     //    qDebug() << "st: " << st;
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
 
@@ -405,9 +420,7 @@ QVector3D Envelope::computeNormal(float t, float a, bool cont)
     double matDet = (QVector3D::dotProduct(sa,sa) * QVector3D::dotProduct(st,st))
                     - (QVector3D::dotProduct(sa,st) * QVector3D::dotProduct(st,sa));
     // didn't find determinant problems for the first envelope
-    if (matDet < 0.001)
-        qDebug() << "small determinant at (" << a << ", " << t <<")" ;
-    if (1/matDet != 1/matDet && adjEnv != adjEnv)
+    if (1/matDet != 1/matDet)
         qDebug() << "determinant problem at (" << a << ", " << t <<"): det = " << matDet <<", st = " << st <<", sa = " << sa;
     //    qDebug() << "mInv: " << mInv;
     double a11 = 1/matDet * QVector3D::dotProduct(st,st);

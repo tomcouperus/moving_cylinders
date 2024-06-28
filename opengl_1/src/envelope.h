@@ -40,9 +40,10 @@ public:
     QVector3D calcToolAxisDirecAt(float t);
     QVector3D calcAxisRateOfChange(float t);
     QVector3D calcGrazingCurveAt(float t, float a);
-    QVector3D computeNormal(float t, float a, bool cont);
+    QVector3D computeNormal(float t, float a);
     QVector3D getPathAt(float t);
     QVector3D getPathDirecAt(float t);
+    QVector3D getPathTangentAt(float t);
 
     QMatrix4x4 getAdjMovementRotation(float time);
 

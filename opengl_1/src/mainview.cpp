@@ -375,11 +375,12 @@ void MainView::updateToolTransf(){
 
     toolRotation.setToIdentity();
     toolRotation = move.getMovementRotation(settings.time);
-qDebug() << "here";
+
     // Update the model transformation matrix
+    // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
     toolTransf = modelTransf * toolTranslation * toolRotation * toolToPathTranslation;
 
-    //toolRend.updateUniforms(toolTransf, projTransf);
+    toolRend.updateUniforms(toolTransf, projTransf);
     toolRend.setTransf(toolTransf);
 
     if (settings.secondEnv) {
@@ -407,6 +408,7 @@ void MainView::updateAdjToolTransf(){
         toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
 
         // Update the model transformation matrix
+        // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
         toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolRotation * toolToPathTranslation2;
     } else {
         toolRotation2 = move2.getMovementRotation(settings.time);
@@ -415,7 +417,7 @@ void MainView::updateAdjToolTransf(){
         toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolToPathTranslation2;
     }
 
-    //toolRend.updateUniforms(toolTransf, projTransf);
+    toolRend2.updateUniforms(toolTransf, projTransf);
     toolRend2.setTransf(toolTransf2);
 }
 
