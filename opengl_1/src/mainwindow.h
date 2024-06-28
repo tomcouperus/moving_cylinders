@@ -44,6 +44,7 @@ class MainWindow : public QMainWindow {
   void on_toolBox_currentIndexChanged(int index);
 
   void on_tanContCheckBox_toggled(bool checked);
+  void on_positContCheckBox_toggled(bool checked);
   void on_radiusSpinBox_2_valueChanged(double value);
   void on_radius0SpinBox_2_valueChanged(double value);
   void on_angleSpinBox_2_valueChanged(double value);

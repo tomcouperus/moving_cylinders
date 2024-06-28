@@ -244,7 +244,7 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
  * @return Path at time t.
  */
 QVector3D Envelope::getPathAt(float t){
-    if (adjEnv != nullptr && contToAdj){
+    if (adjEnv != nullptr && positToAdj){
         QVector3D adjCenter = adjEnv->endCurveArr[adjEnv->toolMovement->getPath().getIdxAtTime(t)];
         float rAdjEnv = adjEnv->tool->getRadiusAt(adjEnv->tool->getA1());
         float rEnv = tool->getRadiusAt(tool->getA0());
@@ -259,7 +259,7 @@ QVector3D Envelope::getPathAt(float t){
 
 
 QVector3D Envelope::getPathTangentAt(float t){
-    if (adjEnv != nullptr && contToAdj){
+    if (adjEnv != nullptr && positToAdj){
         SimplePath path = adjEnv->toolMovement->getPath();
         float tDelta = (path.getT1()-path.getT0())/sectorsT;
         if(t == path.getT1()) {

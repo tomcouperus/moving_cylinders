@@ -30,6 +30,7 @@ void MainWindow::on_secondPassCheckBox_toggled(bool checked){
   ui->mainView->settings.secondEnv = checked;
 
   ui->tanContCheckBox->setEnabled(checked);
+  ui->positContCheckBox->setEnabled(checked && !ui->tanContCheckBox->isChecked());
   ui->angleSpinBox_2->setEnabled(checked && ui->mainView->settings.tool2Idx==0);
   ui->heightSpinBox_2->setEnabled(checked);
   ui->radiusSpinBox_2->setEnabled(checked);
@@ -393,9 +394,12 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
   QVector3D vector1;
   QVector3D vector2;
   if(checked) {
+      ui->positContCheckBox->setChecked(true);
+      ui->positContCheckBox->setDisabled(true);
       vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
       vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
   } else {
+      ui->positContCheckBox->setEnabled(true);
       vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
       vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
   }
@@ -406,6 +410,26 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
+  ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_positContCheckBox_toggled Updates the positional continuity settings of the envelopes.
+ * @param checked The new value of the checkbox.
+ */
+void MainWindow::on_positContCheckBox_toggled(bool checked){
+  ui->mainView->envelope2.setIsPositContinuous(checked);
+
+  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
+  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
+
+  bool success = ui->mainView->move2.setAxisDirections(vector1,vector2);
+  if (success){
+      ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
+  }
+
+  ui->mainView->updateBuffers();
+  ui->mainView->updateAdjToolTransf();
   ui->mainView->update();
 }
 

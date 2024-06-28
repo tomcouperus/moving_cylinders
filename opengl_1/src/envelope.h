@@ -9,6 +9,7 @@ class Envelope
 {
     Envelope *adjEnv;
     bool contToAdj = true;
+    bool positToAdj = true;
     CylinderMovement *toolMovement;
     Tool *tool;
     double adjAxisAngle1;
@@ -48,6 +49,7 @@ public:
     QMatrix4x4 getAdjMovementRotation(float time);
 
     inline void setIsTanContinuous(bool value){ contToAdj = value; }
+    inline void setIsPositContinuous(bool value){ positToAdj = value; }
     inline bool isTanContinuous() { return contToAdj; }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
