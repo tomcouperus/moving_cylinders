@@ -54,12 +54,30 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->mainView->cylinder.setRadius(value);
   ui->mainView->drum.setMidRadius(value);
   ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
+  switch (ui->mainView->settings.toolIdx){
+  case 0:
+      ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+      break;
+  case 1:
+      ui->mainView->envelope.setTool(&(ui->mainView->drum));
+  default:
+      break;
+  }
 
   if (ui->mainView->settings.secondEnv){
     ui->mainView->cylinder2.setRadius(value);
     ui->radiusSpinBox_2->setValue(value);
     ui->mainView->drum2.setMidRadius(value);
     ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+    switch (ui->mainView->settings.tool2Idx){
+    case 0:
+        ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+        break;
+    case 1:
+        ui->mainView->envelope2.setTool(&(ui->mainView->drum2));
+    default:
+        break;
+    }
   }
 
   ui->mainView->updateToolTransf();
@@ -73,10 +91,12 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
  */
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
   ui->mainView->drum.setRadius(value);
+  ui->mainView->envelope.setTool(&(ui->mainView->drum));
 
   if (ui->mainView->settings.secondEnv){
     ui->mainView->drum2.setRadius(value);
     ui->radius0SpinBox_2->setValue(value);
+    ui->mainView->envelope2.setTool(&(ui->mainView->drum2));
   }
 
   ui->mainView->updateToolTransf();

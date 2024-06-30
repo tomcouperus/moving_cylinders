@@ -92,7 +92,7 @@ void Envelope::computeToolCenters()
     vertexArrCenters.clear();
     endCurveArr.clear();
     QVector<Vertex> pathArr = toolMovement->getPath().getVertexArr();
-    if(adjEnv != nullptr && contToAdj)
+    if(adjEnv != nullptr && positToAdj)
         pathArr.clear();
 
     QVector3D color = QVector3D(0,0,1);
@@ -103,23 +103,28 @@ void Envelope::computeToolCenters()
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1();
+    qDebug() <<"a1="<<tool->getA1();
     for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
         for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             v1 = calcToolCenterAt(t, a);
-            v2 = calcToolCenterAt(t, a+aDelta);
+            if(a+aDelta >= a1) // fix for division error
+               v2 = calcToolCenterAt(t, tool->getA1());
+            else
+               v2 = calcToolCenterAt(t, a+aDelta);
+
 
             // Add vertices to array
             vertexArrCenters.append(Vertex(v1, color));
             vertexArrCenters.append(Vertex(v2, color));
 
-            if(adjEnv != nullptr && contToAdj && a == tool->getA0()){
+            if(adjEnv != nullptr && positToAdj && a == tool->getA0()){
                 pathArr.append(Vertex(v1, color));
             }
-            if(a >= a1-aDelta){
+            if(a+aDelta >= a1){
                 endCurveArr.append(v2);
-                // qDebug() << "appended endpoint at (" << a+aDelta << ", " << t << ")";
+                qDebug() << "appended endpoint at (" << a+aDelta << ", " << t << ")";
             }
         }
     }
@@ -146,7 +151,10 @@ void Envelope::computeGrazingCurves()
         for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             v1 = calcGrazingCurveAt(t, a);
-            v2 = calcGrazingCurveAt(t, a+aDelta);
+            if(a+aDelta >= a1) // fix for division error
+                v2 = calcGrazingCurveAt(t, tool->getA1());
+            else
+                v2 = calcGrazingCurveAt(t, a+aDelta);
 
             // Add vertices to array
             vertexArrGrazingCurve.append(Vertex(v1, color));
@@ -173,9 +181,14 @@ void Envelope::computeEnvelope()
         for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             v1 = calcEnvelopeAt(t, a);
-            v2 = calcEnvelopeAt(t, a+aDelta);
             v3 = calcEnvelopeAt(t+tDelta, a);
-            v4 = calcEnvelopeAt(t+tDelta, a+aDelta);
+            if(a+aDelta >= a1) { // fix for division error
+                v2 = calcEnvelopeAt(t, tool->getA1());
+                v4 = calcEnvelopeAt(t+tDelta, tool->getA1());
+            } else {
+                v2 = calcEnvelopeAt(t, a+aDelta);
+                v4 = calcEnvelopeAt(t+tDelta, a+aDelta);
+            }
 
             // Add vertices to array
             vertexArr.append(v1);
@@ -209,9 +222,14 @@ void Envelope::computeNormals(){
         for (float a = tool->getA0(); a <= a1; a+=aDelta)
         {
             p1 = calcToolCenterAt(t,a);
-            p2 = calcToolCenterAt(t, a+aDelta);
             v1 = p1 + tool->getRadiusAt(a)*computeNormal(t, a);
-            v2 = p2 + tool->getRadiusAt(a)*computeNormal(t, a+aDelta);
+            if(a+aDelta >= a1) { // fix for division error
+                p2 = calcToolCenterAt(t, tool->getA1());
+                v2 = p2 + tool->getRadiusAt(a)*computeNormal(t, tool->getA1());
+            } else {
+                p2 = calcToolCenterAt(t, a+aDelta);
+                v2 = p2 + tool->getRadiusAt(a)*computeNormal(t, a+aDelta);
+            }
 
             // Add vertices to array
             normals.append(Vertex(p1,c));
@@ -428,7 +446,7 @@ QVector3D Envelope::computeNormal(float t, float a)
     double a21 = -1/matDet * QVector3D::dotProduct(st,sa);
     beta = a21 * (-ra);
     //    qDebug() << "A11"<< mInv.column(0).normalized().x();
-    gamma = sqrt(1-ra*ra*a11); // abs to solve issue with imaginaries?
+    gamma = (matDet>0 ? 1 : -1)*sqrt(1-ra*ra*a11); // abs to solve issue with imaginaries?
     // adjEnv != adjEnv to focus on the first envelope only
     if (gamma != gamma && adjEnv != adjEnv)
         qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma << " det: " << matDet;
