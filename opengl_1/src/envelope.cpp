@@ -10,7 +10,6 @@ Envelope::Envelope() :
 {
     sectorsA = 20;
     sectorsT = 50;
-    qDebug() << "Envelope()";
 }
 
 /**
@@ -103,7 +102,6 @@ void Envelope::computeToolCenters()
     float a1 = tool->getA1()-aDelta;
     float tDelta = (path.getT1()-path.getT0())/sectorsT;
     float t1 = path.getT1();
-    qDebug() <<"a1="<<tool->getA1();
     for (float t = path.getT0(); t <= t1; t+=tDelta)
     {
         for (float a = tool->getA0(); a <= a1; a+=aDelta)
@@ -119,12 +117,12 @@ void Envelope::computeToolCenters()
             vertexArrCenters.append(Vertex(v1, color));
             vertexArrCenters.append(Vertex(v2, color));
 
+            // Compute the path of an envelope with respect to its adjacent one
             if(adjEnv != nullptr && positToAdj && a == tool->getA0()){
                 pathArr.append(Vertex(v1, color));
             }
             if(a+aDelta >= a1){
                 endCurveArr.append(v2);
-                qDebug() << "appended endpoint at (" << a+aDelta << ", " << t << ")";
             }
         }
     }
@@ -263,6 +261,7 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
  */
 QVector3D Envelope::getPathAt(float t){
     if (adjEnv != nullptr && positToAdj){
+        // use positional continuity formula
         QVector3D adjCenter = adjEnv->endCurveArr[adjEnv->toolMovement->getPath().getIdxAtTime(t)];
         float rAdjEnv = adjEnv->tool->getRadiusAt(adjEnv->tool->getA1());
         float rEnv = tool->getRadiusAt(tool->getA0());
@@ -275,9 +274,14 @@ QVector3D Envelope::getPathAt(float t){
     }
 }
 
-
+/**
+ * @brief Envelope::getPathTangentAt Returns the vector tangent to the curve that defines the tool path at time t.
+ * @param t Time
+ * @return Tangent vector at t
+ */
 QVector3D Envelope::getPathTangentAt(float t){
     if (adjEnv != nullptr && positToAdj){
+        // compute according to discrete path obtained from the adjacent path formula
         SimplePath path = adjEnv->toolMovement->getPath();
         float tDelta = (path.getT1()-path.getT0())/sectorsT;
         if(t == path.getT1()) {
@@ -288,20 +292,6 @@ QVector3D Envelope::getPathTangentAt(float t){
     } else {
         SimplePath path = toolMovement->getPath();
         return path.getTangentAt(t);
-    }
-}
-
-/**
- * @brief Envelope::getPathDirecAt Returns the path direction of the tool movement at a given time.
- * @param t Time.
- * @return Path direction at time t.
- */
-QVector3D Envelope::getPathDirecAt(float t){
-    int idx = toolMovement->getPath().getIdxAtTime(t);
-    if(idx == adjEnv->endCurveArr.size()-1) {
-        return (adjEnv->endCurveArr[idx] - adjEnv->endCurveArr[idx-1]);
-    } else {
-        return (adjEnv->endCurveArr[idx+1] - adjEnv->endCurveArr[idx]);
     }
 }
 
@@ -336,7 +326,9 @@ QVector3D Envelope::calcAxisRateOfChange(float t)
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
         axis = QVector3D(axisDirecNew.x(),axisDirecNew.y(),axisDirecNew.z());
     }
-    return axis;
+
+    // AxisRateOfChange is a direction, if AxisRateOfChange is not normalized then the grazing curves are ruled
+    return axis.normalized();
 }
 
 /**
@@ -411,50 +403,35 @@ QVector3D Envelope::calcGrazingCurveAt(float t, float a)
 }
 
 /**
- * @brief Envelope::computeNormal Computes the normal at a given time and axis height.
+ * @brief Envelope::computeNormal Computes the normal of the envelope at a given time and axis height.
  * @param t Time.
  * @param a Axis height.
- * @param cont True if the envelope is continuous to the adjacent envelope.
  * @return The normal.
  */
 QVector3D Envelope::computeNormal(float t, float a)
 {
     QVector3D sa = calcToolAxisDirecAt(t);
     float a0 = tool->getA0();
-    // AxisRateOfChange is a direction, if AxisRateOfChange is not normalized then the grazing curves are ruled
-    QVector3D st = getPathTangentAt(t) + (a-a0)*(calcAxisRateOfChange(t).normalized());
-    //    qDebug() << "st: " << st;
+    QVector3D st = getPathTangentAt(t) + (a-a0)*calcAxisRateOfChange(t);
     QVector3D sNorm = QVector3D::crossProduct(sa, st).normalized();
-
-    //if (st != st)
-    //    qDebug() << "Problem with st at (" << a << ", " << t <<")" ;
-    //if (sa != sa)
-        //qDebug() << "Problem with sa at (" << a << ", " << t <<")" ;
 
     // Calculate alpha, beta, gamma
     float alpha, beta, gamma;
     float ra = tool->getRadiusDerivativeWRTa(a);
-    //    qDebug() << "ra: " << ra;
     double matDet = (QVector3D::dotProduct(sa,sa) * QVector3D::dotProduct(st,st))
                     - (QVector3D::dotProduct(sa,st) * QVector3D::dotProduct(st,sa));
-    // didn't find determinant problems for the first envelope
     if (1/matDet != 1/matDet)
         qDebug() << "determinant problem at (" << a << ", " << t <<"): det = " << matDet <<", st = " << st <<", sa = " << sa;
-    //    qDebug() << "mInv: " << mInv;
     double a11 = 1/matDet * QVector3D::dotProduct(st,st);
     alpha = a11 * (-ra);
     double a21 = -1/matDet * QVector3D::dotProduct(st,sa);
     beta = a21 * (-ra);
-    //    qDebug() << "A11"<< mInv.column(0).normalized().x();
-    gamma = (matDet>0 ? 1 : -1)*sqrt(1-ra*ra*a11); // abs to solve issue with imaginaries?
+    gamma = (matDet>0 ? 1 : -1)*sqrt(1-ra*ra*a11);
     // adjEnv != adjEnv to focus on the first envelope only
     if (gamma != gamma && adjEnv != adjEnv)
         qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma << " det: " << matDet;
 
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
-    if (normal != normal && adjEnv != adjEnv)
-        qDebug() << "alpha: " << alpha << " beta: " << beta << " gamma: " << gamma << " det: " << matDet;
-    // qDebug() << "norm: " << normal;
     normal.normalize();
     return normal;
 }

@@ -11,7 +11,7 @@ class Path
 {
 protected:
     QVector<Vertex> vertexArr;
-    int sectors = 50;
+    int sectors = 100;
 public:
     inline Path() : vertexArr(), sectors(50) {}
     virtual QVector3D getPathAt(float t) = 0;

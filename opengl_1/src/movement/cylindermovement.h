@@ -27,8 +27,7 @@ public:
     CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder);
 
     inline QVector<Vertex> getPathVertexArr() { return this->discPath; }
-    inline void setDiscPath(QVector<Vertex> discPath) { this->discPath.clear(); this->discPath = discPath;
-        qDebug() << "path size:" << this->discPath.size();}
+    inline void setDiscPath(QVector<Vertex> discPath) { this->discPath.clear(); this->discPath = discPath;}
     inline void setPath(SimplePath path) { t0 = path.getT0(); t1 = path.getT1(); this->path = path; discPath = path.getVertexArr(); }
     inline SimplePath getPath() {return path;}
     inline void setAxisDirections(QVector<QVector3D> axisDirections) {axisDirections.clear(); this->axisDirections = axisDirections;}

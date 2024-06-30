@@ -11,7 +11,6 @@ CylinderMovement::CylinderMovement() :
     discPath(path.getVertexArr())
 {
     t0 = path.getT0(); t1 = path.getT1();
-    qDebug() << "CylinderMovement()";
     QVector<Vertex> vertices = path.getVertexArr();
     QVector3D rotationVector = QVector3D::crossProduct(cylinderAxis, QVector3D(0, 1, 0));
     for (size_t i = 0; i < vertices.size(); i++)
@@ -42,7 +41,6 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     QVector3D deltaDirection = (axisDirection2 - axisDirection1) / (path.getSectors());
     for (size_t i = 0; i <= path.getSectors(); i++)
     {
-        qDebug() << lastDirection;
         axisDirections.append(lastDirection.normalized()); // add interpolated directional vector
 
         // Get (and save) vector perpendicular to both the directional vector of the movement and the axis of the cylinder

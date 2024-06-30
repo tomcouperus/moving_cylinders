@@ -26,6 +26,11 @@ MainWindow::MainWindow(QWidget *parent)
  */
 MainWindow::~MainWindow() { delete ui; }
 
+/**
+ * @brief MainWindow::on_secondPassCheckBox_toggled Updates the second envelope setting.
+ * Enables and disables the input boxes of the second tool.
+ * @param checked The new value of the checkbox
+ */
 void MainWindow::on_secondPassCheckBox_toggled(bool checked){
   ui->mainView->settings.secondEnv = checked;
 
@@ -46,7 +51,10 @@ void MainWindow::on_secondPassCheckBox_toggled(bool checked){
   ui->mainView->update();
 }
 
-
+/**
+ * @brief MainWindow::on_axisSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the cylinder.
+ * @param value The new number of sectors.
+ */
 void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
   qDebug() << "Axis sectors changed";
   ui->aSlider->setMaximum(value);
@@ -60,6 +68,10 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
   ui->mainView->update();
 }
 
+/**
+ * @brief MainWindow::on_timeSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the path.
+ * @param value The new number of sectors.
+ */
 void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
   qDebug() << "Time sectors changed";
   ui->TimeSlider->setMaximum(value);

@@ -43,7 +43,6 @@ public:
     QVector3D calcGrazingCurveAt(float t, float a);
     QVector3D computeNormal(float t, float a);
     QVector3D getPathAt(float t);
-    QVector3D getPathDirecAt(float t);
     QVector3D getPathTangentAt(float t);
 
     QMatrix4x4 getAdjMovementRotation(float time);
@@ -57,7 +56,8 @@ public:
     inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
     inline QVector<Vertex> getVertexArrGrazingCurve(){ return vertexArrGrazingCurve; }
     inline QVector<Vertex> getVertexArrNormalsAt(int idx){ return vertexArrNormals[idx]; }
-    inline QVector<Vertex> getVertexArrNormalsAt(float t){ SimplePath path = toolMovement->getPath(); return vertexArrNormals[path.getIdxAtTime(t)]; }
+    inline QVector<Vertex> getVertexArrNormalsAt(float t){ SimplePath path = toolMovement->getPath();
+                                                            return vertexArrNormals[path.getIdxAtTime(t)]; }
     
     inline Tool* getTool(){ return tool; }
     void setTool(Tool *tool);

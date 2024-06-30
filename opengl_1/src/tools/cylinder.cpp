@@ -7,7 +7,6 @@ Cylinder::Cylinder()
     : r(0.5), angle(0.0)
 
 {
-    qDebug() << "Cylinder()";
     this->a0 = r*tan(angle);
     float r1 = r + height*tan(angle);
     this->a1 = height + r1*tan(angle);
