@@ -13,7 +13,7 @@ protected:
     QVector<Vertex> vertexArr;
     int sectors = 100;
 public:
-    inline Path() : vertexArr(), sectors(50) {}
+    inline Path() : vertexArr(), sectors(100) {}
     virtual QVector3D getPathAt(float t) = 0;
     virtual void initVertexArr() = 0;
     virtual void updateVertexArr() = 0;
