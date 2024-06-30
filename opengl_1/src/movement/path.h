@@ -16,8 +16,9 @@ public:
     inline Path() : vertexArr(), sectors(50) {}
     virtual QVector3D getPathAt(float t) = 0;
     virtual void initVertexArr() = 0;
+    virtual void updateVertexArr() = 0;
 
-    inline void setSectors(int s) {sectors = s;}
+    inline void setSectors(int s) {sectors = s; updateVertexArr();}
     inline int getSectors() {return sectors;}
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 };

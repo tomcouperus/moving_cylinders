@@ -21,7 +21,7 @@ public:
     QVector3D getPathAt(float t) override;
     int getIdxAtTime(float t);
     void initVertexArr() override;
-    void updateVertexArr();
+    void updateVertexArr() override;
     QVector3D getTangentAt(float t);
 
     inline void setX(Polynomial x) {this->x = x; updateVertexArr();}

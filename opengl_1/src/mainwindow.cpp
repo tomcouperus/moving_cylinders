@@ -46,6 +46,38 @@ void MainWindow::on_secondPassCheckBox_toggled(bool checked){
   ui->mainView->update();
 }
 
+
+void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
+  qDebug() << "Axis sectors changed";
+  ui->aSlider->setMaximum(value);
+  ui->mainView->cylinder.setSectors(value);
+  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->cylinder2.setSectors(value);
+  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+
+  ui->mainView->updateBuffers();
+  ui->mainView->updateToolTransf();
+  ui->mainView->update();
+}
+
+void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
+  qDebug() << "Time sectors changed";
+  ui->TimeSlider->setMaximum(value);
+  SimplePath path = ui->mainView->move.getPath();
+
+  path.setSectors(value);
+
+  ui->mainView->move.setPath(path);
+  ui->mainView->move2.setPath(path);
+
+  ui->mainView->envelope.setToolMovement(&ui->mainView->move);
+  ui->mainView->envelope2.setToolMovement(&ui->mainView->move2);
+
+  ui->mainView->updateBuffers();
+  ui->mainView->updateToolTransf();
+  ui->mainView->update();
+}
+
 /**
  * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the tool.
  * @param value new radius.

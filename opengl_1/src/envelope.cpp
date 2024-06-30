@@ -8,8 +8,8 @@ Envelope::Envelope() :
     toolMovement(nullptr),
     tool()
 {
-    sectorsA = 200;
-    sectorsT = 200;
+    sectorsA = 20;
+    sectorsT = 50;
     qDebug() << "Envelope()";
 }
 

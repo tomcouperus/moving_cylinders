@@ -34,6 +34,8 @@ class MainWindow : public QMainWindow {
   void on_sphereCheckBox_toggled(bool checked);
 
   void on_secondPassCheckBox_toggled(bool checked);
+  void on_axisSectorsSpinBox_valueChanged(int value);
+  void on_timeSectorsSpinBox_valueChanged(int value);
 
   void on_radiusSpinBox_valueChanged(double value);
   void on_radius0SpinBox_valueChanged(double value);
