@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1048</width>
-    <height>600</height>
+    <height>701</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>300</y>
+         <y>400</y>
          <width>205</width>
          <height>177</height>
         </rect>
@@ -143,7 +143,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>480</y>
+         <y>580</y>
          <width>205</width>
          <height>90</height>
         </rect>
@@ -210,10 +210,10 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>12</x>
-         <y>32</y>
+         <x>10</x>
+         <y>20</y>
          <width>205</width>
-         <height>231</height>
+         <height>301</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -225,18 +225,204 @@
        <property name="minimumSize">
         <size>
          <width>169</width>
-         <height>150</height>
+         <height>200</height>
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
-       <widget class="QWidget" name="Cylinder">
+       <widget class="QWidget" name="Settings">
+        <attribute name="title">
+         <string>Settings</string>
+        </attribute>
+        <widget class="QCheckBox" name="envelopeCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Envelope</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="grazCurveCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>141</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Grazing curves</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="pathCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Path</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="toolAxisCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Tool axis</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="sphereCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>130</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sphere</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="toolCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Tool</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="normalsCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Normals</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="secondPassCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>160</y>
+           <width>141</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Second Envelope</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="axisSectorsSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>210</y>
+           <width>42</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>20</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="timeSectorsSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>240</y>
+           <width>42</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>50</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelAxisSectors">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>210</y>
+           <width>71</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Axis sectors</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelTimeSectors">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>240</y>
+           <width>71</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Time sectors</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelSampling">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>190</y>
+           <width>71</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sampling:</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="Tool">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <attribute name="title">
-         <string>Cylinder</string>
+         <string>Tool</string>
         </attribute>
         <widget class="QFrame" name="cylinderBox">
          <property name="geometry">
@@ -244,14 +430,14 @@
            <x>0</x>
            <y>0</y>
            <width>196</width>
-           <height>141</height>
+           <height>261</height>
           </rect>
          </property>
          <widget class="QLabel" name="labelRadius">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>30</y>
+            <y>10</y>
             <width>54</width>
             <height>17</height>
            </rect>
@@ -264,7 +450,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>70</y>
+            <y>40</y>
             <width>54</width>
             <height>17</height>
            </rect>
@@ -277,7 +463,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>110</y>
+            <y>70</y>
             <width>54</width>
             <height>17</height>
            </rect>
@@ -289,8 +475,8 @@
          <widget class="QDoubleSpinBox" name="radiusSpinBox">
           <property name="geometry">
            <rect>
-            <x>110</x>
-            <y>30</y>
+            <x>130</x>
+            <y>0</y>
             <width>62</width>
             <height>26</height>
            </rect>
@@ -305,24 +491,27 @@
          <widget class="QDoubleSpinBox" name="angleSpinBox">
           <property name="geometry">
            <rect>
-            <x>110</x>
-            <y>70</y>
+            <x>130</x>
+            <y>30</y>
             <width>62</width>
             <height>26</height>
            </rect>
+          </property>
+          <property name="maximum">
+           <double>62.000000000000000</double>
           </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
           </property>
           <property name="value">
-           <double>0.500000000000000</double>
+           <double>0.000000000000000</double>
           </property>
          </widget>
          <widget class="QDoubleSpinBox" name="heightSpinBox">
           <property name="geometry">
            <rect>
-            <x>110</x>
-            <y>110</y>
+            <x>130</x>
+            <y>60</y>
             <width>62</width>
             <height>26</height>
            </rect>
@@ -332,6 +521,135 @@
           </property>
           <property name="value">
            <double>2.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="orientVector_1">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>150</y>
+            <width>101</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(0.0,1.0,0.0)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelOrient_1">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>160</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Orientation 1</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="orientVector_2">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>180</y>
+            <width>101</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(0.0,1.0,0.0)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelOrient_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>190</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Orientation 2</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelRadius0">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>100</y>
+            <width>111</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Drum curve radius</string>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="radius0SpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>90</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="minimum">
+           <double>1.250000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.500000000000000</double>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="toolBox">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>220</y>
+            <width>72</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="editable">
+           <bool>false</bool>
+          </property>
+          <property name="currentText">
+           <string notr="true">Cylinder</string>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>Cylinder</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Drum</string>
+           </property>
+          </item>
+         </widget>
+         <widget class="QLabel" name="tooltypeLabel">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>220</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>tool type</string>
           </property>
          </widget>
         </widget>
@@ -713,7 +1031,7 @@
           <number>0</number>
          </property>
          <property name="value">
-          <number>5</number>
+          <number>2</number>
          </property>
         </widget>
         <widget class="QLabel" name="label_17">
@@ -735,17 +1053,352 @@
          </property>
         </widget>
        </widget>
-       <widget class="QWidget" name="tab_2">
+       <widget class="QWidget" name="secondTool">
         <attribute name="title">
-         <string>Tab 2</string>
+         <string>Second Tool</string>
         </attribute>
+        <widget class="QFrame" name="cylinderBox_2">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>196</width>
+           <height>271</height>
+          </rect>
+         </property>
+         <widget class="QLabel" name="labelRadius_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Radius</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelAngle_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>80</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Angle</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelHeight_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>110</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Height</string>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="radiusSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>40</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.500000000000000</double>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="angleSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>70</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <double>6.200000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="heightSpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>100</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>2.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="orientVector_1_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>180</y>
+            <width>81</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(0.0,1.0,0.0)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelOrient_1_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>160</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Orientation 1</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="orientVector_2_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>110</x>
+            <y>180</y>
+            <width>81</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(0.0,1.0,0.0)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelOrient_2_2">
+          <property name="geometry">
+           <rect>
+            <x>110</x>
+            <y>160</y>
+            <width>81</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Orientation 2</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelRadius0_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>140</y>
+            <width>111</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Drum curve radius</string>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="radius0SpinBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>130</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="minimum">
+           <double>1.250000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.500000000000000</double>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="toolBox_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>240</y>
+            <width>72</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="editable">
+           <bool>false</bool>
+          </property>
+          <property name="currentText">
+           <string notr="true">Cylinder</string>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>Cylinder</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Drum</string>
+           </property>
+          </item>
+         </widget>
+         <widget class="QLabel" name="tooltypeLabel_2">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>240</y>
+            <width>54</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>tool type</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="tanContCheckBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>0</y>
+            <width>161</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Tangentially Continuous</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="angleOrient_1_SpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>210</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="minimum">
+           <double>-3.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>3.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QDoubleSpinBox" name="angleOrient_2_SpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>210</y>
+            <width>62</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="minimum">
+           <double>-3.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>3.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000000000000000</double>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="positContCheckBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>161</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Positionally Continuous</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
        </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>260</y>
+         <y>360</y>
          <width>205</width>
          <height>41</height>
         </rect>
@@ -769,7 +1422,42 @@
          </rect>
         </property>
         <property name="maximum">
-         <number>49</number>
+         <number>50</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>320</y>
+         <width>205</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Axis</string>
+       </property>
+       <widget class="QSlider" name="aSlider">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>24</y>
+          <width>196</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>50</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

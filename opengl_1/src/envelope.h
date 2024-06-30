@@ -1,34 +1,68 @@
 #ifndef ENVELOPE_H
 #define ENVELOPE_H
 
-#include "cylinder.h"
-#include "simplepath.h"
+#include "vertex.h"
+#include "movement/cylindermovement.h"
+#include <QMatrix2x2>
 
 class Envelope
 {
-    Cylinder cylinder;
-    // TODO: finish abstract class and modify Envelope class accordingly
-    std::unique_ptr<Path> path;
-    // SimplePath path;
-    // TODO: A w.r.t. time t
-    QVector3D axisDirection;
-    float t0, t1;
+    Envelope *adjEnv;
+    bool contToAdj = true;
+    bool positToAdj = true;
+    CylinderMovement *toolMovement;
+    Tool *tool;
+    double adjAxisAngle1;
+    double adjAxisAngle2;
+
+    int sectorsA;
+    int sectorsT;
+
     QVector<Vertex> vertexArr;
+    QVector<Vertex> vertexArrCenters;
+    QVector<Vertex> vertexArrGrazingCurve;
+    QVector<QVector<Vertex>> vertexArrNormals;
+
+    QVector<QVector3D> endCurveArr;
 public:
     Envelope();
-    Envelope(Cylinder cylinder, Path* path, QVector3D direction, int sectors);
+    Envelope(CylinderMovement *toolMovement, Tool *tool);
+    Envelope(CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope);
 
     void initEnvelope();
-    void setCylinder(Cylinder cylinder);
-    void setSectors(int sectors);
-    void setPath(Path* path);
-    void setAxisDirection(QVector3D direction);
-
-    inline QVector<Vertex> getVertexArr(){ return vertexArr; }
-private:
-    int sectors;
     void computeEnvelope();
-    Vertex calcSurfaceVertex(float t, float a);
+    void computeAdjEnvelope();
+    void computeToolCenters();
+    void computeGrazingCurves();
+    void computeNormals();
+
+    Vertex calcEnvelopeAt(float t, float a);
+    QVector3D calcToolCenterAt(float t, float a);
+    QVector3D calcToolAxisDirecAt(float t);
+    QVector3D calcAxisRateOfChange(float t);
+    QVector3D calcGrazingCurveAt(float t, float a);
+    QVector3D computeNormal(float t, float a);
+    QVector3D getPathAt(float t);
+    QVector3D getPathTangentAt(float t);
+
+    QMatrix4x4 getAdjMovementRotation(float time);
+
+    inline void setIsTanContinuous(bool value){ contToAdj = value; }
+    inline void setIsPositContinuous(bool value){ positToAdj = value; }
+    inline bool isTanContinuous() { return contToAdj; }
+    inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
+    inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
+    inline QVector<Vertex> getVertexArr(){ return vertexArr; }
+    inline QVector<Vertex> getVertexArrCenters(){ return vertexArrCenters; }
+    inline QVector<Vertex> getVertexArrGrazingCurve(){ return vertexArrGrazingCurve; }
+    inline QVector<Vertex> getVertexArrNormalsAt(int idx){ return vertexArrNormals[idx]; }
+    inline QVector<Vertex> getVertexArrNormalsAt(float t){ SimplePath path = toolMovement->getPath();
+                                                            return vertexArrNormals[path.getIdxAtTime(t)]; }
+    
+    inline Tool* getTool(){ return tool; }
+    void setTool(Tool *tool);
+    void setToolMovement(CylinderMovement *toolMovement);
+    void setAdjacentEnvelope(Envelope *env);
 };
 
 #endif // ENVELOPE_H

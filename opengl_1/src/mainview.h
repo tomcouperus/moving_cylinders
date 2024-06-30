@@ -4,51 +4,65 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QOpenGLDebugLogger>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_1_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 #include <QTimer>
 #include <QVector3D>
 
-#include "model.h"
 #include "vertex.h"
-#include "cylinder.h"
-#include "cylindermovement.h"
-#include "simplepath.h"
+#include "tools/cylinder.h"
+#include "movement/cylindermovement.h"
+#include "movement/simplepath.h"
+#include "envelope.h"
+#include "settings.h"
+#include "renderers/toolrenderer.h"
+#include "renderers/enveloperenderer.h"
+#include "renderers/moverenderer.h"
 
 
 /**
  * @brief The MainView class is resonsible for the actual content of the main
  * window.
  */
-class MainView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
+class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 {
     Q_OBJECT
     friend class MainWindow;
 
-    // Cylinder rendering
+    // Tool rendering
+    ToolRenderer toolRend;
+    ToolRenderer toolRend2;
+    Drum drum;
     Cylinder cylinder;
-    GLuint vaoCyl;
-    GLuint vboCyl;
-    QVector<Vertex> vertexArrCyl;
-    QOpenGLShaderProgram shader;
+    Drum drum2;
+    Cylinder cylinder2;
 
     // Path rendering
     CylinderMovement move;
-    QVector<QVector3D> axisDirections;
-    SimplePath path;
-    GLuint vaoPth;
-    GLuint vboPth;
-    QVector<Vertex> vertexArrPth;
+    MoveRenderer movRend;
+    CylinderMovement move2;
+    MoveRenderer movRend2;
+
+    // Envelope rendering
+    EnvelopeRenderer envRend;
+    Envelope envelope;
+    EnvelopeRenderer envRend2;
+    Envelope envelope2;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;
     QMatrix4x4 modelRotation;
-    QMatrix4x4 cylinderRotation;
-    QMatrix4x4 cylinderTranslation;
     QMatrix4x4 modelTranslation;
-    QMatrix4x4 cylinderTransf; // cylinderTranslation * modelRotation * modelScaling
     QMatrix4x4 modelTransf;
+    QMatrix4x4 toolRotation;
+    QMatrix4x4 toolRotation2;
+    QMatrix4x4 toolToPathTranslation;
+    QMatrix4x4 toolToPathTranslation2;
+    QMatrix4x4 toolTranslation;
+    QMatrix4x4 toolTranslation2;
+    QMatrix4x4 toolTransf; // toolTranslation * modelRotation * modelScaling
+    QMatrix4x4 toolTransf2;
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
@@ -64,6 +78,9 @@ public:
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
     void setTime(float time);
+    void setA(float a);
+    void updateToolTransf();
+    void updateAdjToolTransf();
     void updateBuffers();
 
 protected:
@@ -92,10 +109,8 @@ private:
     QOpenGLDebugLogger debugLogger;
     QTimer timer; // timer used for animation
 
-    QOpenGLShaderProgram shaderProgram;
-    float time;
-
-    void createShaderProgram();
+    QOpenGLFunctions_4_1_Core *gl;
+    Settings settings;
 };
 
 #endif // MAINVIEW_H

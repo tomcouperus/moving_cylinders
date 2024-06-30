@@ -44,3 +44,14 @@ void Polynomial::setParameters(float a, float b, float c, float d)
     this->c = c;
     this->d = d;
 }
+
+/**
+ * @brief Polynomial::getDerivativeAt Returns the value of the derivative of the polynomial at a given time.
+ * @param t The time.
+ * @return The value of the derivative of the polynomial at time t.
+*/
+float Polynomial::getDerivativeAt(float t)
+{
+    float pt = 3*a*t*t + 2*b*t + c;
+    return pt;
+}

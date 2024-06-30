@@ -4,10 +4,12 @@
  * @brief Cylinder::Cylinder Default constructor builds cylinder to preset size
  */
 Cylinder::Cylinder()
-    : r(0.5), angle(0.5), height(2), sectors(25),posit(QVector3D(0.0f,0.0f,0.0f))
+    : r(0.5), angle(0.0)
 
 {
-    theta = 2*PI/sectors;
+    this->a0 = r*tan(angle);
+    float r1 = r + height*tan(angle);
+    this->a1 = height + r1*tan(angle);
 }
 
 /**
@@ -19,9 +21,13 @@ Cylinder::Cylinder()
  * @param position position of the center of the base of the cylinder
  */
 Cylinder::Cylinder(float baseRadius, float angle, float height, int sectors, QVector3D position)
-    : r(baseRadius), angle(angle), height(height), sectors(sectors),posit(position)
+    : r(baseRadius), angle(angle)
 {
-    theta = 2*PI/sectors;
+    this->sectors = sectors;
+    this->posit = position;
+    this->a0 = r*tan(angle);
+    float r1 = r + height*tan(angle);
+    this->a1 = height + r1*tan(angle);
 }
 
 /**
@@ -33,21 +39,32 @@ void Cylinder::initCylinder(){
 
 void Cylinder::setSectors(int sectors){
     this->sectors = sectors;
-    theta = 2*PI/sectors;
     computeCylinder();
 }
+
 void Cylinder::setRadius(float radius){
     r = radius;
+    this->a0 = r*tan(angle);
+    float r1 = r + height*tan(angle);
+    this->a1 = height + r1*tan(angle);
     computeCylinder();
 }
+
 void Cylinder::setAngle(float angle){
     this->angle = angle;
+    this->a0 = r*tan(angle);
+    float r1 = r + height*tan(angle);
+    this->a1 = height + r1*tan(angle);
     computeCylinder();
 }
+
 void Cylinder::setHeight(float height){
     this->height = height;
+    float r1 = r + height*tan(angle);
+    this->a1 = height + r1*tan(angle);
     computeCylinder();
 }
+
 void Cylinder::setPosit(QVector3D position){
     posit = position;
     computeCylinder();
@@ -62,6 +79,7 @@ void Cylinder::computeCylinder(){
     float hDelta = height/sectors;
     float r0, r1 = r;
     float h0, h1 = 0;
+    float theta = 2*PI/sectors;
     for(size_t j=0;j<sectors;j++){
         // transition to next layer
         h0 = h1;
@@ -70,10 +88,10 @@ void Cylinder::computeCylinder(){
         r1 = r + h1*tan(angle);
         for(size_t i=0;i<sectors;i++){
             // Calculate vertices of a quad of the cylinder
-            v1 = calcCircleBound(posit, r0, theta*i, h0);
-            v2 = calcCircleBound(posit, r1, theta*i, h1);
-            v3 = calcCircleBound(posit, r0, theta*(i+1), h0);
-            v4 = calcCircleBound(posit, r1, theta*(i+1), h1);
+            v1 = calcCircleBound(r0, theta*i, h0);
+            v2 = calcCircleBound(r1, theta*i, h1);
+            v3 = calcCircleBound(r0, theta*(i+1), h0);
+            v4 = calcCircleBound(r1, theta*(i+1), h1);
             // Add vertices to array
             vertexArr.append(v1);
             vertexArr.append(v4);
@@ -93,7 +111,7 @@ void Cylinder::computeCylinder(){
  * @param h height
  * @return Vertex of circle at height h and direction of angle
  */
-Vertex Cylinder::calcCircleBound(QVector3D posit, float r1, float theta, float h) {
+Vertex Cylinder::calcCircleBound(float r1, float theta, float h) {
     // point position
     QVector3D p = QVector3D();
     p.setX(posit.x() + r1*cos(theta));

@@ -3,6 +3,7 @@
 
 #include "path.h"
 #include "polynomial.h"
+#include <QOpenGLDebugLogger>
 
 /**
  * @brief The SimplePath class is a path parameterized by a
@@ -20,7 +21,8 @@ public:
     QVector3D getPathAt(float t) override;
     int getIdxAtTime(float t);
     void initVertexArr() override;
-    void updateVertexArr();
+    void updateVertexArr() override;
+    QVector3D getTangentAt(float t);
 
     inline void setX(Polynomial x) {this->x = x; updateVertexArr();}
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}

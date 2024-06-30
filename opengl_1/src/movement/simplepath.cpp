@@ -7,7 +7,7 @@ SimplePath::SimplePath()
     : x(Polynomial()), y(Polynomial()), z(Polynomial())
 {
     t0 = 0;
-    t1 = 5;
+    t1 = 2;
 }
 
 /**
@@ -20,13 +20,13 @@ SimplePath::SimplePath(Polynomial x, Polynomial y, Polynomial z)
     : x(x), y(y), z(z)
 {
     t0 = 0;
-    t1 = 5;
+    t1 = 2;
 }
 
 /**
  * @brief SimplePath::getPathAt Returns the path at a given time.
- * @param t
- * @return
+ * @param t Time.
+ * @return Path at time t.
 */
 QVector3D SimplePath::getPathAt(float t)
 {
@@ -39,12 +39,14 @@ QVector3D SimplePath::getPathAt(float t)
 
 /**
  * @brief SimplePath::getIdxAtTime Returns the index of the vertex array at a given time.
- * @param time
- * @return
+ * @param time Time.
+ * @return Index of the vertex array at time.
 */
 int SimplePath::getIdxAtTime(float time)
 {
-    float delta = (t1-t0)/sectors;
+    float delta = (t1-t0)/(sectors+1);
+    if ((time-t0)/delta > vertexArr.size()-1)
+        return vertexArr.size()-1;
     return (time-t0)/delta;
 }
 
@@ -77,3 +79,19 @@ void SimplePath::updateVertexArr()
         t += delta;
     }
 }
+
+/**
+ * @brief SimplePath::getTangentAt Returns the tangent at a given time.
+ * @param t Time.
+ * @return Tangent at time t.
+*/
+QVector3D SimplePath::getTangentAt(float t)
+{
+    QVector3D tangent = QVector3D();
+    tangent.setX(x.getDerivativeAt(t));
+    tangent.setY(y.getDerivativeAt(t));
+    tangent.setZ(z.getDerivativeAt(t));
+    return tangent;
+}
+
+

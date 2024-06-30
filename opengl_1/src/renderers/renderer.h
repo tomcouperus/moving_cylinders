@@ -4,6 +4,7 @@
 #include <QOpenGLFunctions_4_1_Core>
 #include <QOpenGLShaderProgram>
 
+#include "../settings.h"
 
 /**
  * @brief The Renderer class represents a generic renderer class. The class is
@@ -20,11 +21,8 @@ public:
 protected:
     virtual void initShaders() = 0;
     virtual void initBuffers() = 0;
-    QOpenGLShaderProgram *constructDefaultShader(const QString &name) const;
 
-    QMap<ShaderType, QOpenGLShaderProgram *> shaders;
     QOpenGLFunctions_4_1_Core *gl;
     Settings *settings;
 };
-
-#endif  // RENDERER_H
+#endif // RENDERER_H

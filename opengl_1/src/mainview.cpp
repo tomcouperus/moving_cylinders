@@ -3,6 +3,7 @@
 #include "vertex.h"
 
 #include <QDateTime>
+#include <QOpenGLVersionFunctionsFactory>
 
 /**
  * @brief MainView::MainView Constructs a new main view.
@@ -27,12 +28,6 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 MainView::~MainView()
 {
     qDebug() << "MainView destructor";
-
-    // CLEAN UP!
-    glDeleteBuffers(1, &vboCyl);
-    glDeleteVertexArrays(1, &vaoCyl);
-    glDeleteBuffers(1, &vboPth);
-    glDeleteVertexArrays(1, &vaoPth);
 
     makeCurrent();
 }
@@ -69,48 +64,93 @@ void MainView::initializeGL()
     // Default is GL_LESS
     glDepthFunc(GL_LEQUAL);
 
+    // grab the opengl context
+    gl =
+        QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_4_1_Core>(
+            this->context());
+
     // Set the color to be used by glClear.
     // This is the background color.
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
-    createShaderProgram();
-
     // TODO: refactor
 
-    // Define the vertices of the cylinder
+    // Define the vertices of the tools
     cylinder.initCylinder();
-    vertexArrCyl = cylinder.getVertexArr();
+    cylinder2.initCylinder();
+    drum.initDrum();
+    drum2.initDrum();
 
-    path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
+    switch (settings.toolIdx) {
+    case 0:
+        toolRend.setTool(&cylinder);
+        toolRend2.setTool(&cylinder2);
+        break;
+    case 1:
+        toolRend.setTool(&drum);
+        toolRend2.setTool(&drum2);
+        break;
+    default:
+        break;
+    }
+    toolRend.init(gl,&settings);
+    toolRend2.init(gl,&settings);
+
+    // Define path for the tool
+    SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
                       Polynomial(0.0,1.0,0.0,0.0),
                       Polynomial());
     path.initVertexArr();
-    vertexArrPth = path.getVertexArr();
 
+    // Define orientation(s) of the tool
     move = CylinderMovement(path,
-                            QVector3D(0.0,0.1,-1.0),
+                            //QVector3D(0.0,0.1,-1.0),
+                            QVector3D(0.0,1.0,0.0),
                             QVector3D(0.0,1.0,0.0), cylinder);
-    axisDirections = move.getAxisDirections();
+    move2 = CylinderMovement(path,
+                            //QVector3D(0.0,0.1,-1.0),
+                            QVector3D(0.0,1.0,0.0),
+                            QVector3D(0.0,1.0,0.0), cylinder2);
+
+    movRend.setMovement(&move);
+    movRend.init(gl,&settings);
+    movRend2.setMovement(&move2);
+    movRend2.init(gl,&settings);
+
+    // Define the vertices of the enveloping surface
+    envelope = Envelope(&move, &cylinder);
+    envelope.initEnvelope();
+
+    envelope2 = Envelope(&move2, &cylinder2, &envelope);
+    envelope2.initEnvelope();
+
+    envRend.setEnvelope(&envelope);
+    envRend.init(gl,&settings);
+    envRend2.setEnvelope(&envelope2);
+    envRend2.init(gl,&settings);
 
     initBuffers();
 
     // First transformation of the cylinder
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation.translate(-2, 0, -6);
-    modelTranslation = cylinderTranslation;
-
-    cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(0);
+    modelTranslation.setToIdentity();
+    modelTranslation.translate(-2, 0, -6);
 
     // Set the initial model transformation to
     // just the translation
-    cylinderTransf = cylinderTranslation * cylinderRotation;
     modelTransf = modelTranslation;
+    updateToolTransf();
+
+    // Pass initial transformations to the renderers;
+    toolRend.setTransf(toolTransf);
+    toolRend2.setTransf(toolTransf2);
+    envRend.setTransf(modelTransf);
+    envRend2.setTransf(modelTransf);
+    movRend.setTransf(modelTransf);
+    movRend2.setTransf(modelTransf);
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
     projTransf.ortho(0.0f,20.0f,0.0f,20.0f,0.2f,20.0f);
-    //projTransf.perspective(60.0f, 1.0f, 0.2f, 20.0f);
 }
 
 /**
@@ -118,47 +158,14 @@ void MainView::initializeGL()
  * TODO: extend for other cylinders and enveloping surfaces.
  */
 void MainView::initBuffers() {
-    glGenVertexArrays(1, &vaoCyl);
-    glBindVertexArray(vaoCyl);
-    glGenBuffers(1, &vboCyl);
+    toolRend.initBuffers();
+    toolRend2.initBuffers();
 
-    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
+    movRend.initBuffers();
+    movRend2.initBuffers();
 
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(
-        0,                               // index
-        3,                               // size of part of interest (x,y,z)
-        GL_FLOAT,                        // type
-        GL_FALSE,                        // normalized
-        sizeof(Vertex),                  // stride (size of object)
-        (void *)offsetof(Vertex, xCoord) // offset
-        );
-    glVertexAttribPointer(
-        1,                             // index
-        3,                             // size of part of interest (r,g,b)
-        GL_FLOAT,                      // type
-        GL_FALSE,                      // normalized
-        sizeof(Vertex),                // stride (size of object)
-        (void *)offsetof(Vertex, rVal) // offset
-        );
-
-    glGenVertexArrays(1, &vaoPth);
-    glBindVertexArray(vaoPth);
-    glGenBuffers(1, &vboPth);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
-
-    // Set up the vertex attributes
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+    envRend.initBuffers();
+    envRend2.initBuffers();
 }
 
 /**
@@ -166,35 +173,44 @@ void MainView::initBuffers() {
  * TODO: extend to update buffer of other cylinders and enveloping surfaces.
  */
 void MainView::updateBuffers(){
-    vertexArrCyl.clear();
-    vertexArrCyl = cylinder.getVertexArr();
+    qDebug() << "main update buffers";
+    switch (settings.toolIdx) {
+    case 0:
+        envelope.setTool(&cylinder);
+        envelope2.setAdjacentEnvelope(&envelope);
+        toolRend.updateBuffers(&cylinder);
+        break;
+    case 1:
+        qDebug() << "is drum";
+        envelope.setTool(&drum);
+        envelope2.setAdjacentEnvelope(&envelope);
+        toolRend.updateBuffers(&drum);
+        break;
+    default:
+        break;
+    }
+    envRend.updateBuffers(&envelope);
+    movRend.updateBuffers(&move);
 
-    vertexArrPth.clear();
-    vertexArrPth = path.getVertexArr();
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrCyl.size() * sizeof(Vertex), vertexArrCyl.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-    glBufferData(GL_ARRAY_BUFFER, vertexArrPth.size() * sizeof(Vertex), vertexArrPth.data(), GL_STATIC_DRAW);
+    if (settings.secondEnv) {
+        switch (settings.tool2Idx) {
+        case 0:
+            envelope2.setTool(&cylinder2);
+            toolRend2.updateBuffers(&cylinder2);
+            break;
+        case 1:
+            qDebug() << "is drum";
+            envelope2.setTool(&drum2);
+            toolRend2.updateBuffers(&drum2);
+            break;
+        default:
+            break;
+        }
+        envRend2.updateBuffers(&envelope2);
+        movRend2.updateBuffers(&move2);
+    }
 }
 
-/**
- * @brief MainView::createShaderProgram Creates a new shader program with a
- * vertex and fragment shader.
- */
-void MainView::createShaderProgram()
-{
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                          ":/shaders/vertshader.glsl");
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                          ":/shaders/fragshader.glsl");
-    shaderProgram.link();
-
-    // Get the locations of the model and projection matrices
-    modelLocation = shaderProgram.uniformLocation("modelTransform");
-    projLocation = shaderProgram.uniformLocation("projTransform");
-}
 
 /**
  * @brief MainView::paintGL Actual function used for drawing to the screen.
@@ -203,48 +219,29 @@ void MainView::createShaderProgram()
 void MainView::paintGL()
 {
     // Clear the screen before rendering
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Bind the shader program
-    shaderProgram.bind();
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, projTransf.data());
 
-    // Bind cylinder buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboCyl);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, cylinderTransf.data());
-    glBindVertexArray(vaoCyl);
-    // Draw cylinder
-    glDrawArrays(GL_TRIANGLES,0,vertexArrCyl.size());
+    toolRend.updateUniforms(toolTransf, projTransf);
+    toolRend.paintGL();
 
-    // Bind path buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vboPth);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, modelTransf.data());
-    glBindVertexArray(vaoPth);
-    // Draw path
-    glDrawArrays(GL_LINE_STRIP,0,vertexArrPth.size());
+    movRend.updateUniforms(modelTransf,projTransf);
+    movRend.paintGL();
 
-    shaderProgram.release();
+    envRend.updateUniforms(modelTransf,projTransf);
+    envRend.paintGL();
 
-}
+    if (settings.secondEnv) {
+        toolRend2.updateUniforms(toolTransf, projTransf);
+        toolRend2.paintGL();
 
+        movRend2.updateUniforms(modelTransf,projTransf);
+        movRend2.paintGL();
 
-void MainView::moveModel(float x, float y)
-{
-    qDebug() << "is " << modelTranslation;
-    modelTranslation.translate(-x/500.0f, -y/700.0f, 0);
-    qDebug() << "moved " << modelTranslation;
-
-    modelTransf = modelTranslation * modelScaling * modelRotation;
-
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
-    update();
+        envRend2.updateUniforms(modelTransf,projTransf);
+        envRend2.paintGL();
+    }
 }
 
 /**
@@ -285,14 +282,11 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    envRend.setTransf(modelTransf);
+    envRend2.setTransf(modelTransf);
+    movRend.setTransf(modelTransf);
+    movRend2.setTransf(modelTransf);
+    updateToolTransf();
     update();
 }
 
@@ -314,17 +308,11 @@ void MainView::setScale(float scale)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(time);
-
-    // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
+    envRend.setTransf(modelTransf);
+    envRend2.setTransf(modelTransf);
+    movRend.setTransf(modelTransf);
+    movRend2.setTransf(modelTransf);
+    updateToolTransf();
     update();
 }
 
@@ -335,20 +323,96 @@ void MainView::setScale(float scale)
 void MainView::setTime(float time)
 {
     qDebug() << "Time changed to " << time;
-    this->time = time;
 
-    cylinderTranslation.setToIdentity();
-    cylinderTranslation = modelTranslation;
-    QVector4D shift = QVector4D(path.getPathAt(time),0);
-    shift = modelTransf * shift;
-    cylinderTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+    settings.time = time + move.getPath().getT0();
 
-    cylinderRotation.setToIdentity();
-    cylinderRotation = move.getMovementRotation(time);
+    updateToolTransf();
+    update();
+}
+
+/**
+ * @brief MainView::setA Changes the position value a of the displayed objects.
+ * @param a The new a value.
+ */
+void MainView::setA(float a)
+{
+    float divisor;
+    switch (settings.toolIdx) {
+    case 0:
+        divisor = cylinder.getSectors() / (cylinder.getA1() - cylinder.getA0());
+        break;
+    case 1:
+        divisor = drum.getSectors() / (drum.getA1() - drum.getA0());
+        break;
+    default:
+        break;
+    }
+
+    settings.a = a / divisor;
+}
+
+/**
+ * @brief MainView::updateToolTransf Updates the tools transformation matrices.
+ */
+void MainView::updateToolTransf(){
+    // tool translation towards path
+    toolToPathTranslation.setToIdentity();
+    QVector3D toolPosit = -envelope.getTool()->getA0()*envelope.getTool()->getAxisVector();
+    QVector4D shift = QVector4D(toolPosit,0);
+    toolToPathTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    // tool translation w.r.t path
+    toolTranslation.setToIdentity();
+    toolPosit = envelope.getPathAt(settings.time);
+    shift = QVector4D(toolPosit,0);
+    toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+
+    toolRotation.setToIdentity();
+    toolRotation = move.getMovementRotation(settings.time);
 
     // Update the model transformation matrix
-    cylinderTransf = cylinderTranslation * modelScaling * modelRotation * cylinderRotation;
-    update();
+    // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
+    toolTransf = modelTransf * toolTranslation * toolRotation * toolToPathTranslation;
+
+    toolRend.updateUniforms(toolTransf, projTransf);
+    toolRend.setTransf(toolTransf);
+
+    if (settings.secondEnv) {
+        updateAdjToolTransf();
+    }
+}
+
+/**
+ * @brief MainView::updateAdjToolTransf Updates the tools transformation matrices of a second tool.
+ */
+void MainView::updateAdjToolTransf(){
+    // tool translation towards path
+    toolToPathTranslation2.setToIdentity();
+    QVector3D toolPosit = -envelope2.getTool()->getA0()*envelope2.getTool()->getAxisVector();
+    QVector4D shift2 = QVector4D(toolPosit,0);
+    toolToPathTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+
+    toolTranslation2.setToIdentity();
+    toolPosit = envelope2.getPathAt(settings.time);
+    shift2 = QVector4D(toolPosit,0);
+    toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+
+    toolRotation2.setToIdentity();
+    if (envelope2.isTanContinuous()) {
+        toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
+
+        // Update the model transformation matrix
+        // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
+        toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolRotation * toolToPathTranslation2;
+    } else {
+        toolRotation2 = move2.getMovementRotation(settings.time);
+
+        // Update the model transformation matrix
+        toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolToPathTranslation2;
+    }
+
+    toolRend2.updateUniforms(toolTransf, projTransf);
+    toolRend2.setTransf(toolTransf2);
 }
 
 /**
