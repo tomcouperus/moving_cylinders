@@ -117,7 +117,7 @@ void ToolRenderer::initBuffers()
  */
 void ToolRenderer::updateBuffers(Tool *tool)
 {
-    qDebug()<< "update buffers";
+    qDebug()<< "ToolRenderer::updateBuffers";
     vertexArrTool.clear();
     vertexArrTool = tool->getVertexArr();
 

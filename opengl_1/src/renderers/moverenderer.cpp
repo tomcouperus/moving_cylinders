@@ -49,7 +49,6 @@ void MoveRenderer::initBuffers()
 {
     vertexArrPath.clear();
     vertexArrPath = move->getPathVertexArr();
-    qDebug() << this->move->getPathVertexArr().size();
 
     gl->glGenVertexArrays(1, &vaoPath);
     gl->glBindVertexArray(vaoPath);

@@ -102,10 +102,6 @@ void MainView::initializeGL()
                       Polynomial());
     path.initVertexArr();
 
-    float tDelta = (path.getT1()-path.getT0())/path.getSectors();
-    for(float i=path.getT0(); i<path.getT1(); i+=tDelta)
-        qDebug()<< i << "gives" << path.getIdxAtTime(i);
-
     // Define orientation(s) of the tool
     move = CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
@@ -125,7 +121,6 @@ void MainView::initializeGL()
     envelope = Envelope(&move, &cylinder);
     envelope.initEnvelope();
 
-    qDebug() << "env2";
     envelope2 = Envelope(&move2, &cylinder2, &envelope);
     envelope2.initEnvelope();
 
@@ -240,7 +235,6 @@ void MainView::paintGL()
     if (settings.secondEnv) {
         toolRend2.updateUniforms(toolTransf, projTransf);
         toolRend2.paintGL();
-        qDebug() << "pft";
 
         movRend2.updateUniforms(modelTransf,projTransf);
         movRend2.paintGL();
@@ -369,7 +363,7 @@ void MainView::updateToolTransf(){
 
     // tool translation w.r.t path
     toolTranslation.setToIdentity();
-    toolPosit = envelope.getPathAt(settings.time); //-envelope.getTool()->getA0()*envelope.calcToolAxisDirecAt(settings.time);
+    toolPosit = envelope.getPathAt(settings.time);
     shift = QVector4D(toolPosit,0);
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
@@ -399,7 +393,7 @@ void MainView::updateAdjToolTransf(){
     toolToPathTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
     toolTranslation2.setToIdentity();
-    toolPosit = envelope2.getPathAt(settings.time); // -envelope2.getTool()->getA0()*envelope2.calcToolAxisDirecAt(settings.time);
+    toolPosit = envelope2.getPathAt(settings.time);
     shift2 = QVector4D(toolPosit,0);
     toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 

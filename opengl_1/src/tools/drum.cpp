@@ -7,11 +7,9 @@ Drum::Drum()
     : r0(2), rm(0.5)
 
 {
-    qDebug()<< "Drum()";
     float phi = asin(height/(2*r0));
     this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
-    qDebug() << "drum goes from " << a0 << " to " << a1;
 }
 
 /**
@@ -30,7 +28,6 @@ Drum::Drum(float curveRadius, float midRadius, float height, int sectors, QVecto
     float phi = asin(height/(2*r0));
     this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
-    qDebug() << "drum goes from " << a0 << " to " << a1;
 }
 
 /**
@@ -38,7 +35,6 @@ Drum::Drum(float curveRadius, float midRadius, float height, int sectors, QVecto
 */
 void Drum::initDrum(){
     float phi = asin(height/(2*r0));
-    qDebug()<< height/(2*r0);
     computeDrum();
 }
 

@@ -61,7 +61,6 @@ void SimplePath::initVertexArr()
     float t = t0;
     for(int i=0; i<=sectors; ++i){
         vertexArr.append(Vertex(getPathAt(t), color));
-        qDebug() << t;
         t += delta;
     }
 }
