@@ -112,16 +112,17 @@ void Cylinder::computeCylinder(){
  * @return Vertex of circle at height h and direction of angle
  */
 Vertex Cylinder::calcCircleBound(float r1, float theta, float h) {
-    // point position
-    QVector3D p = QVector3D();
-    p.setX(posit.x() + r1*cos(theta));
-    p.setY(posit.y() + r1*sin(theta));
-    p.setZ(posit.z() + h);
-
     float a = h + r1*tan(angle); // sphere height
-    QVector3D q = posit; // sphere center
-    q.setZ(posit.z()+a);
-    QVector3D n = (q-p).normalized(); // direction of the normal
+
+    QVector3D direction;
+    direction.setX(getRadiusAt(a)*cos(angle)*cos(theta));
+    direction.setY(getRadiusAt(a)*cos(angle)*sin(theta));
+    direction.setZ(-getRadiusAt(a)*sin(angle));
+    QVector3D spherePosit = (a)*axisVector;
+    QVector3D n = direction.normalized();
+
+    // point position
+    QVector3D p = spherePosit + direction;
 
     return Vertex(p, n);
 }

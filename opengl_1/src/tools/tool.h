@@ -12,7 +12,7 @@ class Tool
 protected:
     float height = 2;
 
-    constexpr static float PI = acos(-1.0f);
+    float PI = acos(-1.0f);
 
     QVector3D posit;
     float a0=0;
