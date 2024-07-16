@@ -375,15 +375,27 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
  */
 Vertex Envelope::calcEnvelopeAt(float t, float a)
 {
-    QVector3D color = QVector3D(1,0,0);
-
     QVector3D center = calcToolCenterAt(t, a);
 
     float r = tool->getRadiusAt(a) + 0.0001; // + 0.0001 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
-    return Vertex(posit, normal);
+    QVector3D color;
+    if (reflectionLines){
+        float alpha;
+        alpha = acos(QVector3D::dotProduct(normal,QVector3D(1,0,0)));
+        qDebug() << alpha / reflFreq;
+        float aux = alpha / reflFreq;
+        if (aux -(int)aux <= percentBlack)
+            color = QVector3D(0,0,0);
+        else
+            color = QVector3D(1,1,1);
+    } else {
+        color = normal;
+    }
+
+    return Vertex(posit, color);
 }
 
 /**

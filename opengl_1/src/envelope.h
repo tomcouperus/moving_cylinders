@@ -10,6 +10,9 @@ class Envelope
     Envelope *adjEnv;
     bool contToAdj = true;
     bool positToAdj = true;
+    bool reflectionLines = true;
+    float reflFreq = 0.02;
+    float percentBlack = 0.5;
     CylinderMovement *toolMovement;
     Tool *tool;
     double adjAxisAngle1;
