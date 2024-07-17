@@ -10,6 +10,9 @@ class Envelope
     Envelope *adjEnv;
     bool contToAdj = true;
     bool positToAdj = true;
+    bool reflectionLines = false;
+    float reflFreq = 20;
+    float percentBlack = 0.5;
     CylinderMovement *toolMovement;
     Tool *tool;
     double adjAxisAngle1;
@@ -49,6 +52,9 @@ public:
 
     inline void setIsTanContinuous(bool value){ contToAdj = value; }
     inline void setIsPositContinuous(bool value){ positToAdj = value; }
+    inline void setReflectionLines(bool value){ reflectionLines = value; }
+    inline void setReflectionLinesFreq(float value){ reflFreq = value; }
+    inline void setReflectionLinesBlackPercent(float value){ percentBlack = value; }
     inline bool isTanContinuous() { return contToAdj; }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }

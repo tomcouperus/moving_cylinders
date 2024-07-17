@@ -280,18 +280,22 @@ QVector3D Envelope::getPathAt(float t){
  * @return Tangent vector at t
  */
 QVector3D Envelope::getPathTangentAt(float t){
+    SimplePath path;
+    Envelope *env;
     if (adjEnv != nullptr && positToAdj){
         // compute according to discrete path obtained from the adjacent path formula
-        SimplePath path = adjEnv->toolMovement->getPath();
-        float tDelta = (path.getT1()-path.getT0())/sectorsT;
-        if(t == path.getT1()) {
-            return (adjEnv->getPathAt(t) - adjEnv->getPathAt(t-tDelta));
-        } else {
-            return (adjEnv->getPathAt(t+tDelta) - adjEnv->getPathAt(t));
-        }
+        path = adjEnv->toolMovement->getPath();
+        env = adjEnv;
     } else {
-        SimplePath path = toolMovement->getPath();
-        return path.getTangentAt(t);
+        path = toolMovement->getPath();
+        env = this;
+    }
+    // this tangent can be computed exactly but is done as an approximation for congruence
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    if(t == path.getT1()) {
+        return (env->getPathAt(t) - env->getPathAt(t-tDelta));
+    } else {
+        return (env->getPathAt(t+tDelta) - env->getPathAt(t));
     }
 }
 
@@ -375,15 +379,26 @@ QMatrix4x4 Envelope::getAdjMovementRotation(float time)
  */
 Vertex Envelope::calcEnvelopeAt(float t, float a)
 {
-    QVector3D color = QVector3D(1,0,0);
-
     QVector3D center = calcToolCenterAt(t, a);
 
     float r = tool->getRadiusAt(a) + 0.0001; // + 0.0001 to avoid floating point weirdness
     QVector3D normal = computeNormal(t, a);
     QVector3D posit = center + r*normal;
 
-    return Vertex(posit, normal);
+    QVector3D color;
+    if (reflectionLines){
+        float alpha;
+        alpha = acos(QVector3D::dotProduct(normal,QVector3D(1,0,0)));
+        float aux = alpha * reflFreq;
+        if (aux -(int)aux <= percentBlack)
+            color = QVector3D(0,0,0);
+        else
+            color = QVector3D(1,1,1);
+    } else {
+        color = normal;
+    }
+
+    return Vertex(posit, color);
 }
 
 /**

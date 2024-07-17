@@ -25,6 +25,11 @@ class MainWindow : public QMainWindow {
 
  private slots:
 
+  void on_reflecLinesCheckBox_toggled(bool checked);
+  void on_freqReflSpinBox_valueChanged(int value);
+  void on_fracReflSpinBox_valueChanged(double value);
+
+
   void on_envelopeCheckBox_toggled(bool checked);
   void on_toolCheckBox_toggled(bool checked);
   void on_grazCurveCheckBox_toggled(bool checked);
