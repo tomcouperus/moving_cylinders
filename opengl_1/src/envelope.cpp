@@ -280,18 +280,22 @@ QVector3D Envelope::getPathAt(float t){
  * @return Tangent vector at t
  */
 QVector3D Envelope::getPathTangentAt(float t){
+    SimplePath path;
+    Envelope *env;
     if (adjEnv != nullptr && positToAdj){
         // compute according to discrete path obtained from the adjacent path formula
-        SimplePath path = adjEnv->toolMovement->getPath();
-        float tDelta = (path.getT1()-path.getT0())/sectorsT;
-        if(t == path.getT1()) {
-            return (adjEnv->getPathAt(t) - adjEnv->getPathAt(t-tDelta));
-        } else {
-            return (adjEnv->getPathAt(t+tDelta) - adjEnv->getPathAt(t));
-        }
+        path = adjEnv->toolMovement->getPath();
+        env = adjEnv;
     } else {
-        SimplePath path = toolMovement->getPath();
-        return path.getTangentAt(t);
+        path = toolMovement->getPath();
+        env = this;
+    }
+    // this tangent can be computed exactly but is done as an approximation for congruence
+    float tDelta = (path.getT1()-path.getT0())/sectorsT;
+    if(t == path.getT1()) {
+        return (env->getPathAt(t) - env->getPathAt(t-tDelta));
+    } else {
+        return (env->getPathAt(t+tDelta) - env->getPathAt(t));
     }
 }
 
@@ -385,8 +389,7 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     if (reflectionLines){
         float alpha;
         alpha = acos(QVector3D::dotProduct(normal,QVector3D(1,0,0)));
-        qDebug() << alpha / reflFreq;
-        float aux = alpha / reflFreq;
+        float aux = alpha * reflFreq;
         if (aux -(int)aux <= percentBlack)
             color = QVector3D(0,0,0);
         else

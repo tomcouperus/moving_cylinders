@@ -783,6 +783,34 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
 }
 
 /**
+ * @brief MainWindow::on_reflecLinesCheckBox_toggled Updates the envelope's shading.
+ * @param checked The new value of the checkbox.
+ */
+void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
+    ui->fracReflSpinBox->setEnabled(checked);
+    ui->freqReflSpinBox->setEnabled(checked);
+
+    ui->mainView->envelope.setReflectionLines(checked);
+    ui->mainView->envelope2.setReflectionLines(checked);
+    ui->mainView->updateBuffers();
+    ui->mainView->update();
+}
+
+void MainWindow::on_freqReflSpinBox_valueChanged(int value){
+    ui->mainView->envelope.setReflectionLinesFreq(value);
+    ui->mainView->envelope2.setReflectionLinesFreq(value);
+    ui->mainView->updateBuffers();
+    ui->mainView->update();
+}
+
+void MainWindow::on_fracReflSpinBox_valueChanged(double value){
+    ui->mainView->envelope.setReflectionLinesBlackPercent(value);
+    ui->mainView->envelope2.setReflectionLinesBlackPercent(value);
+    ui->mainView->updateBuffers();
+    ui->mainView->update();
+}
+
+/**
  * @brief MainWindow::on_envelopeCheckBox_toggled Updates the envelope(s) visibility.
  * @param checked The new value of the checkbox.
  */

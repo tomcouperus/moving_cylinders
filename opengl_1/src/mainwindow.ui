@@ -416,6 +416,105 @@
           <string>Sampling:</string>
          </property>
         </widget>
+        <widget class="QCheckBox" name="reflecLinesCheckBox">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>30</y>
+           <width>82</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>reflection lines</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelReflecLines">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>10</y>
+           <width>71</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Shading:</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="freqReflSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>70</y>
+           <width>42</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>50</number>
+         </property>
+         <property name="value">
+          <number>20</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelFreqReflecLines">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>50</y>
+           <width>61</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Freqency:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelBlackReflecLines">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>100</y>
+           <width>61</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Fraction black:</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="fracReflSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>120</y>
+           <width>41</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
        </widget>
        <widget class="QWidget" name="Tool">
         <property name="enabled">
