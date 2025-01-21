@@ -2,6 +2,7 @@
 #define SPHERE_H
 
 #include <QVector3D>
+#include <QList>
 #include "vertex.h"
 
 class Sphere
@@ -9,7 +10,7 @@ class Sphere
     QVector3D position;
     float radius;
 
-    constexpr static float PI = acos(-1.0f);
+    constexpr static float PI = 3.14159265;
 
     QVector<Vertex> vertexArr;
 public:
