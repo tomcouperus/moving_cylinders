@@ -881,7 +881,6 @@ void MainWindow::on_TimeSlider_sliderMoved(int value) {
   SimplePath path = ui->mainView->move.getPath();
   float divisor = path.getSectors() / (path.getRange());
   ui->mainView->setTime(value / divisor);
-  ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 
