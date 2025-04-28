@@ -31,8 +31,9 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     friend class MainWindow;
 
     // Tool rendering
-    ToolRenderer toolRend;
-    ToolRenderer toolRend2;
+    QVector<std::shared_ptr<ToolRenderer>> toolRenderers;
+    // ToolRenderer toolRend;
+    // ToolRenderer toolRend2;
     Drum drum;
     Cylinder cylinder;
     Drum drum2;

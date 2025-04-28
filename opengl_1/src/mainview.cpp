@@ -74,6 +74,11 @@ void MainView::initializeGL()
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
     // TODO: refactor
+    toolRenderers.reserve(2);
+    std::shared_ptr<ToolRenderer> toolRenderer1(new ToolRenderer());
+    std::shared_ptr<ToolRenderer> toolRenderer2(new ToolRenderer());
+    toolRenderers.push_back(toolRenderer1);
+    toolRenderers.push_back(toolRenderer2);
 
     // Define the vertices of the tools
     cylinder.initCylinder();
@@ -83,18 +88,18 @@ void MainView::initializeGL()
 
     switch (settings.toolIdx) {
     case 0:
-        toolRend.setTool(&cylinder);
-        toolRend2.setTool(&cylinder2);
+        toolRenderers[0]->setTool(&cylinder);
+        toolRenderers[1]->setTool(&cylinder2);
         break;
     case 1:
-        toolRend.setTool(&drum);
-        toolRend2.setTool(&drum2);
+        toolRenderers[0]->setTool(&drum);
+        toolRenderers[1]->setTool(&drum2);
         break;
     default:
         break;
     }
-    toolRend.init(gl,&settings);
-    toolRend2.init(gl,&settings);
+    toolRenderers[0]->init(gl,&settings);
+    toolRenderers[1]->init(gl,&settings);
 
     // Define path for the tool
     SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
@@ -141,8 +146,8 @@ void MainView::initializeGL()
     updateToolTransf();
 
     // Pass initial transformations to the renderers;
-    toolRend.setTransf(toolTransf);
-    toolRend2.setTransf(toolTransf2);
+    toolRenderers[0]->setTransf(toolTransf);
+    toolRenderers[1]->setTransf(toolTransf2);
     envRend.setTransf(modelTransf);
     envRend2.setTransf(modelTransf);
     movRend.setTransf(modelTransf);
@@ -158,8 +163,8 @@ void MainView::initializeGL()
  * TODO: extend for other cylinders and enveloping surfaces.
  */
 void MainView::initBuffers() {
-    toolRend.initBuffers();
-    toolRend2.initBuffers();
+    toolRenderers[0]->initBuffers();
+    toolRenderers[1]->initBuffers();
 
     movRend.initBuffers();
     movRend2.initBuffers();
@@ -178,13 +183,13 @@ void MainView::updateBuffers(){
     case 0:
         envelope.setTool(&cylinder);
         envelope2.setAdjacentEnvelope(&envelope);
-        toolRend.updateBuffers(&cylinder);
+        toolRenderers[0]->updateBuffers(&cylinder);
         break;
     case 1:
         qDebug() << "is drum";
         envelope.setTool(&drum);
         envelope2.setAdjacentEnvelope(&envelope);
-        toolRend.updateBuffers(&drum);
+        toolRenderers[0]->updateBuffers(&drum);
         break;
     default:
         break;
@@ -196,12 +201,12 @@ void MainView::updateBuffers(){
         switch (settings.tool2Idx) {
         case 0:
             envelope2.setTool(&cylinder2);
-            toolRend2.updateBuffers(&cylinder2);
+            toolRenderers[1]->updateBuffers(&cylinder2);
             break;
         case 1:
             qDebug() << "is drum";
             envelope2.setTool(&drum2);
-            toolRend2.updateBuffers(&drum2);
+            toolRenderers[1]->updateBuffers(&drum2);
             break;
         default:
             break;
@@ -223,8 +228,8 @@ void MainView::paintGL()
 
     // Bind the shader program
 
-    toolRend.updateUniforms(toolTransf, projTransf);
-    toolRend.paintGL();
+    toolRenderers[0]->updateUniforms(toolTransf, projTransf);
+    toolRenderers[0]->paintGL();
 
     movRend.updateUniforms(modelTransf,projTransf);
     movRend.paintGL();
@@ -233,8 +238,8 @@ void MainView::paintGL()
     envRend.paintGL();
 
     if (settings.secondEnv) {
-        toolRend2.updateUniforms(toolTransf, projTransf);
-        toolRend2.paintGL();
+        toolRenderers[1]->updateUniforms(toolTransf, projTransf);
+        toolRenderers[1]->paintGL();
 
         movRend2.updateUniforms(modelTransf,projTransf);
         movRend2.paintGL();
@@ -374,8 +379,8 @@ void MainView::updateToolTransf(){
     // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
     toolTransf = modelTransf * toolTranslation * toolRotation * toolToPathTranslation;
 
-    toolRend.updateUniforms(toolTransf, projTransf);
-    toolRend.setTransf(toolTransf);
+    toolRenderers[0]->updateUniforms(toolTransf, projTransf);
+    toolRenderers[0]->setTransf(toolTransf);
 
     if (settings.secondEnv) {
         updateAdjToolTransf();
@@ -411,8 +416,8 @@ void MainView::updateAdjToolTransf(){
         toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolToPathTranslation2;
     }
 
-    toolRend2.updateUniforms(toolTransf, projTransf);
-    toolRend2.setTransf(toolTransf2);
+    toolRenderers[1]->updateUniforms(toolTransf, projTransf);
+    toolRenderers[1]->setTransf(toolTransf2);
 }
 
 /**
