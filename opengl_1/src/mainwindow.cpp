@@ -58,10 +58,10 @@ void MainWindow::on_secondPassCheckBox_toggled(bool checked){
 void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
   qDebug() << "Axis sectors changed";
   ui->aSlider->setMaximum(value);
-  ui->mainView->cylinder.setSectors(value);
-  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
-  ui->mainView->cylinder2.setSectors(value);
-  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+  ui->mainView->cylinders[0]->setSectors(value);
+  ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
+  ui->mainView->cylinders[1]->setSectors(value);
+  ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
 
   ui->mainView->updateBuffers();
   ui->mainView->updateToolTransf();
@@ -95,30 +95,30 @@ void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
-  ui->mainView->cylinder.setRadius(value);
-  ui->mainView->drum.setMidRadius(value);
-  ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
+  ui->mainView->cylinders[0]->setRadius(value);
+  ui->mainView->drums[0]->setMidRadius(value);
+  ui->radius0SpinBox->setMinimum(ui->mainView->drums[0]->getMinR0());
   switch (ui->mainView->settings.toolIdx){
   case 0:
-      ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+      ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
       break;
   case 1:
-      ui->mainView->envelope.setTool(&(ui->mainView->drum));
+      ui->mainView->envelope.setTool(ui->mainView->drums[0]);
   default:
       break;
   }
 
   if (ui->mainView->settings.secondEnv){
-    ui->mainView->cylinder2.setRadius(value);
+    ui->mainView->cylinders[1]->setRadius(value);
     ui->radiusSpinBox_2->setValue(value);
-    ui->mainView->drum2.setMidRadius(value);
-    ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+    ui->mainView->drums[1]->setMidRadius(value);
+    ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
     switch (ui->mainView->settings.tool2Idx){
     case 0:
-        ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+        ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
         break;
     case 1:
-        ui->mainView->envelope2.setTool(&(ui->mainView->drum2));
+        ui->mainView->envelope2.setTool(ui->mainView->drums[1]);
     default:
         break;
     }
@@ -134,13 +134,13 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
  * @param value new inner radius.
  */
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
-  ui->mainView->drum.setRadius(value);
-  ui->mainView->envelope.setTool(&(ui->mainView->drum));
+  ui->mainView->drums[0]->setRadius(value);
+  ui->mainView->envelope.setTool(ui->mainView->drums[0]);
 
   if (ui->mainView->settings.secondEnv){
-    ui->mainView->drum2.setRadius(value);
+    ui->mainView->drums[1]->setRadius(value);
     ui->radius0SpinBox_2->setValue(value);
-    ui->mainView->envelope2.setTool(&(ui->mainView->drum2));
+    ui->mainView->envelope2.setTool(ui->mainView->drums[1]);
   }
 
   ui->mainView->updateToolTransf();
@@ -153,13 +153,13 @@ void MainWindow::on_radius0SpinBox_valueChanged(double value) {
  * @param value new opening angle.
  */
 void MainWindow::on_angleSpinBox_valueChanged(double value) {
-  ui->mainView->cylinder.setAngle(value);
-  ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
+  ui->mainView->cylinders[0]->setAngle(value);
+  ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
 
   if (ui->mainView->settings.secondEnv){
-    ui->mainView->cylinder2.setAngle(value);
+    ui->mainView->cylinders[1]->setAngle(value);
     ui->angleSpinBox_2->setValue(value);
-    ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+    ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
   }
 
   ui->mainView->updateToolTransf();
@@ -172,18 +172,18 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
-  ui->mainView->cylinder.setHeight(value);
-  ui->mainView->drum.setHeight(value);
-  ui->radius0SpinBox->setMinimum(ui->mainView->drum.getMinR0());
+  ui->mainView->cylinders[0]->setHeight(value);
+  ui->mainView->drums[0]->setHeight(value);
+  ui->radius0SpinBox->setMinimum(ui->mainView->drums[0]->getMinR0());
 
   if (ui->mainView->settings.secondEnv){
-    ui->mainView->cylinder2.setHeight(value);
+    ui->mainView->cylinders[1]->setHeight(value);
     ui->heightSpinBox_2->setValue(value);
-    ui->mainView->drum2.setHeight(value);
-    ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+    ui->mainView->drums[1]->setHeight(value);
+    ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
-    ui->mainView->envelope.setTool(&(ui->mainView->cylinder));
-    ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+    ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
+    ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
   }
 
   ui->mainView->updateToolTransf();
@@ -318,9 +318,9 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
-  ui->mainView->cylinder2.setRadius(value);
-  ui->mainView->drum2.setMidRadius(value);
-  ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+  ui->mainView->cylinders[1]->setRadius(value);
+  ui->mainView->drums[1]->setMidRadius(value);
+  ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -332,7 +332,7 @@ void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
  * @param value new inner radius.
  */
 void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
-  ui->mainView->drum2.setRadius(value);
+  ui->mainView->drums[1]->setRadius(value);
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -344,9 +344,9 @@ void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
  * @param value new opening angle.
  */
 void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
-  ui->mainView->cylinder2.setAngle(value);
+  ui->mainView->cylinders[1]->setAngle(value);
 
-  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+  ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -358,11 +358,11 @@ void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
-  ui->mainView->cylinder2.setHeight(value);
-  ui->mainView->drum2.setHeight(value);
-  ui->radius0SpinBox_2->setMinimum(ui->mainView->drum2.getMinR0());
+  ui->mainView->cylinders[1]->setHeight(value);
+  ui->mainView->drums[1]->setHeight(value);
+  ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
-  ui->mainView->envelope2.setTool(&(ui->mainView->cylinder2));
+  ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();

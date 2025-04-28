@@ -28,6 +28,21 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 MainView::~MainView()
 {
     qDebug() << "MainView destructor";
+    for (auto i : toolRenderers){
+        delete i;
+    }
+    toolRenderers.clear();
+    toolRenderers.squeeze();
+    for (auto i : drums){
+        delete i;
+    }
+    drums.clear();
+    drums.squeeze();
+    for (auto i : cylinders){
+        delete i;
+    }
+    cylinders.clear();
+    cylinders.squeeze();
 
     makeCurrent();
 }
@@ -75,25 +90,30 @@ void MainView::initializeGL()
 
     // TODO: refactor
     toolRenderers.reserve(2);
-    std::shared_ptr<ToolRenderer> toolRenderer1(new ToolRenderer());
-    std::shared_ptr<ToolRenderer> toolRenderer2(new ToolRenderer());
-    toolRenderers.push_back(toolRenderer1);
-    toolRenderers.push_back(toolRenderer2);
+    toolRenderers.append(new ToolRenderer());
+    toolRenderers.append(new ToolRenderer());
 
     // Define the vertices of the tools
-    cylinder.initCylinder();
-    cylinder2.initCylinder();
-    drum.initDrum();
-    drum2.initDrum();
+    cylinders.reserve(2);
+    cylinders.append(new Cylinder());
+    cylinders.append(new Cylinder());
+    cylinders[0]->initCylinder();
+    cylinders[1]->initCylinder();
+
+    drums.reserve(2);
+    drums.append(new Drum());
+    drums.append(new Drum());
+    drums[0]->initDrum();
+    drums[1]->initDrum();
 
     switch (settings.toolIdx) {
     case 0:
-        toolRenderers[0]->setTool(&cylinder);
-        toolRenderers[1]->setTool(&cylinder2);
+        toolRenderers[0]->setTool(cylinders[0]);
+        toolRenderers[1]->setTool(cylinders[1]);
         break;
     case 1:
-        toolRenderers[0]->setTool(&drum);
-        toolRenderers[1]->setTool(&drum2);
+        toolRenderers[0]->setTool(drums[0]);
+        toolRenderers[1]->setTool(drums[1]);
         break;
     default:
         break;
@@ -111,11 +131,11 @@ void MainView::initializeGL()
     move = CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0),
-                            QVector3D(0.0,1.0,0.0), cylinder);
+                            QVector3D(0.0,1.0,0.0), *cylinders[0]);
     move2 = CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0),
-                            QVector3D(0.0,1.0,0.0), cylinder2);
+                            QVector3D(0.0,1.0,0.0), *cylinders[1]);
 
     movRend.setMovement(&move);
     movRend.init(gl,&settings);
@@ -123,10 +143,10 @@ void MainView::initializeGL()
     movRend2.init(gl,&settings);
 
     // Define the vertices of the enveloping surface
-    envelope = Envelope(&move, &cylinder);
+    envelope = Envelope(&move, cylinders[0]);
     envelope.initEnvelope();
 
-    envelope2 = Envelope(&move2, &cylinder2, &envelope);
+    envelope2 = Envelope(&move2, cylinders[1], &envelope);
     envelope2.initEnvelope();
 
     envRend.setEnvelope(&envelope);
@@ -181,15 +201,15 @@ void MainView::updateBuffers(){
     qDebug() << "main update buffers";
     switch (settings.toolIdx) {
     case 0:
-        envelope.setTool(&cylinder);
+        envelope.setTool(cylinders[0]);
         envelope2.setAdjacentEnvelope(&envelope);
-        toolRenderers[0]->updateBuffers(&cylinder);
+        toolRenderers[0]->updateBuffers(cylinders[0]);
         break;
     case 1:
         qDebug() << "is drum";
-        envelope.setTool(&drum);
+        envelope.setTool(drums[0]);
         envelope2.setAdjacentEnvelope(&envelope);
-        toolRenderers[0]->updateBuffers(&drum);
+        toolRenderers[0]->updateBuffers(drums[0]);
         break;
     default:
         break;
@@ -200,13 +220,13 @@ void MainView::updateBuffers(){
     if (settings.secondEnv) {
         switch (settings.tool2Idx) {
         case 0:
-            envelope2.setTool(&cylinder2);
-            toolRenderers[1]->updateBuffers(&cylinder2);
+            envelope2.setTool(cylinders[1]);
+            toolRenderers[1]->updateBuffers(cylinders[1]);
             break;
         case 1:
             qDebug() << "is drum";
-            envelope2.setTool(&drum2);
-            toolRenderers[1]->updateBuffers(&drum2);
+            envelope2.setTool(drums[1]);
+            toolRenderers[1]->updateBuffers(drums[1]);
             break;
         default:
             break;
@@ -344,10 +364,10 @@ void MainView::setA(float a)
     float divisor;
     switch (settings.toolIdx) {
     case 0:
-        divisor = cylinder.getSectors() / (cylinder.getA1() - cylinder.getA0());
+        divisor = cylinders[0]->getSectors() / (cylinders[0]->getA1() - cylinders[0]->getA0());
         break;
     case 1:
-        divisor = drum.getSectors() / (drum.getA1() - drum.getA0());
+        divisor = drums[0]->getSectors() / (drums[0]->getA1() - drums[0]->getA0());
         break;
     default:
         break;
