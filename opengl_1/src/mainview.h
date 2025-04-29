@@ -37,8 +37,7 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 
     // Path rendering
     QVector<CylinderMovement*> movements;
-    MoveRenderer movRend;
-    MoveRenderer movRend2;
+    QVector<MoveRenderer*> moveRenderers;
 
     // Envelope rendering
     EnvelopeRenderer envRend;

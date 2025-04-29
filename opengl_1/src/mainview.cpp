@@ -51,6 +51,11 @@ MainView::~MainView()
     }
     movements.clear();
     movements.squeeze();
+    for (auto i : moveRenderers){
+        delete i;
+    }
+    moveRenderers.clear();
+    moveRenderers.squeeze();
 
     makeCurrent();
 }
@@ -148,10 +153,13 @@ void MainView::initializeGL()
                             QVector3D(0.0,1.0,0.0),
                             QVector3D(0.0,1.0,0.0), *cylinders[1]);
 
-    movRend.setMovement(movements[0]);
-    movRend.init(gl,&settings);
-    movRend2.setMovement(movements[1]);
-    movRend2.init(gl,&settings);
+    moveRenderers.reserve(2);
+    moveRenderers.append(new MoveRenderer());
+    moveRenderers.append(new MoveRenderer());
+    moveRenderers[0]->setMovement(movements[0]);
+    moveRenderers[0]->init(gl,&settings);
+    moveRenderers[1]->setMovement(movements[1]);
+    moveRenderers[1]->init(gl,&settings);
 
     // Define the vertices of the enveloping surface
     envelope = Envelope(movements[0], cylinders[0]);
@@ -181,8 +189,8 @@ void MainView::initializeGL()
     toolRenderers[1]->setTransf(toolTransf2);
     envRend.setTransf(modelTransf);
     envRend2.setTransf(modelTransf);
-    movRend.setTransf(modelTransf);
-    movRend2.setTransf(modelTransf);
+    moveRenderers[0]->setTransf(modelTransf);
+    moveRenderers[1]->setTransf(modelTransf);
 
     // Set the initial projection transformation
     projTransf.setToIdentity();
@@ -197,8 +205,8 @@ void MainView::initBuffers() {
     toolRenderers[0]->initBuffers();
     toolRenderers[1]->initBuffers();
 
-    movRend.initBuffers();
-    movRend2.initBuffers();
+    moveRenderers[0]->initBuffers();
+    moveRenderers[1]->initBuffers();
 
     envRend.initBuffers();
     envRend2.initBuffers();
@@ -226,7 +234,7 @@ void MainView::updateBuffers(){
         break;
     }
     envRend.updateBuffers(&envelope);
-    movRend.updateBuffers(movements[0]);
+    moveRenderers[0]->updateBuffers(movements[0]);
 
     if (settings.secondEnv) {
         switch (settings.tool2Idx) {
@@ -243,7 +251,7 @@ void MainView::updateBuffers(){
             break;
         }
         envRend2.updateBuffers(&envelope2);
-        movRend2.updateBuffers(movements[1]);
+        moveRenderers[1]->updateBuffers(movements[1]);
     }
 }
 
@@ -262,8 +270,8 @@ void MainView::paintGL()
     toolRenderers[0]->updateUniforms(toolTransf, projTransf);
     toolRenderers[0]->paintGL();
 
-    movRend.updateUniforms(modelTransf,projTransf);
-    movRend.paintGL();
+    moveRenderers[0]->updateUniforms(modelTransf,projTransf);
+    moveRenderers[0]->paintGL();
 
     envRend.updateUniforms(modelTransf,projTransf);
     envRend.paintGL();
@@ -272,8 +280,8 @@ void MainView::paintGL()
         toolRenderers[1]->updateUniforms(toolTransf, projTransf);
         toolRenderers[1]->paintGL();
 
-        movRend2.updateUniforms(modelTransf,projTransf);
-        movRend2.paintGL();
+        moveRenderers[1]->updateUniforms(modelTransf,projTransf);
+        moveRenderers[1]->paintGL();
 
         envRend2.updateUniforms(modelTransf,projTransf);
         envRend2.paintGL();
@@ -320,8 +328,8 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
 
     envRend.setTransf(modelTransf);
     envRend2.setTransf(modelTransf);
-    movRend.setTransf(modelTransf);
-    movRend2.setTransf(modelTransf);
+    moveRenderers[0]->setTransf(modelTransf);
+    moveRenderers[1]->setTransf(modelTransf);
     updateToolTransf();
     update();
 }
@@ -346,8 +354,8 @@ void MainView::setScale(float scale)
 
     envRend.setTransf(modelTransf);
     envRend2.setTransf(modelTransf);
-    movRend.setTransf(modelTransf);
-    movRend2.setTransf(modelTransf);
+    moveRenderers[0]->setTransf(modelTransf);
+    moveRenderers[1]->setTransf(modelTransf);
     updateToolTransf();
     update();
 }
