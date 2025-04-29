@@ -14,6 +14,9 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 {
     qDebug() << "MainView constructor";
 
+    // The movements array has to be initialized here due to the setup function in MainWindow
+
+
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 }
 
@@ -43,6 +46,11 @@ MainView::~MainView()
     }
     cylinders.clear();
     cylinders.squeeze();
+    for (auto i : movements){
+        delete i;
+    }
+    movements.clear();
+    movements.squeeze();
 
     makeCurrent();
 }
@@ -128,25 +136,28 @@ void MainView::initializeGL()
     path.initVertexArr();
 
     // Define orientation(s) of the tool
-    move = CylinderMovement(path,
+    movements.reserve(2);
+    movements.append(nullptr);
+    movements.append(nullptr);
+    movements[0] = new CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0),
                             QVector3D(0.0,1.0,0.0), *cylinders[0]);
-    move2 = CylinderMovement(path,
+    movements[1] = new CylinderMovement(path,
                             //QVector3D(0.0,0.1,-1.0),
                             QVector3D(0.0,1.0,0.0),
                             QVector3D(0.0,1.0,0.0), *cylinders[1]);
 
-    movRend.setMovement(&move);
+    movRend.setMovement(movements[0]);
     movRend.init(gl,&settings);
-    movRend2.setMovement(&move2);
+    movRend2.setMovement(movements[1]);
     movRend2.init(gl,&settings);
 
     // Define the vertices of the enveloping surface
-    envelope = Envelope(&move, cylinders[0]);
+    envelope = Envelope(movements[0], cylinders[0]);
     envelope.initEnvelope();
 
-    envelope2 = Envelope(&move2, cylinders[1], &envelope);
+    envelope2 = Envelope(movements[1], cylinders[1], &envelope);
     envelope2.initEnvelope();
 
     envRend.setEnvelope(&envelope);
@@ -215,7 +226,7 @@ void MainView::updateBuffers(){
         break;
     }
     envRend.updateBuffers(&envelope);
-    movRend.updateBuffers(&move);
+    movRend.updateBuffers(movements[0]);
 
     if (settings.secondEnv) {
         switch (settings.tool2Idx) {
@@ -232,7 +243,7 @@ void MainView::updateBuffers(){
             break;
         }
         envRend2.updateBuffers(&envelope2);
-        movRend2.updateBuffers(&move2);
+        movRend2.updateBuffers(movements[1]);
     }
 }
 
@@ -349,7 +360,7 @@ void MainView::setTime(float time)
 {
     qDebug() << "Time changed to " << time;
 
-    settings.time = time + move.getPath().getT0();
+    settings.time = time + movements[0]->getPath().getT0();
 
     updateToolTransf();
     update();
@@ -393,7 +404,7 @@ void MainView::updateToolTransf(){
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     toolRotation.setToIdentity();
-    toolRotation = move.getMovementRotation(settings.time);
+    toolRotation = movements[0]->getMovementRotation(settings.time);
 
     // Update the model transformation matrix
     // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
@@ -430,7 +441,7 @@ void MainView::updateAdjToolTransf(){
         // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
         toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolRotation * toolToPathTranslation2;
     } else {
-        toolRotation2 = move2.getMovementRotation(settings.time);
+        toolRotation2 = movements[1]->getMovementRotation(settings.time);
 
         // Update the model transformation matrix
         toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolToPathTranslation2;
