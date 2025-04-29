@@ -40,10 +40,8 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     QVector<MoveRenderer*> moveRenderers;
 
     // Envelope rendering
-    EnvelopeRenderer envRend;
-    Envelope envelope;
-    EnvelopeRenderer envRend2;
-    Envelope envelope2;
+    QVector<Envelope*> envelopes;
+    QVector<EnvelopeRenderer*> envelopeRenderers;
 
     // Transformation matrices for the model
     QMatrix4x4 modelScaling;

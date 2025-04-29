@@ -56,6 +56,16 @@ MainView::~MainView()
     }
     moveRenderers.clear();
     moveRenderers.squeeze();
+    for (auto i : envelopes){
+        delete i;
+    }
+    envelopes.clear();
+    envelopes.squeeze();
+    for (auto i : envelopeRenderers){
+        delete i;
+    }
+    envelopeRenderers.clear();
+    envelopeRenderers.squeeze();
 
     makeCurrent();
 }
@@ -162,16 +172,20 @@ void MainView::initializeGL()
     moveRenderers[1]->init(gl,&settings);
 
     // Define the vertices of the enveloping surface
-    envelope = Envelope(movements[0], cylinders[0]);
-    envelope.initEnvelope();
+    envelopes.reserve(2);
+    envelopes.append(new Envelope(movements[0], cylinders[0]));
+    envelopes[0]->initEnvelope();
 
-    envelope2 = Envelope(movements[1], cylinders[1], &envelope);
-    envelope2.initEnvelope();
+    envelopes.append(new Envelope(movements[1], cylinders[1], envelopes[0]));
+    envelopes[1]->initEnvelope();
 
-    envRend.setEnvelope(&envelope);
-    envRend.init(gl,&settings);
-    envRend2.setEnvelope(&envelope2);
-    envRend2.init(gl,&settings);
+    envelopeRenderers.reserve(2);
+    envelopeRenderers.append(new EnvelopeRenderer());
+    envelopeRenderers.append(new EnvelopeRenderer());
+    envelopeRenderers[0]->setEnvelope(envelopes[0]);
+    envelopeRenderers[0]->init(gl,&settings);
+    envelopeRenderers[1]->setEnvelope(envelopes[1]);
+    envelopeRenderers[1]->init(gl,&settings);
 
     initBuffers();
 
@@ -187,8 +201,8 @@ void MainView::initializeGL()
     // Pass initial transformations to the renderers;
     toolRenderers[0]->setTransf(toolTransf);
     toolRenderers[1]->setTransf(toolTransf2);
-    envRend.setTransf(modelTransf);
-    envRend2.setTransf(modelTransf);
+    envelopeRenderers[0]->setTransf(modelTransf);
+    envelopeRenderers[1]->setTransf(modelTransf);
     moveRenderers[0]->setTransf(modelTransf);
     moveRenderers[1]->setTransf(modelTransf);
 
@@ -208,8 +222,8 @@ void MainView::initBuffers() {
     moveRenderers[0]->initBuffers();
     moveRenderers[1]->initBuffers();
 
-    envRend.initBuffers();
-    envRend2.initBuffers();
+    envelopeRenderers[0]->initBuffers();
+    envelopeRenderers[1]->initBuffers();
 }
 
 /**
@@ -220,37 +234,37 @@ void MainView::updateBuffers(){
     qDebug() << "main update buffers";
     switch (settings.toolIdx) {
     case 0:
-        envelope.setTool(cylinders[0]);
-        envelope2.setAdjacentEnvelope(&envelope);
+        envelopes[0]->setTool(cylinders[0]);
+        envelopes[1]->setAdjacentEnvelope(envelopes[0]);
         toolRenderers[0]->updateBuffers(cylinders[0]);
         break;
     case 1:
         qDebug() << "is drum";
-        envelope.setTool(drums[0]);
-        envelope2.setAdjacentEnvelope(&envelope);
+        envelopes[0]->setTool(drums[0]);
+        envelopes[1]->setAdjacentEnvelope(envelopes[0]);
         toolRenderers[0]->updateBuffers(drums[0]);
         break;
     default:
         break;
     }
-    envRend.updateBuffers(&envelope);
+    envelopeRenderers[0]->updateBuffers(envelopes[0]);
     moveRenderers[0]->updateBuffers(movements[0]);
 
     if (settings.secondEnv) {
         switch (settings.tool2Idx) {
         case 0:
-            envelope2.setTool(cylinders[1]);
+            envelopes[1]->setTool(cylinders[1]);
             toolRenderers[1]->updateBuffers(cylinders[1]);
             break;
         case 1:
             qDebug() << "is drum";
-            envelope2.setTool(drums[1]);
+            envelopes[1]->setTool(drums[1]);
             toolRenderers[1]->updateBuffers(drums[1]);
             break;
         default:
             break;
         }
-        envRend2.updateBuffers(&envelope2);
+        envelopeRenderers[1]->updateBuffers(envelopes[1]);
         moveRenderers[1]->updateBuffers(movements[1]);
     }
 }
@@ -273,8 +287,8 @@ void MainView::paintGL()
     moveRenderers[0]->updateUniforms(modelTransf,projTransf);
     moveRenderers[0]->paintGL();
 
-    envRend.updateUniforms(modelTransf,projTransf);
-    envRend.paintGL();
+    envelopeRenderers[0]->updateUniforms(modelTransf,projTransf);
+    envelopeRenderers[0]->paintGL();
 
     if (settings.secondEnv) {
         toolRenderers[1]->updateUniforms(toolTransf, projTransf);
@@ -283,8 +297,8 @@ void MainView::paintGL()
         moveRenderers[1]->updateUniforms(modelTransf,projTransf);
         moveRenderers[1]->paintGL();
 
-        envRend2.updateUniforms(modelTransf,projTransf);
-        envRend2.paintGL();
+        envelopeRenderers[1]->updateUniforms(modelTransf,projTransf);
+        envelopeRenderers[1]->paintGL();
     }
 }
 
@@ -326,8 +340,8 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    envRend.setTransf(modelTransf);
-    envRend2.setTransf(modelTransf);
+    envelopeRenderers[0]->setTransf(modelTransf);
+    envelopeRenderers[1]->setTransf(modelTransf);
     moveRenderers[0]->setTransf(modelTransf);
     moveRenderers[1]->setTransf(modelTransf);
     updateToolTransf();
@@ -352,8 +366,8 @@ void MainView::setScale(float scale)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    envRend.setTransf(modelTransf);
-    envRend2.setTransf(modelTransf);
+    envelopeRenderers[0]->setTransf(modelTransf);
+    envelopeRenderers[1]->setTransf(modelTransf);
     moveRenderers[0]->setTransf(modelTransf);
     moveRenderers[1]->setTransf(modelTransf);
     updateToolTransf();
@@ -401,13 +415,13 @@ void MainView::setA(float a)
 void MainView::updateToolTransf(){
     // tool translation towards path
     toolToPathTranslation.setToIdentity();
-    QVector3D toolPosit = -envelope.getTool()->getA0()*envelope.getTool()->getAxisVector();
+    QVector3D toolPosit = -envelopes[0]->getTool()->getA0()*envelopes[0]->getTool()->getAxisVector();
     QVector4D shift = QVector4D(toolPosit,0);
     toolToPathTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     // tool translation w.r.t path
     toolTranslation.setToIdentity();
-    toolPosit = envelope.getPathAt(settings.time);
+    toolPosit = envelopes[0]->getPathAt(settings.time);
     shift = QVector4D(toolPosit,0);
     toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
@@ -432,18 +446,18 @@ void MainView::updateToolTransf(){
 void MainView::updateAdjToolTransf(){
     // tool translation towards path
     toolToPathTranslation2.setToIdentity();
-    QVector3D toolPosit = -envelope2.getTool()->getA0()*envelope2.getTool()->getAxisVector();
+    QVector3D toolPosit = -envelopes[1]->getTool()->getA0()*envelopes[1]->getTool()->getAxisVector();
     QVector4D shift2 = QVector4D(toolPosit,0);
     toolToPathTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
     toolTranslation2.setToIdentity();
-    toolPosit = envelope2.getPathAt(settings.time);
+    toolPosit = envelopes[1]->getPathAt(settings.time);
     shift2 = QVector4D(toolPosit,0);
     toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
     toolRotation2.setToIdentity();
-    if (envelope2.isTanContinuous()) {
-        toolRotation2 = envelope2.getAdjMovementRotation(settings.time);
+    if (envelopes[1]->isTanContinuous()) {
+        toolRotation2 = envelopes[1]->getAdjMovementRotation(settings.time);
 
         // Update the model transformation matrix
         // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first

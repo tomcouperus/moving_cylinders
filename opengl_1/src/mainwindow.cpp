@@ -57,9 +57,9 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
   qDebug() << "Axis sectors changed";
   ui->aSlider->setMaximum(value);
   ui->mainView->cylinders[0]->setSectors(value);
-  ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
+  ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
   ui->mainView->cylinders[1]->setSectors(value);
-  ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
+  ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
 
   ui->mainView->updateBuffers();
   ui->mainView->updateToolTransf();
@@ -80,8 +80,8 @@ void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
 
   ui->mainView->updateBuffers();
   ui->mainView->updateToolTransf();
@@ -98,10 +98,10 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
   ui->radius0SpinBox->setMinimum(ui->mainView->drums[0]->getMinR0());
   switch (ui->mainView->settings.toolIdx){
   case 0:
-      ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
+      ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
       break;
   case 1:
-      ui->mainView->envelope.setTool(ui->mainView->drums[0]);
+      ui->mainView->envelopes[0]->setTool(ui->mainView->drums[0]);
   default:
       break;
   }
@@ -113,10 +113,10 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
     ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
     switch (ui->mainView->settings.tool2Idx){
     case 0:
-        ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
+        ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
         break;
     case 1:
-        ui->mainView->envelope2.setTool(ui->mainView->drums[1]);
+        ui->mainView->envelopes[1]->setTool(ui->mainView->drums[1]);
     default:
         break;
     }
@@ -133,12 +133,12 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
  */
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
   ui->mainView->drums[0]->setRadius(value);
-  ui->mainView->envelope.setTool(ui->mainView->drums[0]);
+  ui->mainView->envelopes[0]->setTool(ui->mainView->drums[0]);
 
   if (ui->mainView->settings.secondEnv){
     ui->mainView->drums[1]->setRadius(value);
     ui->radius0SpinBox_2->setValue(value);
-    ui->mainView->envelope2.setTool(ui->mainView->drums[1]);
+    ui->mainView->envelopes[1]->setTool(ui->mainView->drums[1]);
   }
 
   ui->mainView->updateToolTransf();
@@ -152,12 +152,12 @@ void MainWindow::on_radius0SpinBox_valueChanged(double value) {
  */
 void MainWindow::on_angleSpinBox_valueChanged(double value) {
   ui->mainView->cylinders[0]->setAngle(value);
-  ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
+  ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
 
   if (ui->mainView->settings.secondEnv){
     ui->mainView->cylinders[1]->setAngle(value);
     ui->angleSpinBox_2->setValue(value);
-    ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
+    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
   }
 
   ui->mainView->updateToolTransf();
@@ -180,8 +180,8 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
     ui->mainView->drums[1]->setHeight(value);
     ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
-    ui->mainView->envelope.setTool(ui->mainView->cylinders[0]);
-    ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
+    ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
+    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
   }
 
   ui->mainView->updateToolTransf();
@@ -201,7 +201,7 @@ void MainWindow::on_orientVector_1_returnPressed(){
 
   bool success = ui->mainView->movements[0]->setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
+      ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
   } else {
       error.showMessage("The inputed vector is not a valid orientation 1 vector");
   }
@@ -215,7 +215,7 @@ void MainWindow::on_orientVector_1_returnPressed(){
 
       success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
       if (success){
-          ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+          ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
       } else {
           error.showMessage("The inputed vector is not a valid orientation 1 vector");
       }
@@ -238,7 +238,7 @@ void MainWindow::on_orientVector_2_returnPressed(){
 
   bool success = ui->mainView->movements[0]->setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
+      ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
   } else {
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
@@ -252,7 +252,7 @@ void MainWindow::on_orientVector_2_returnPressed(){
 
       success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
       if (success){
-          ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+          ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
       } else {
           error.showMessage("The inputed vector is not a valid orientation 2 vector");
       }
@@ -344,7 +344,7 @@ void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
 void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
   ui->mainView->cylinders[1]->setAngle(value);
 
-  ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
+  ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -360,7 +360,7 @@ void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
   ui->mainView->drums[1]->setHeight(value);
   ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
-  ui->mainView->envelope2.setTool(ui->mainView->cylinders[1]);
+  ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -379,7 +379,7 @@ void MainWindow::on_orientVector_1_2_returnPressed(){
 
   bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+      ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   } else {
       error.showMessage("The inputed vector is not a valid orientation 1 vector");
   }
@@ -401,7 +401,7 @@ void MainWindow::on_orientVector_2_2_returnPressed(){
 
   bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+      ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   } else {
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
@@ -446,7 +446,7 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_tanContCheckBox_toggled(bool checked){
-  ui->mainView->envelope2.setIsTanContinuous(checked);
+  ui->mainView->envelopes[1]->setIsTanContinuous(checked);
 
   ui->angleOrient_1_SpinBox->setEnabled(checked);
   ui->angleOrient_2_SpinBox->setEnabled(checked);
@@ -467,7 +467,7 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
   }
   bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+      ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   }
 
   ui->mainView->updateAdjToolTransf();
@@ -480,14 +480,14 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_positContCheckBox_toggled(bool checked){
-  ui->mainView->envelope2.setIsPositContinuous(checked);
+  ui->mainView->envelopes[1]->setIsPositContinuous(checked);
 
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
   QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
 
   bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
   if (success){
-      ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+      ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   }
 
   ui->mainView->updateBuffers();
@@ -501,7 +501,7 @@ void MainWindow::on_positContCheckBox_toggled(bool checked){
  * @param value new angle.
  */ 
 void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
-  ui->mainView->envelope2.setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
+  ui->mainView->envelopes[1]->setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -514,7 +514,7 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
  * @param value new angle.
  */
 void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
-  ui->mainView->envelope2.setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
+  ui->mainView->envelopes[1]->setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
 
   ui->mainView->updateAdjToolTransf();
   ui->mainView->updateBuffers();
@@ -537,8 +537,8 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -560,8 +560,8 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -583,8 +583,8 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -606,8 +606,8 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -629,8 +629,8 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -652,8 +652,8 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -676,8 +676,8 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -699,8 +699,8 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -722,8 +722,8 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
 
   ui->mainView->updateBuffers();
@@ -746,8 +746,8 @@ void MainWindow::on_spinBox_t_0_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
 
   ui->mainView->setTime(sliderTimePerSector*path.getRange());
 
@@ -771,8 +771,8 @@ void MainWindow::on_spinBox_t_1_valueChanged(int value) {
   ui->mainView->movements[0]->setPath(path);
   ui->mainView->movements[1]->setPath(path);
 
-  ui->mainView->envelope.setToolMovement(ui->mainView->movements[0]);
-  ui->mainView->envelope2.setToolMovement(ui->mainView->movements[1]);
+  ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+  ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
 
   ui->mainView->setTime(sliderTimePerSector*path.getRange());
 
@@ -788,22 +788,22 @@ void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
     ui->fracReflSpinBox->setEnabled(checked);
     ui->freqReflSpinBox->setEnabled(checked);
 
-    ui->mainView->envelope.setReflectionLines(checked);
-    ui->mainView->envelope2.setReflectionLines(checked);
+    ui->mainView->envelopes[0]->setReflectionLines(checked);
+    ui->mainView->envelopes[1]->setReflectionLines(checked);
     ui->mainView->updateBuffers();
     ui->mainView->update();
 }
 
 void MainWindow::on_freqReflSpinBox_valueChanged(int value){
-    ui->mainView->envelope.setReflectionLinesFreq(value);
-    ui->mainView->envelope2.setReflectionLinesFreq(value);
+    ui->mainView->envelopes[0]->setReflectionLinesFreq(value);
+    ui->mainView->envelopes[1]->setReflectionLinesFreq(value);
     ui->mainView->updateBuffers();
     ui->mainView->update();
 }
 
 void MainWindow::on_fracReflSpinBox_valueChanged(double value){
-    ui->mainView->envelope.setReflectionLinesBlackPercent(value);
-    ui->mainView->envelope2.setReflectionLinesBlackPercent(value);
+    ui->mainView->envelopes[0]->setReflectionLinesBlackPercent(value);
+    ui->mainView->envelopes[1]->setReflectionLinesBlackPercent(value);
     ui->mainView->updateBuffers();
     ui->mainView->update();
 }
