@@ -66,6 +66,26 @@ MainView::~MainView()
     }
     envelopeRenderers.clear();
     envelopeRenderers.squeeze();
+    for (auto i : toolRotations){
+        delete i;
+    }
+    toolRotations.clear();
+    toolRotations.squeeze();
+    for (auto i : toolToPathTranslations){
+        delete i;
+    }
+    toolToPathTranslations.clear();
+    toolToPathTranslations.squeeze();
+    for (auto i : toolTranslations){
+        delete i;
+    }
+    toolTranslations.clear();
+    toolTranslations.squeeze();
+    for (auto i : toolTransforms){
+        delete i;
+    }
+    toolTransforms.clear();
+    toolTransforms.squeeze();
 
     makeCurrent();
 }
@@ -187,6 +207,20 @@ void MainView::initializeGL()
     envelopeRenderers[1]->setEnvelope(envelopes[1]);
     envelopeRenderers[1]->init(gl,&settings);
 
+    // Initialize tool matrices
+    toolRotations.reserve(2);
+    toolRotations.append(new QMatrix4x4());
+    toolRotations.append(new QMatrix4x4());
+    toolToPathTranslations.reserve(2);
+    toolToPathTranslations.append(new QMatrix4x4());
+    toolToPathTranslations.append(new QMatrix4x4());
+    toolTranslations.reserve(2);
+    toolTranslations.append(new QMatrix4x4());
+    toolTranslations.append(new QMatrix4x4());
+    toolTransforms.reserve(2);
+    toolTransforms.append(new QMatrix4x4());
+    toolTransforms.append(new QMatrix4x4());
+
     initBuffers();
 
     // First transformation of the cylinder
@@ -199,8 +233,8 @@ void MainView::initializeGL()
     updateToolTransf();
 
     // Pass initial transformations to the renderers;
-    toolRenderers[0]->setTransf(toolTransf);
-    toolRenderers[1]->setTransf(toolTransf2);
+    toolRenderers[0]->setTransf(*toolTransforms[0]);
+    toolRenderers[1]->setTransf(*toolTransforms[1]);
     envelopeRenderers[0]->setTransf(modelTransf);
     envelopeRenderers[1]->setTransf(modelTransf);
     moveRenderers[0]->setTransf(modelTransf);
@@ -281,7 +315,7 @@ void MainView::paintGL()
 
     // Bind the shader program
 
-    toolRenderers[0]->updateUniforms(toolTransf, projTransf);
+    toolRenderers[0]->updateUniforms(*toolTransforms[0], projTransf);
     toolRenderers[0]->paintGL();
 
     moveRenderers[0]->updateUniforms(modelTransf,projTransf);
@@ -291,7 +325,7 @@ void MainView::paintGL()
     envelopeRenderers[0]->paintGL();
 
     if (settings.secondEnv) {
-        toolRenderers[1]->updateUniforms(toolTransf, projTransf);
+        toolRenderers[1]->updateUniforms(*toolTransforms[0], projTransf);
         toolRenderers[1]->paintGL();
 
         moveRenderers[1]->updateUniforms(modelTransf,projTransf);
@@ -414,26 +448,25 @@ void MainView::setA(float a)
  */
 void MainView::updateToolTransf(){
     // tool translation towards path
-    toolToPathTranslation.setToIdentity();
+    toolToPathTranslations[0]->setToIdentity();
     QVector3D toolPosit = -envelopes[0]->getTool()->getA0()*envelopes[0]->getTool()->getAxisVector();
     QVector4D shift = QVector4D(toolPosit,0);
-    toolToPathTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+    toolToPathTranslations[0]->translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
     // tool translation w.r.t path
-    toolTranslation.setToIdentity();
+    toolTranslations[0]->setToIdentity();
     toolPosit = envelopes[0]->getPathAt(settings.time);
     shift = QVector4D(toolPosit,0);
-    toolTranslation.translate(QVector3D(shift.x(),shift.y(),shift.z()));
+    toolTranslations[0]->translate(QVector3D(shift.x(),shift.y(),shift.z()));
 
-    toolRotation.setToIdentity();
-    toolRotation = movements[0]->getMovementRotation(settings.time);
+    *toolRotations[0] = movements[0]->getMovementRotation(settings.time);
 
     // Update the model transformation matrix
     // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
-    toolTransf = modelTransf * toolTranslation * toolRotation * toolToPathTranslation;
+    *toolTransforms[0] = modelTransf * *toolTranslations[0] * *toolRotations[0] * *toolToPathTranslations[0];
 
-    toolRenderers[0]->updateUniforms(toolTransf, projTransf);
-    toolRenderers[0]->setTransf(toolTransf);
+    toolRenderers[0]->updateUniforms(*toolTransforms[0], projTransf);
+    toolRenderers[0]->setTransf(*toolTransforms[0]);
 
     if (settings.secondEnv) {
         updateAdjToolTransf();
@@ -445,32 +478,31 @@ void MainView::updateToolTransf(){
  */
 void MainView::updateAdjToolTransf(){
     // tool translation towards path
-    toolToPathTranslation2.setToIdentity();
+    toolToPathTranslations[1]->setToIdentity();
     QVector3D toolPosit = -envelopes[1]->getTool()->getA0()*envelopes[1]->getTool()->getAxisVector();
     QVector4D shift2 = QVector4D(toolPosit,0);
-    toolToPathTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+    toolToPathTranslations[1]->translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
-    toolTranslation2.setToIdentity();
+    toolTranslations[1]->setToIdentity();
     toolPosit = envelopes[1]->getPathAt(settings.time);
     shift2 = QVector4D(toolPosit,0);
-    toolTranslation2.translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
+    toolTranslations[1]->translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
 
-    toolRotation2.setToIdentity();
     if (envelopes[1]->isTanContinuous()) {
-        toolRotation2 = envelopes[1]->getAdjMovementRotation(settings.time);
+        *toolRotations[1] = envelopes[1]->getAdjMovementRotation(settings.time);
 
         // Update the model transformation matrix
         // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
-        toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolRotation * toolToPathTranslation2;
+        *toolTransforms[1] = modelTransf * *toolTranslations[1] * *toolRotations[1] * *toolRotations[0] * *toolToPathTranslations[1];
     } else {
-        toolRotation2 = movements[1]->getMovementRotation(settings.time);
+        *toolRotations[1] = movements[1]->getMovementRotation(settings.time);
 
         // Update the model transformation matrix
-        toolTransf2 = modelTransf * toolTranslation2 * toolRotation2 * toolToPathTranslation2;
+        *toolTransforms[1] = modelTransf * *toolTranslations[1] * *toolRotations[1] * *toolToPathTranslations[1];
     }
 
-    toolRenderers[1]->updateUniforms(toolTransf, projTransf);
-    toolRenderers[1]->setTransf(toolTransf2);
+    toolRenderers[1]->updateUniforms(*toolTransforms[0], projTransf);
+    toolRenderers[1]->setTransf(*toolTransforms[1]);
 }
 
 /**

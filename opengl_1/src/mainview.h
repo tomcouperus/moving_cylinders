@@ -48,14 +48,10 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     QMatrix4x4 modelRotation;
     QMatrix4x4 modelTranslation;
     QMatrix4x4 modelTransf;
-    QMatrix4x4 toolRotation;
-    QMatrix4x4 toolRotation2;
-    QMatrix4x4 toolToPathTranslation;
-    QMatrix4x4 toolToPathTranslation2;
-    QMatrix4x4 toolTranslation;
-    QMatrix4x4 toolTranslation2;
-    QMatrix4x4 toolTransf; // toolTranslation * modelRotation * modelScaling
-    QMatrix4x4 toolTransf2;
+    QVector<QMatrix4x4*> toolRotations;
+    QVector<QMatrix4x4*> toolToPathTranslations;
+    QVector<QMatrix4x4*> toolTranslations;
+    QVector<QMatrix4x4*> toolTransforms;
 
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
