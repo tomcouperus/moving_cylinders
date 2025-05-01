@@ -36,7 +36,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="Settings">
           <attribute name="title">
@@ -396,7 +396,7 @@
              <item>
               <widget class="QLabel" name="tooltypeLabel">
                <property name="text">
-                <string>tool type</string>
+                <string>Tool type</string>
                </property>
               </widget>
              </item>
