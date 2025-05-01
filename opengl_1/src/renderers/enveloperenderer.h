@@ -46,7 +46,7 @@ public:
     void initBuffers() override;
     void updateBuffers();
     void updateUniforms(QMatrix4x4 envelopeTransf, QMatrix4x4 projTransf);
-    void paintGL();
+    void paintGL() override;
 
     inline void setEnvelope(Envelope *env) { this->envelope = env; }
     inline void setTransf(QMatrix4x4 envelopeTransf) { this->envelopeTransf = envelopeTransf; }

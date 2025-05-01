@@ -41,7 +41,7 @@ public:
     void initBuffers() override;
     void updateBuffers();
     void updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf);
-    void paintGL();
+    void paintGL() override;
 
     inline void setTool(Tool *tool) { this->tool = tool; }
     inline void setTransf(QMatrix4x4 toolTransf) { this->toolTransf = toolTransf; }

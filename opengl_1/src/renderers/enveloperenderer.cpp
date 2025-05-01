@@ -132,6 +132,8 @@ void EnvelopeRenderer::initBuffers()
  */
 void EnvelopeRenderer::updateBuffers()
 {
+    envelope->update();
+
     vertexArrEnv.clear();
     vertexArrEnv = envelope->getVertexArr();
 

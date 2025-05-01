@@ -19,7 +19,9 @@ typedef struct Settings {
     bool showNormals = false;
     bool showSpheres = false;
     bool secondEnv = false;
-    bool reflectionLines = true;
+    bool reflectionLines = false;
+    float reflFreq = 20;
+    float percentBlack = 0.5;
     float a = 0.0f;
     float time = 0.0f;
     int toolIdx = 0;

@@ -25,31 +25,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 /**
- * @brief MainWindow::on_secondPassCheckBox_toggled Updates the second envelope setting.
- * Enables and disables the input boxes of the second tool.
- * @param checked The new value of the checkbox
- */
-void MainWindow::on_secondPassCheckBox_toggled(bool checked){
-  ui->mainView->settings.secondEnv = checked;
-
-  ui->tanContCheckBox->setEnabled(checked);
-  ui->positContCheckBox->setEnabled(checked && !ui->tanContCheckBox->isChecked());
-  ui->angleSpinBox_2->setEnabled(checked && ui->mainView->settings.tool2Idx==0);
-  ui->heightSpinBox_2->setEnabled(checked);
-  ui->radiusSpinBox_2->setEnabled(checked);
-  ui->radius0SpinBox_2->setEnabled(checked && ui->mainView->settings.tool2Idx==1);
-  ui->orientVector_1_2->setEnabled(checked && !ui->tanContCheckBox->isChecked());
-  ui->orientVector_2_2->setEnabled(checked && !ui->tanContCheckBox->isChecked());
-  ui->angleOrient_1_SpinBox->setEnabled(checked && ui->tanContCheckBox->isChecked());
-  ui->angleOrient_2_SpinBox->setEnabled(checked && ui->tanContCheckBox->isChecked());
-  ui->toolBox_2->setEnabled(checked);
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
  * @brief MainWindow::on_axisSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the cylinder.
  * @param value The new number of sectors.
  */
@@ -449,6 +424,20 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
   ui->aSlider->setValue(0);
   ui->mainView->setA(0);
 
+  Tool *tool = nullptr;
+  switch(index) {
+  case 0:
+      tool = ui->mainView->cylinders[1];
+      break;
+  case 1:
+      tool = ui->mainView->drums[1];
+      break;
+  }
+
+  ui->mainView->envelopes[1]->setTool(tool);
+  ui->mainView->envelopes[1]->update();
+  ui->mainView->toolRenderers[1]->setTool(tool);
+
   ui->mainView->updateBuffers();
   ui->mainView->updateAdjToolTransf();
   ui->mainView->update();
@@ -801,22 +790,19 @@ void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
     ui->fracReflSpinBox->setEnabled(checked);
     ui->freqReflSpinBox->setEnabled(checked);
 
-    ui->mainView->envelopes[0]->setReflectionLines(checked);
-    ui->mainView->envelopes[1]->setReflectionLines(checked);
+    ui->mainView->settings.reflectionLines = checked;
     ui->mainView->updateBuffers();
     ui->mainView->update();
 }
 
 void MainWindow::on_freqReflSpinBox_valueChanged(int value){
-    ui->mainView->envelopes[0]->setReflectionLinesFreq(value);
-    ui->mainView->envelopes[1]->setReflectionLinesFreq(value);
+    ui->mainView->settings.reflFreq = value;
     ui->mainView->updateBuffers();
     ui->mainView->update();
 }
 
 void MainWindow::on_fracReflSpinBox_valueChanged(double value){
-    ui->mainView->envelopes[0]->setReflectionLinesBlackPercent(value);
-    ui->mainView->envelopes[1]->setReflectionLinesBlackPercent(value);
+    ui->mainView->settings.percentBlack = value;
     ui->mainView->updateBuffers();
     ui->mainView->update();
 }

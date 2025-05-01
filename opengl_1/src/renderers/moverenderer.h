@@ -32,7 +32,7 @@ public:
     void initBuffers() override;
     void updateBuffers();
     void updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf);
-    void paintGL();
+    void paintGL() override;
 
     inline void setMovement(CylinderMovement *move) { this->move = move; }
     inline void setTransf(QMatrix4x4 moveTransf) { this->pathTransf = moveTransf; }

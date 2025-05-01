@@ -2,8 +2,10 @@
 
 /**
  * @brief Envelope::Envelope Creates a new envelope with default values.
+ * @param settings Readonly pointer to settings
  */
-Envelope::Envelope() :
+Envelope::Envelope(const Settings *settings) :
+    settings(settings),
     adjEnv(nullptr),
     toolMovement(nullptr),
     tool()
@@ -14,10 +16,12 @@ Envelope::Envelope() :
 
 /**
  * @brief Envelope::Envelope Creates a new envelope with the given values.
+ * @param settings Readonly pointer to settings
  * @param toolMovement Tool movement.
  * @param tool Tool pointer.
  */
-Envelope::Envelope(CylinderMovement *toolMovement, Tool *tool) :
+Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Tool *tool) :
+    settings(settings),
     adjEnv(nullptr),
     toolMovement(toolMovement),
     tool(tool)
@@ -28,11 +32,13 @@ Envelope::Envelope(CylinderMovement *toolMovement, Tool *tool) :
 
 /**
  * @brief Envelope::Envelope Creates a new envelope with the given values.
+ * @param settigns Readonly pointer to settings
  * @param toolMovement Tool movement.
  * @param tool Tool pointer.
  * @param adjEnvelope Adjacent envelope.
  */
-Envelope::Envelope(CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope) :
+Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope) :
+    settings(settings),
     adjEnv(adjEnvelope),
     toolMovement(toolMovement),
     tool(tool)
@@ -379,11 +385,11 @@ Vertex Envelope::calcEnvelopeAt(float t, float a)
     QVector3D posit = center + r*normal;
 
     QVector3D color;
-    if (reflectionLines){
+    if (settings->reflectionLines){
         float alpha;
         alpha = acos(QVector3D::dotProduct(normal,QVector3D(1,0,0)));
-        float aux = alpha * reflFreq;
-        if (aux -(int)aux <= percentBlack)
+        float aux = alpha * settings->reflFreq;
+        if (aux -(int)aux <= settings->percentBlack)
             color = QVector3D(0,0,0);
         else
             color = QVector3D(1,1,1);

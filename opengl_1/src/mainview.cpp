@@ -197,12 +197,12 @@ void MainView::initializeGL()
 
     // Define the vertices of the enveloping surface
     envelopes.reserve(2);
-    envelopes.append(new Envelope(movements[0], cylinders[0]));
+    envelopes.append(new Envelope(&settings, movements[0], cylinders[0]));
     envelopes[0]->initEnvelope();
 
-    envelopes.append(new Envelope(movements[1], cylinders[1], envelopes[0]));
+    envelopes.append(new Envelope(&settings, movements[1], cylinders[1], envelopes[0]));
     envelopes[1]->initEnvelope();
-    envelopes[1]->setActive(false);
+    envelopes[1]->setActive(true);
 
     envelopeRenderers.reserve(2);
     envelopeRenderers.append(new EnvelopeRenderer());

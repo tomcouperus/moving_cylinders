@@ -21,6 +21,7 @@ public:
 protected:
     virtual void initShaders() = 0;
     virtual void initBuffers() = 0;
+    virtual void paintGL() = 0;
 
     QOpenGLFunctions_4_1_Core *gl;
     Settings *settings;

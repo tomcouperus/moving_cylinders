@@ -36,7 +36,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="Settings">
           <attribute name="title">
@@ -99,151 +99,131 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="secondPassCheckBox">
-             <property name="text">
-              <string>Second Envelope</string>
+            <widget class="QGroupBox" name="samplingBox">
+             <property name="title">
+              <string>Sampling</string>
              </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <widget class="QLabel" name="labelAxisSectors">
+                  <property name="text">
+                   <string>Axis sectors</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="axisSectorsSpinBox">
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="value">
+                   <number>20</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <item>
+                 <widget class="QLabel" name="labelTimeSectors">
+                  <property name="text">
+                   <string>Time sectors</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="timeSectorsSpinBox">
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="value">
+                   <number>50</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_14">
-             <item>
-              <widget class="QLabel" name="labelSampling">
-               <property name="text">
-                <string>Sampling:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
-               <item>
-                <widget class="QLabel" name="labelAxisSectors">
-                 <property name="text">
-                  <string>Axis sectors</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSpinBox" name="axisSectorsSpinBox">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="value">
-                  <number>20</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
-               <item>
-                <widget class="QLabel" name="labelTimeSectors">
-                 <property name="text">
-                  <string>Time sectors</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSpinBox" name="timeSectorsSpinBox">
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="value">
-                  <number>50</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
+            <widget class="QGroupBox" name="reflectionBox">
+             <property name="title">
+              <string>Reflection Lines</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QCheckBox" name="reflecLinesCheckBox">
+                <property name="text">
+                 <string>Enable</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <item>
+                 <widget class="QLabel" name="labelFreqReflecLines">
+                  <property name="text">
+                   <string>Freqency:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="freqReflSpinBox">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>50</number>
+                  </property>
+                  <property name="value">
+                   <number>20</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <item>
+                 <widget class="QLabel" name="labelBlackReflecLines">
+                  <property name="text">
+                   <string>Fraction black:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="fracReflSpinBox">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="minimum">
+                   <double>0.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.500000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
            </item>
            <item>
             <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="Shading">
-          <attribute name="title">
-           <string>Shading</string>
-          </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_15">
-           <item>
-            <widget class="QCheckBox" name="reflecLinesCheckBox">
-             <property name="text">
-              <string>reflection lines</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <widget class="QLabel" name="labelFreqReflecLines">
-               <property name="text">
-                <string>Freqency:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="freqReflSpinBox">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>50</number>
-               </property>
-               <property name="value">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <widget class="QLabel" name="labelBlackReflecLines">
-               <property name="text">
-                <string>Fraction black:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="fracReflSpinBox">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimum">
-                <double>0.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>1.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.100000000000000</double>
-               </property>
-               <property name="value">
-                <double>0.500000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Orientation::Vertical</enum>
              </property>
@@ -714,7 +694,7 @@
            <item>
             <widget class="QCheckBox" name="tanContCheckBox">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>Tangentially Continuous</string>
@@ -727,7 +707,7 @@
            <item>
             <widget class="QCheckBox" name="positContCheckBox">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>Positionally Continuous</string>
@@ -749,7 +729,7 @@
              <item>
               <widget class="QDoubleSpinBox" name="radiusSpinBox_2">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="singleStep">
                 <double>0.100000000000000</double>
@@ -773,7 +753,7 @@
              <item>
               <widget class="QDoubleSpinBox" name="angleSpinBox_2">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="maximum">
                 <double>6.200000000000000</double>
@@ -800,7 +780,7 @@
              <item>
               <widget class="QDoubleSpinBox" name="heightSpinBox_2">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="singleStep">
                 <double>0.100000000000000</double>
@@ -824,7 +804,7 @@
              <item>
               <widget class="QDoubleSpinBox" name="radius0SpinBox_2">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="minimum">
                 <double>1.250000000000000</double>
@@ -853,7 +833,7 @@
                <item>
                 <widget class="QLineEdit" name="orientVector_1_2">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="text">
                   <string>(0.0,1.0,0.0)</string>
@@ -863,7 +843,7 @@
                <item>
                 <widget class="QDoubleSpinBox" name="angleOrient_1_SpinBox">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="minimum">
                   <double>-3.000000000000000</double>
@@ -893,7 +873,7 @@
                <item>
                 <widget class="QLineEdit" name="orientVector_2_2">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="text">
                   <string>(0.0,1.0,0.0)</string>
@@ -903,7 +883,7 @@
                <item>
                 <widget class="QDoubleSpinBox" name="angleOrient_2_SpinBox">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="minimum">
                   <double>-3.000000000000000</double>
@@ -935,7 +915,7 @@
              <item>
               <widget class="QComboBox" name="toolBox_2">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="editable">
                 <bool>false</bool>
