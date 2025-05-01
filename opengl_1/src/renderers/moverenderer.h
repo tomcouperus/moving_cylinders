@@ -30,7 +30,7 @@ public:
 
     void initShaders() override;
     void initBuffers() override;
-    void updateBuffers(CylinderMovement *move);
+    void updateBuffers();
     void updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf);
     void paintGL();
 

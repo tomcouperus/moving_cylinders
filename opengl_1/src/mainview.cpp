@@ -31,6 +31,8 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 MainView::~MainView()
 {
     qDebug() << "MainView destructor";
+    indicesUsed.clear();
+    indicesUsed.squeeze();
     for (auto i : toolRenderers){
         delete i;
     }
@@ -132,6 +134,8 @@ void MainView::initializeGL()
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
     // TODO: refactor
+    indicesUsed.fill(true, 2);
+
     toolRenderers.reserve(2);
     toolRenderers.append(new ToolRenderer());
     toolRenderers.append(new ToolRenderer());
@@ -198,6 +202,7 @@ void MainView::initializeGL()
 
     envelopes.append(new Envelope(movements[1], cylinders[1], envelopes[0]));
     envelopes[1]->initEnvelope();
+    envelopes[1]->setActive(false);
 
     envelopeRenderers.reserve(2);
     envelopeRenderers.append(new EnvelopeRenderer());
@@ -250,14 +255,12 @@ void MainView::initializeGL()
  * TODO: extend for other cylinders and enveloping surfaces.
  */
 void MainView::initBuffers() {
-    toolRenderers[0]->initBuffers();
-    toolRenderers[1]->initBuffers();
-
-    moveRenderers[0]->initBuffers();
-    moveRenderers[1]->initBuffers();
-
-    envelopeRenderers[0]->initBuffers();
-    envelopeRenderers[1]->initBuffers();
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        toolRenderers[i]->initBuffers();
+        moveRenderers[i]->initBuffers();
+        envelopeRenderers[i]->initBuffers();
+    }
 }
 
 /**
@@ -266,40 +269,13 @@ void MainView::initBuffers() {
  */
 void MainView::updateBuffers(){
     qDebug() << "main update buffers";
-    switch (settings.toolIdx) {
-    case 0:
-        envelopes[0]->setTool(cylinders[0]);
-        envelopes[1]->setAdjacentEnvelope(envelopes[0]);
-        toolRenderers[0]->updateBuffers(cylinders[0]);
-        break;
-    case 1:
-        qDebug() << "is drum";
-        envelopes[0]->setTool(drums[0]);
-        envelopes[1]->setAdjacentEnvelope(envelopes[0]);
-        toolRenderers[0]->updateBuffers(drums[0]);
-        break;
-    default:
-        break;
-    }
-    envelopeRenderers[0]->updateBuffers(envelopes[0]);
-    moveRenderers[0]->updateBuffers(movements[0]);
 
-    if (settings.secondEnv) {
-        switch (settings.tool2Idx) {
-        case 0:
-            envelopes[1]->setTool(cylinders[1]);
-            toolRenderers[1]->updateBuffers(cylinders[1]);
-            break;
-        case 1:
-            qDebug() << "is drum";
-            envelopes[1]->setTool(drums[1]);
-            toolRenderers[1]->updateBuffers(drums[1]);
-            break;
-        default:
-            break;
-        }
-        envelopeRenderers[1]->updateBuffers(envelopes[1]);
-        moveRenderers[1]->updateBuffers(movements[1]);
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->updateBuffers();
+        envelopeRenderers[i]->updateBuffers();
+        moveRenderers[i]->updateBuffers();
     }
 }
 
@@ -313,26 +289,17 @@ void MainView::paintGL()
     // Clear the screen before rendering
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Bind the shader program
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->updateUniforms(*toolTransforms[i], projTransf);
+        toolRenderers[i]->paintGL();
 
-    toolRenderers[0]->updateUniforms(*toolTransforms[0], projTransf);
-    toolRenderers[0]->paintGL();
+        moveRenderers[i]->updateUniforms(modelTransf, projTransf);
+        moveRenderers[i]->paintGL();
 
-    moveRenderers[0]->updateUniforms(modelTransf,projTransf);
-    moveRenderers[0]->paintGL();
-
-    envelopeRenderers[0]->updateUniforms(modelTransf,projTransf);
-    envelopeRenderers[0]->paintGL();
-
-    if (settings.secondEnv) {
-        toolRenderers[1]->updateUniforms(*toolTransforms[0], projTransf);
-        toolRenderers[1]->paintGL();
-
-        moveRenderers[1]->updateUniforms(modelTransf,projTransf);
-        moveRenderers[1]->paintGL();
-
-        envelopeRenderers[1]->updateUniforms(modelTransf,projTransf);
-        envelopeRenderers[1]->paintGL();
+        envelopeRenderers[i]->updateUniforms(modelTransf,projTransf);
+        envelopeRenderers[i]->paintGL();
     }
 }
 
@@ -374,10 +341,11 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    envelopeRenderers[0]->setTransf(modelTransf);
-    envelopeRenderers[1]->setTransf(modelTransf);
-    moveRenderers[0]->setTransf(modelTransf);
-    moveRenderers[1]->setTransf(modelTransf);
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        envelopeRenderers[i]->setTransf(modelTransf);
+        moveRenderers[i]->setTransf(modelTransf);
+    }
     updateToolTransf();
     update();
 }
@@ -400,10 +368,11 @@ void MainView::setScale(float scale)
     // Update the model transformation matrix
     modelTransf = modelTranslation * modelScaling * modelRotation;
 
-    envelopeRenderers[0]->setTransf(modelTransf);
-    envelopeRenderers[1]->setTransf(modelTransf);
-    moveRenderers[0]->setTransf(modelTransf);
-    moveRenderers[1]->setTransf(modelTransf);
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        envelopeRenderers[i]->setTransf(modelTransf);
+        moveRenderers[i]->setTransf(modelTransf);
+    }
     updateToolTransf();
     update();
 }
@@ -446,6 +415,8 @@ void MainView::setA(float a)
 /**
  * @brief MainView::updateToolTransf Updates the tools transformation matrices.
  */
+// TODO move this and the other toolTransf function to the Envelope class.
+// Their only difference is an if statement to determine if the path relies on another envelope, which the Envelope already knows.
 void MainView::updateToolTransf(){
     // tool translation towards path
     toolToPathTranslations[0]->setToIdentity();

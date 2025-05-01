@@ -10,6 +10,7 @@
  * number of default values.
  */
 typedef struct Settings {
+    int selectedIdx = -1;
     bool showEnvelope = true;
     bool showTool = true;
     bool showPath = false;

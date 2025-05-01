@@ -44,7 +44,7 @@ public:
 
     void initShaders() override;
     void initBuffers() override;
-    void updateBuffers(Envelope *env);
+    void updateBuffers();
     void updateUniforms(QMatrix4x4 envelopeTransf, QMatrix4x4 projTransf);
     void paintGL();
 

@@ -128,12 +128,10 @@ void EnvelopeRenderer::initBuffers()
 }
 
 /**
- * @brief EnvelopeRenderer::updateBuffers Updates the buffers with the new envelope.
- * @param env Envelope.
+ * @brief EnvelopeRenderer::updateBuffers Updates the buffers with the set envelope.
  */
-void EnvelopeRenderer::updateBuffers(Envelope *env)
+void EnvelopeRenderer::updateBuffers()
 {
-    envelope = env;
     vertexArrEnv.clear();
     vertexArrEnv = envelope->getVertexArr();
 

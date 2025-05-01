@@ -112,10 +112,9 @@ void ToolRenderer::initBuffers()
 }
 
 /**
- * @brief ToolRenderer::updateBuffers Updates the buffers for the tool renderer.
- * @param tool Tool to update the buffers with.
+ * @brief ToolRenderer::updateBuffers Updates the buffers for the tool renderer with the set tool
  */
-void ToolRenderer::updateBuffers(Tool *tool)
+void ToolRenderer::updateBuffers()
 {
     qDebug()<< "ToolRenderer::updateBuffers";
     vertexArrTool.clear();

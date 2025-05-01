@@ -50,37 +50,30 @@ void Envelope::initEnvelope()
     computeToolCenters();
     computeGrazingCurves();
     computeNormals();
+    active = true;
+}
+
+void Envelope::update() {
+    computeEnvelope();
+    computeToolCenters();
+    computeGrazingCurves();
+    computeNormals();
 }
 
 void Envelope::setToolMovement(CylinderMovement *toolMovement)
 {
     this->toolMovement = toolMovement;
     sectorsT = toolMovement->getPath().getSectors();
-
-    computeEnvelope();
-    computeToolCenters();
-    computeGrazingCurves();
-    computeNormals();
 }
 
 void Envelope::setTool(Tool *tool)
 {
     this->tool = tool;
     sectorsA = tool->getSectors();
-
-    computeEnvelope();
-    computeToolCenters();
-    computeGrazingCurves();
-    computeNormals();
 }
 
 void Envelope::setAdjacentEnvelope(Envelope *env){
     this->adjEnv = env;
-
-    computeEnvelope();
-    computeToolCenters();
-    computeGrazingCurves();
-    computeNormals();
 }
 
 /**

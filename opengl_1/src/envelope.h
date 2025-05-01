@@ -7,6 +7,7 @@
 
 class Envelope
 {
+    bool active;
     Envelope *adjEnv;
     bool contToAdj = true;
     bool positToAdj = true;
@@ -33,6 +34,7 @@ public:
     Envelope(CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope);
 
     void initEnvelope();
+    void update();
     void computeEnvelope();
     void computeAdjEnvelope();
     void computeToolCenters();
@@ -49,6 +51,9 @@ public:
     QVector3D getPathTangentAt(float t);
 
     QMatrix4x4 getAdjMovementRotation(float time);
+
+    inline bool isActive() { return active; }
+    inline void setActive(bool value) { active = value; }
 
     inline void setIsTanContinuous(bool value){ contToAdj = value; }
     inline void setIsPositContinuous(bool value){ positToAdj = value; }

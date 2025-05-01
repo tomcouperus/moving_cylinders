@@ -39,7 +39,7 @@ public:
 
     void initShaders() override;
     void initBuffers() override;
-    void updateBuffers(Tool *tool);
+    void updateBuffers();
     void updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf);
     void paintGL();
 

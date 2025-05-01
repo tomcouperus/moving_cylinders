@@ -306,6 +306,19 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
       }
   }
 
+  Tool *tool = nullptr;
+  switch(index) {
+  case 0:
+      tool = ui->mainView->cylinders[0];
+      break;
+  case 1:
+      tool = ui->mainView->drums[0];
+      break;
+  }
+
+  ui->mainView->envelopes[0]->setTool(tool);
+  ui->mainView->envelopes[0]->update();
+  ui->mainView->toolRenderers[0]->setTool(tool);
   ui->mainView->updateBuffers();
   ui->mainView->updateToolTransf();
   ui->mainView->update();

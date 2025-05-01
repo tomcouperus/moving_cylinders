@@ -65,10 +65,9 @@ void MoveRenderer::initBuffers()
 }
 
 /**
- * @brief MoveRenderer::updateBuffers Updates the buffers with the new movement.
- * @param move Movement.
+ * @brief MoveRenderer::updateBuffers Updates the buffers with the set movement.
  */
-void MoveRenderer::updateBuffers(CylinderMovement *move)
+void MoveRenderer::updateBuffers()
 {
     vertexArrPath.clear();
     vertexArrPath = move->getPathVertexArr();
