@@ -18,10 +18,17 @@ public:
     virtual ~Renderer();
     void init(QOpenGLFunctions_4_1_Core *f, Settings *s);
 
+    inline void setModelTransf(QMatrix4x4 modelTransf) { this->modelTransform = modelTransf; }
+    inline void setProjTransf(QMatrix4x4 projTransf) { this->projTransform = projTransf; }
+
 protected:
+    QMatrix4x4 modelTransform, projTransform;
+
     virtual void initShaders() = 0;
     virtual void initBuffers() = 0;
     virtual void paintGL() = 0;
+    virtual void updateBuffers() = 0;
+    virtual void updateUniforms() = 0;
 
     QOpenGLFunctions_4_1_Core *gl;
     Settings *settings;

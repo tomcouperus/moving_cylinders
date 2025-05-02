@@ -6,7 +6,7 @@
 MoveRenderer::MoveRenderer()
 {
     this->move = nullptr;
-    pathTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -16,7 +16,7 @@ MoveRenderer::MoveRenderer()
 MoveRenderer::MoveRenderer(CylinderMovement *move)
 {
     this->move = move;
-    pathTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -37,9 +37,6 @@ void MoveRenderer::initShaders()
     shader.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragshader.glsl");
 
     shader.link();
-
-    modelLocation = shader.uniformLocation("modelTransform");
-    projLocation = shader.uniformLocation("projTransform");
 }
 
 /**
@@ -81,11 +78,11 @@ void MoveRenderer::updateBuffers()
  * @param pathTransf Transformation matrix of the movement.
  * @param projTransf Projection matrix.
  */
-void MoveRenderer::updateUniforms(QMatrix4x4 pathTransf, QMatrix4x4 projTransf)
+void MoveRenderer::updateUniforms()
 {
     shader.bind();
-    shader.setUniformValue(modelLocation, pathTransf);
-    shader.setUniformValue(projLocation, projTransf);
+    shader.setUniformValue("modelTransform", modelTransform);
+    shader.setUniformValue("projTransform", projTransform);
     shader.release();
 }
 
@@ -97,6 +94,7 @@ void MoveRenderer::paintGL()
     shader.bind();
     if(settings->showPath)
     {
+        qDebug() << "MoveRenderer::paintGL";
         gl->glBindVertexArray(vaoPath);
         gl->glDrawArrays(GL_LINE_STRIP, 0, vertexArrPath.size());
         gl->glBindVertexArray(0);

@@ -17,6 +17,11 @@ MainWindow::MainWindow(QWidget *parent)
 
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
   QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+
+  // Populate the envelope select dropdown box here
+  for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
+      ui->envelopeSelectBox->addItem("Envelope "+QString::number(i));
+  }
 }
 
 /**
@@ -482,7 +487,11 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_positContCheckBox_toggled(bool checked){
-  ui->mainView->envelopes[1]->setIsPositContinuous(checked);
+    if (checked) {
+        ui->mainView->envelopes[1]->setAdjacentEnvelope(ui->mainView->envelopes[0]);
+    } else {
+        ui->mainView->envelopes[1]->setAdjacentEnvelope(nullptr);
+    }
 
   QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
   QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());

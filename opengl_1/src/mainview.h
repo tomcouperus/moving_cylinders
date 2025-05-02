@@ -35,6 +35,7 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     // NOTE: We do not delete any of pointers in the arrays below to avoid creating and deleting objects.
     // If the pool needs to increase, we do so, and keep track in the indicesUsed array for which objects are in use.
     // There are likely optimizations possible to shrink memory usage when possible, but not for now.
+    bool updateUniformsRequired;
 
     // Tool rendering
     QVector<ToolRenderer*> toolRenderers;
@@ -62,9 +63,6 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
 
-    GLint modelLocation;
-    GLint projLocation;
-
 public:
     MainView(QWidget *parent = nullptr);
     ~MainView() override;
@@ -80,7 +78,7 @@ public:
 
 protected:
     void initializeGL() override;
-    void initBuffers();
+    void updateUniforms();
     void resizeGL(int newWidth, int newHeight) override;
     void paintGL() override;
     void moveModel(float x, float y);

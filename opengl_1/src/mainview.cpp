@@ -14,8 +14,107 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 {
     qDebug() << "MainView constructor";
 
-    // The movements array has to be initialized here due to the setup function in MainWindow
+    indicesUsed.fill(true, 2);
 
+    toolRenderers.reserve(2);
+    toolRenderers.append(new ToolRenderer());
+    toolRenderers.append(new ToolRenderer());
+
+    // Define the vertices of the tools
+    cylinders.reserve(2);
+    cylinders.append(new Cylinder());
+    cylinders.append(new Cylinder());
+    cylinders[0]->initCylinder();
+    cylinders[1]->initCylinder();
+
+    drums.reserve(2);
+    drums.append(new Drum());
+    drums.append(new Drum());
+    drums[0]->initDrum();
+    drums[1]->initDrum();
+
+    switch (settings.toolIdx) {
+    case 0:
+        toolRenderers[0]->setTool(cylinders[0]);
+        toolRenderers[1]->setTool(cylinders[1]);
+        break;
+    case 1:
+        toolRenderers[0]->setTool(drums[0]);
+        toolRenderers[1]->setTool(drums[1]);
+        break;
+    default:
+        break;
+    }
+
+    // Define path for the tool
+    SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
+                                 Polynomial(0.0,1.0,0.0,0.0),
+                                 Polynomial());
+    path.initVertexArr();
+
+    // Define orientation(s) of the tool
+    movements.reserve(2);
+    movements.append(nullptr);
+    movements.append(nullptr);
+    movements[0] = new CylinderMovement(path,
+                                        //QVector3D(0.0,0.1,-1.0),
+                                        QVector3D(0.0,1.0,0.0),
+                                        QVector3D(0.0,1.0,0.0), *cylinders[0]);
+    movements[1] = new CylinderMovement(path,
+                                        //QVector3D(0.0,0.1,-1.0),
+                                        QVector3D(0.0,1.0,0.0),
+                                        QVector3D(0.0,1.0,0.0), *cylinders[1]);
+
+    moveRenderers.reserve(2);
+    moveRenderers.append(new MoveRenderer());
+    moveRenderers.append(new MoveRenderer());
+    moveRenderers[0]->setMovement(movements[0]);
+    moveRenderers[1]->setMovement(movements[1]);
+
+    // Define the vertices of the enveloping surface
+    envelopes.reserve(2);
+    envelopes.append(new Envelope(&settings, movements[0], cylinders[0]));
+    envelopes[0]->initEnvelope();
+
+    envelopes.append(new Envelope(&settings, movements[1], cylinders[1], envelopes[0]));
+    envelopes[1]->initEnvelope();
+    envelopes[1]->setActive(false);
+
+    envelopeRenderers.reserve(2);
+    envelopeRenderers.append(new EnvelopeRenderer());
+    envelopeRenderers.append(new EnvelopeRenderer());
+    envelopeRenderers[0]->setEnvelope(envelopes[0]);
+    envelopeRenderers[1]->setEnvelope(envelopes[1]);
+
+    // Initialize tool matrices
+    toolRotations.reserve(2);
+    toolRotations.append(new QMatrix4x4());
+    toolRotations.append(new QMatrix4x4());
+    toolToPathTranslations.reserve(2);
+    toolToPathTranslations.append(new QMatrix4x4());
+    toolToPathTranslations.append(new QMatrix4x4());
+    toolTranslations.reserve(2);
+    toolTranslations.append(new QMatrix4x4());
+    toolTranslations.append(new QMatrix4x4());
+    toolTransforms.reserve(2);
+    toolTransforms.append(new QMatrix4x4());
+    toolTransforms.append(new QMatrix4x4());
+
+    // First transformation of the cylinder
+    modelTranslation.setToIdentity();
+    modelTranslation.translate(-2, 0, -6);
+
+    // Set the initial model transformation to
+    // just the translation
+    modelTransf = modelTranslation;
+    updateToolTransf();
+
+    // Pass initial transformations to the renderers;
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        toolRenderers[i]->setModelTransf(*toolTransforms[i]);
+        envelopeRenderers[i]->setModelTransf(modelTransf);
+        moveRenderers[i]->setModelTransf(modelTransf);
+    }
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 }
@@ -134,134 +233,15 @@ void MainView::initializeGL()
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
     // TODO: refactor
-    indicesUsed.fill(true, 2);
-
-    toolRenderers.reserve(2);
-    toolRenderers.append(new ToolRenderer());
-    toolRenderers.append(new ToolRenderer());
-
-    // Define the vertices of the tools
-    cylinders.reserve(2);
-    cylinders.append(new Cylinder());
-    cylinders.append(new Cylinder());
-    cylinders[0]->initCylinder();
-    cylinders[1]->initCylinder();
-
-    drums.reserve(2);
-    drums.append(new Drum());
-    drums.append(new Drum());
-    drums[0]->initDrum();
-    drums[1]->initDrum();
-
-    switch (settings.toolIdx) {
-    case 0:
-        toolRenderers[0]->setTool(cylinders[0]);
-        toolRenderers[1]->setTool(cylinders[1]);
-        break;
-    case 1:
-        toolRenderers[0]->setTool(drums[0]);
-        toolRenderers[1]->setTool(drums[1]);
-        break;
-    default:
-        break;
-    }
-    toolRenderers[0]->init(gl,&settings);
-    toolRenderers[1]->init(gl,&settings);
-
-    // Define path for the tool
-    SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
-                      Polynomial(0.0,1.0,0.0,0.0),
-                      Polynomial());
-    path.initVertexArr();
-
-    // Define orientation(s) of the tool
-    movements.reserve(2);
-    movements.append(nullptr);
-    movements.append(nullptr);
-    movements[0] = new CylinderMovement(path,
-                            //QVector3D(0.0,0.1,-1.0),
-                            QVector3D(0.0,1.0,0.0),
-                            QVector3D(0.0,1.0,0.0), *cylinders[0]);
-    movements[1] = new CylinderMovement(path,
-                            //QVector3D(0.0,0.1,-1.0),
-                            QVector3D(0.0,1.0,0.0),
-                            QVector3D(0.0,1.0,0.0), *cylinders[1]);
-
-    moveRenderers.reserve(2);
-    moveRenderers.append(new MoveRenderer());
-    moveRenderers.append(new MoveRenderer());
-    moveRenderers[0]->setMovement(movements[0]);
-    moveRenderers[0]->init(gl,&settings);
-    moveRenderers[1]->setMovement(movements[1]);
-    moveRenderers[1]->init(gl,&settings);
-
-    // Define the vertices of the enveloping surface
-    envelopes.reserve(2);
-    envelopes.append(new Envelope(&settings, movements[0], cylinders[0]));
-    envelopes[0]->initEnvelope();
-
-    envelopes.append(new Envelope(&settings, movements[1], cylinders[1], envelopes[0]));
-    envelopes[1]->initEnvelope();
-    envelopes[1]->setActive(true);
-
-    envelopeRenderers.reserve(2);
-    envelopeRenderers.append(new EnvelopeRenderer());
-    envelopeRenderers.append(new EnvelopeRenderer());
-    envelopeRenderers[0]->setEnvelope(envelopes[0]);
-    envelopeRenderers[0]->init(gl,&settings);
-    envelopeRenderers[1]->setEnvelope(envelopes[1]);
-    envelopeRenderers[1]->init(gl,&settings);
-
-    // Initialize tool matrices
-    toolRotations.reserve(2);
-    toolRotations.append(new QMatrix4x4());
-    toolRotations.append(new QMatrix4x4());
-    toolToPathTranslations.reserve(2);
-    toolToPathTranslations.append(new QMatrix4x4());
-    toolToPathTranslations.append(new QMatrix4x4());
-    toolTranslations.reserve(2);
-    toolTranslations.append(new QMatrix4x4());
-    toolTranslations.append(new QMatrix4x4());
-    toolTransforms.reserve(2);
-    toolTransforms.append(new QMatrix4x4());
-    toolTransforms.append(new QMatrix4x4());
-
-    initBuffers();
-
-    // First transformation of the cylinder
-    modelTranslation.setToIdentity();
-    modelTranslation.translate(-2, 0, -6);
-
-    // Set the initial model transformation to
-    // just the translation
-    modelTransf = modelTranslation;
-    updateToolTransf();
-
-    // Pass initial transformations to the renderers;
-    toolRenderers[0]->setTransf(*toolTransforms[0]);
-    toolRenderers[1]->setTransf(*toolTransforms[1]);
-    envelopeRenderers[0]->setTransf(modelTransf);
-    envelopeRenderers[1]->setTransf(modelTransf);
-    moveRenderers[0]->setTransf(modelTransf);
-    moveRenderers[1]->setTransf(modelTransf);
-
-    // Set the initial projection transformation
-    projTransf.setToIdentity();
-    projTransf.ortho(0.0f,20.0f,0.0f,20.0f,0.2f,20.0f);
-}
-
-/**
- * @brief MainView::initBuffers Initialises the buffers
- * TODO: extend for other cylinders and enveloping surfaces.
- */
-void MainView::initBuffers() {
     for (int i = 0; i < indicesUsed.size(); i++) {
-        if (!indicesUsed[i]) continue;
-        toolRenderers[i]->initBuffers();
-        moveRenderers[i]->initBuffers();
-        envelopeRenderers[i]->initBuffers();
+        toolRenderers[i]->init(gl,&settings);
+        moveRenderers[i]->init(gl,&settings);
+        envelopeRenderers[i]->init(gl,&settings);
     }
+    updateBuffers();
+    updateUniformsRequired = true;
 }
+
 
 /**
  * @brief MainView::updateBuffers gets the vertex array of the cylinder and updates the buffer
@@ -279,6 +259,18 @@ void MainView::updateBuffers(){
     }
 }
 
+void MainView::updateUniforms() {
+    qDebug() << "main update uniforms";
+
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->updateUniforms();
+        moveRenderers[i]->updateUniforms();
+        envelopeRenderers[i]->updateUniforms();
+    }
+}
+
 
 /**
  * @brief MainView::paintGL Actual function used for drawing to the screen.
@@ -289,16 +281,16 @@ void MainView::paintGL()
     // Clear the screen before rendering
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    if (updateUniformsRequired) {
+        updateUniforms();
+        updateUniformsRequired = false;
+    }
+
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
         if (!envelopes[i]->isActive()) continue;
-        toolRenderers[i]->updateUniforms(*toolTransforms[i], projTransf);
         toolRenderers[i]->paintGL();
-
-        moveRenderers[i]->updateUniforms(modelTransf, projTransf);
         moveRenderers[i]->paintGL();
-
-        envelopeRenderers[i]->updateUniforms(modelTransf,projTransf);
         envelopeRenderers[i]->paintGL();
     }
 }
@@ -311,12 +303,22 @@ void MainView::paintGL()
  */
 void MainView::resizeGL(int newWidth, int newHeight)
 {
+    qDebug() << "MainView::resizeGL";
     // Get the aspect ratio of the new screen size
     float aspectRatio = newWidth / ((float)newHeight);
 
     // Set the viewport to the new size
     projTransf.setToIdentity();
     projTransf.perspective(60.0f, aspectRatio, 0.2f, 20.0f);
+
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->setProjTransf(projTransf);
+        envelopeRenderers[i]->setProjTransf(projTransf);
+        moveRenderers[i]->setProjTransf(projTransf);
+    }
+    updateUniformsRequired = true;
 }
 
 /**
@@ -343,10 +345,11 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        envelopeRenderers[i]->setTransf(modelTransf);
-        moveRenderers[i]->setTransf(modelTransf);
+        envelopeRenderers[i]->setModelTransf(modelTransf);
+        moveRenderers[i]->setModelTransf(modelTransf);
     }
     updateToolTransf();
+    updateUniformsRequired = true;
     update();
 }
 
@@ -370,10 +373,11 @@ void MainView::setScale(float scale)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        envelopeRenderers[i]->setTransf(modelTransf);
-        moveRenderers[i]->setTransf(modelTransf);
+        envelopeRenderers[i]->setModelTransf(modelTransf);
+        moveRenderers[i]->setModelTransf(modelTransf);
     }
     updateToolTransf();
+    updateUniformsRequired = true;
     update();
 }
 
@@ -388,6 +392,7 @@ void MainView::setTime(float time)
     settings.time = time + movements[0]->getPath().getT0();
 
     updateToolTransf();
+    updateUniformsRequired = true;
     update();
 }
 
@@ -410,6 +415,8 @@ void MainView::setA(float a)
     }
 
     settings.a = a / divisor;
+    updateUniformsRequired = true;
+    update();
 }
 
 /**
@@ -436,8 +443,8 @@ void MainView::updateToolTransf(){
     // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
     *toolTransforms[0] = modelTransf * *toolTranslations[0] * *toolRotations[0] * *toolToPathTranslations[0];
 
-    toolRenderers[0]->updateUniforms(*toolTransforms[0], projTransf);
-    toolRenderers[0]->setTransf(*toolTransforms[0]);
+    toolRenderers[0]->setModelTransf(*toolTransforms[0]);
+    toolRenderers[0]->setProjTransf(projTransf);
 
     if (settings.secondEnv) {
         updateAdjToolTransf();
@@ -472,8 +479,8 @@ void MainView::updateAdjToolTransf(){
         *toolTransforms[1] = modelTransf * *toolTranslations[1] * *toolRotations[1] * *toolToPathTranslations[1];
     }
 
-    toolRenderers[1]->updateUniforms(*toolTransforms[0], projTransf);
-    toolRenderers[1]->setTransf(*toolTransforms[1]);
+    toolRenderers[1]->setModelTransf(*toolTransforms[1]);
+    toolRenderers[1]->setProjTransf(projTransf);
 }
 
 /**

@@ -31,12 +31,6 @@ class EnvelopeRenderer : public Renderer
     GLuint vaoNormals;
     QVector<Vertex> vertexArrNormals;
 
-
-    // Transformation matrices for the envelope
-    QMatrix4x4 envelopeTransf;
-
-    GLint modelLocation;
-    GLint projLocation;
 public:
     EnvelopeRenderer();
     EnvelopeRenderer(Envelope *env);
@@ -44,12 +38,11 @@ public:
 
     void initShaders() override;
     void initBuffers() override;
-    void updateBuffers();
-    void updateUniforms(QMatrix4x4 envelopeTransf, QMatrix4x4 projTransf);
+    void updateBuffers() override;
+    void updateUniforms() override;
     void paintGL() override;
 
     inline void setEnvelope(Envelope *env) { this->envelope = env; }
-    inline void setTransf(QMatrix4x4 envelopeTransf) { this->envelopeTransf = envelopeTransf; }
 };
 
 #endif // ENVELOPERENDERER_H

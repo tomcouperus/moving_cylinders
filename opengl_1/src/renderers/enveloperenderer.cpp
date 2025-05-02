@@ -6,7 +6,7 @@
 EnvelopeRenderer::EnvelopeRenderer()
 {
     envelope = nullptr;
-    envelopeTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -16,7 +16,7 @@ EnvelopeRenderer::EnvelopeRenderer()
 EnvelopeRenderer::EnvelopeRenderer(Envelope *env)
 {
     envelope = env;
-    envelopeTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -43,10 +43,6 @@ void EnvelopeRenderer::initShaders()
     shader.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragshader.glsl");
 
     shader.link();
-
-    // Get the locations of the model and projection matrices
-    modelLocation = shader.uniformLocation("modelTransform");
-    projLocation = shader.uniformLocation("projTransform");
 }
 
 /**
@@ -132,6 +128,7 @@ void EnvelopeRenderer::initBuffers()
  */
 void EnvelopeRenderer::updateBuffers()
 {
+    qDebug() << "EnvelopeRenderer::updateBuffers";
     envelope->update();
 
     vertexArrEnv.clear();
@@ -164,11 +161,11 @@ void EnvelopeRenderer::updateBuffers()
  * @param envelopeTransf Envelope transformation matrix.
  * @param projTransf Projection transformation matrix.
  */
-void EnvelopeRenderer::updateUniforms(QMatrix4x4 envelopeTransf, QMatrix4x4 projTransf)
+void EnvelopeRenderer::updateUniforms()
 {
     shader.bind();
-    shader.setUniformValue(modelLocation, envelopeTransf);
-    shader.setUniformValue(projLocation, projTransf);
+    shader.setUniformValue("modelTransform", modelTransform);
+    shader.setUniformValue("projTransform", projTransform);
     shader.release();
 }
 
@@ -181,36 +178,32 @@ void EnvelopeRenderer::paintGL()
     shader.bind();
 
     if(settings->showEnvelope){
+        qDebug() << "EnvelopeRenderer::paintGL envelope";
         // Bind envelope buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
         gl->glBindVertexArray(vaoEnv);
         // Draw envelope
         gl->glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
     }
 
     if(settings->showToolAxis){
+        qDebug() << "EnvelopeRenderer::paintGL axis";
         // Bind centers buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
         gl->glBindVertexArray(vaoCenters);
         // Draw centers
         gl->glDrawArrays(GL_LINES,0,vertexArrCenters.size());
     }
 
     if(settings->showGrazingCurve){
+        qDebug() << "EnvelopeRenderer::paintGL grazing";
         // Bind grazing curve buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
         gl->glBindVertexArray(vaoGrazingCurve);
         // Draw grazing curve
         gl->glDrawArrays(GL_LINES,0,vertexArrGrazingCurve.size());
     }
 
     if(settings->showNormals){
+        qDebug() << "EnvelopeRenderer::paintGL normals";
         // Bind normals buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, envelopeTransf.data());
         gl->glBindVertexArray(vaoNormals);
         // Draw normals
         gl->glDrawArrays(GL_LINES,0,vertexArrNormals.size());

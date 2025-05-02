@@ -5,7 +5,7 @@
  */
 ToolRenderer::ToolRenderer()
 {
-    toolTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -20,7 +20,7 @@ ToolRenderer::ToolRenderer(Cylinder *cyl)
     vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
     vertexArrSph = sphere.getVertexArr();
-    toolTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -35,7 +35,7 @@ ToolRenderer::ToolRenderer(Drum *drum)
     vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
     vertexArrSph = sphere.getVertexArr();
-    toolTransf.setToIdentity();
+    modelTransform.setToIdentity();
 }
 
 /**
@@ -60,10 +60,6 @@ void ToolRenderer::initShaders()
     qDebug() << "shader link";
     shader.link();
     qDebug() << "shader linked";
-
-    // Get the locations of the model and projection matrices
-    modelLocation = shader.uniformLocation("modelTransform");
-    projLocation = shader.uniformLocation("projTransform");
 }
 
 /**
@@ -139,11 +135,11 @@ void ToolRenderer::updateBuffers()
  * @param toolTransf Tool transformation matrix.
  * @param projTransf Projection transformation matrix.
  */
-void ToolRenderer::updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf)
+void ToolRenderer::updateUniforms()
 {
     shader.bind();
-    shader.setUniformValue(modelLocation, toolTransf);
-    shader.setUniformValue(projLocation, projTransf);
+    shader.setUniformValue("modelTransform", modelTransform);
+    shader.setUniformValue("projTransform", projTransform);
     shader.release();
 }
 
@@ -152,13 +148,11 @@ void ToolRenderer::updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf)
  */
 void ToolRenderer::paintGL()
 {
-    qDebug() << "Drawing tool";
     shader.bind();
 
     if(settings->showTool){
+        qDebug() << "ToolRenderer::paintGL tool";
         // Bind cylinder buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboTool);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, toolTransf.data());
         gl->glBindVertexArray(vaoTool);
         // Draw cylinder
         gl->glDrawArrays(GL_TRIANGLES,0,vertexArrTool.size());
@@ -166,9 +160,8 @@ void ToolRenderer::paintGL()
 
     if (settings->showSpheres)
     {
+        qDebug() << "ToolRenderer::paintGL sphere";
         // Bind sphere buffer
-        gl->glBindBuffer(GL_ARRAY_BUFFER, vboSph);
-        gl->glUniformMatrix4fv(modelLocation, 1, GL_FALSE, toolTransf.data());
         gl->glBindVertexArray(vaoSph);
         // Draw sphere
         gl->glDrawArrays(GL_LINES,0,vertexArrSph.size());

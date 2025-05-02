@@ -25,12 +25,6 @@ class ToolRenderer : public Renderer
 
     QOpenGLShaderProgram shader;
 
-    GLint modelLocation;
-    GLint projLocation;
-
-    // Transformation matrices for the tool
-    QMatrix4x4 toolTransf;
-
 public:
     ToolRenderer();
     ToolRenderer(Cylinder *cylinder);
@@ -39,12 +33,11 @@ public:
 
     void initShaders() override;
     void initBuffers() override;
-    void updateBuffers();
-    void updateUniforms(QMatrix4x4 toolTransf, QMatrix4x4 projTransf);
+    void updateBuffers() override;
+    void updateUniforms() override;
     void paintGL() override;
 
     inline void setTool(Tool *tool) { this->tool = tool; }
-    inline void setTransf(QMatrix4x4 toolTransf) { this->toolTransf = toolTransf; }
 
 
 };

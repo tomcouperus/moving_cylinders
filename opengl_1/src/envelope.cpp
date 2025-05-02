@@ -39,10 +39,10 @@ Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Too
  */
 Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope) :
     settings(settings),
-    adjEnv(adjEnvelope),
     toolMovement(toolMovement),
     tool(tool)
 {
+    setAdjacentEnvelope(adjEnvelope);
     sectorsA = tool->getSectors();
     sectorsT = toolMovement->getPath().getSectors();
 }
@@ -60,10 +60,33 @@ void Envelope::initEnvelope()
 }
 
 void Envelope::update() {
+    if (!checkDependencies()) {
+        throw new std::runtime_error("Dependency issue. Likely a circular dependency. Should be handled on input of dependency.");
+    }
     computeEnvelope();
     computeToolCenters();
     computeGrazingCurves();
     computeNormals();
+
+    for (int i = 0; i < dependentEnvelopes.size(); i++) {
+        dependentEnvelopes[i]->update();
+    }
+}
+
+void Envelope::registerDependent(Envelope *dependent) {
+    // TODO check for circular dependencies when adding
+    if (dependentEnvelopes.contains(dependent)) return;
+    dependentEnvelopes.append(dependent);
+}
+
+void Envelope::deregisterDependent(Envelope *dependent) {
+    qsizetype num = dependentEnvelopes.removeAll(dependent);
+    qDebug() << "Removed" << num << "dependents";
+}
+
+bool Envelope::checkDependencies() {
+    // TODO check for circular dependencies
+    return true;
 }
 
 void Envelope::setToolMovement(CylinderMovement *toolMovement)
@@ -79,7 +102,9 @@ void Envelope::setTool(Tool *tool)
 }
 
 void Envelope::setAdjacentEnvelope(Envelope *env){
-    this->adjEnv = env;
+    if (adjEnv != nullptr) this->adjEnv->deregisterDependent(this);
+    adjEnv = env;
+    if (env != nullptr) env->registerDependent(this);
 }
 
 /**
@@ -90,7 +115,7 @@ void Envelope::computeToolCenters()
     vertexArrCenters.clear();
     endCurveArr.clear();
     QVector<Vertex> pathArr = toolMovement->getPath().getVertexArr();
-    if(adjEnv != nullptr && positToAdj)
+    if(isPositContinuous())
         pathArr.clear();
 
     QVector3D color = QVector3D(0,0,1);
@@ -117,7 +142,7 @@ void Envelope::computeToolCenters()
             vertexArrCenters.append(Vertex(v2, color));
 
             // Compute the path of an envelope with respect to its adjacent one
-            if(adjEnv != nullptr && positToAdj && a == tool->getA0()){
+            if(isPositContinuous() && a == tool->getA0()){
                 pathArr.append(Vertex(v1, color));
             }
             if(a+aDelta >= a1){
@@ -259,7 +284,7 @@ QVector3D Envelope::calcToolCenterAt(float t, float a)
  * @return Path at time t.
  */
 QVector3D Envelope::getPathAt(float t){
-    if (adjEnv != nullptr && positToAdj){
+    if (isPositContinuous()){
         // use positional continuity formula
         QVector3D adjCenter = adjEnv->endCurveArr[adjEnv->toolMovement->getPath().getIdxAtTime(t)];
         float rAdjEnv = adjEnv->tool->getRadiusAt(adjEnv->tool->getA1());
@@ -281,7 +306,7 @@ QVector3D Envelope::getPathAt(float t){
 QVector3D Envelope::getPathTangentAt(float t){
     SimplePath path;
     Envelope *env;
-    if (adjEnv != nullptr && positToAdj){
+    if (isPositContinuous()){
         // compute according to discrete path obtained from the adjacent path formula
         path = adjEnv->toolMovement->getPath();
         env = adjEnv;

@@ -9,9 +9,8 @@
 class Envelope
 {
     bool active;
-    Envelope *adjEnv;
-    bool contToAdj = true;
-    bool positToAdj = true;
+    Envelope *adjEnv = nullptr;
+    bool contToAdj = false;
     CylinderMovement *toolMovement;
     Tool *tool;
     double adjAxisAngle1;
@@ -27,6 +26,9 @@ class Envelope
 
     QVector<QVector3D> endCurveArr;
     const Settings *settings;
+
+    QVector<Envelope*> dependentEnvelopes;
+
 public:
     Envelope(const Settings *settings);
     Envelope(const Settings *settings, CylinderMovement *toolMovement, Tool *tool);
@@ -39,6 +41,10 @@ public:
     void computeToolCenters();
     void computeGrazingCurves();
     void computeNormals();
+
+    void registerDependent(Envelope *dependent);
+    void deregisterDependent(Envelope *dependent);
+    bool checkDependencies();
 
     Vertex calcEnvelopeAt(float t, float a);
     QVector3D calcToolCenterAt(float t, float a);
@@ -55,8 +61,8 @@ public:
     inline void setActive(bool value) { active = value; }
 
     inline void setIsTanContinuous(bool value){ contToAdj = value; }
-    inline void setIsPositContinuous(bool value){ positToAdj = value; }
     inline bool isTanContinuous() { return contToAdj; }
+    inline bool isPositContinuous() { return adjEnv != nullptr; }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
