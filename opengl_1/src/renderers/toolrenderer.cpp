@@ -138,7 +138,7 @@ void ToolRenderer::updateBuffers()
 void ToolRenderer::updateUniforms()
 {
     shader.bind();
-    shader.setUniformValue("modelTransform", modelTransform);
+    shader.setUniformValue("modelTransform", modelTransform * toolTransform);
     shader.setUniformValue("projTransform", projTransform);
     shader.release();
 }

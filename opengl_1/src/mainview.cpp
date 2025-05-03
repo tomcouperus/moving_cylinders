@@ -73,32 +73,18 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 
     // Define the vertices of the enveloping surface
     envelopes.reserve(2);
-    envelopes.append(new Envelope(&settings, movements[0], cylinders[0]));
+    envelopes.append(new Envelope(&settings, 0, movements[0], cylinders[0]));
     envelopes[0]->initEnvelope();
 
-    envelopes.append(new Envelope(&settings, movements[1], cylinders[1], envelopes[0]));
+    envelopes.append(new Envelope(&settings, 1, movements[1], cylinders[1], envelopes[0]));
     envelopes[1]->initEnvelope();
-    envelopes[1]->setActive(false);
+    // envelopes[1]->setActive(false);
 
     envelopeRenderers.reserve(2);
     envelopeRenderers.append(new EnvelopeRenderer());
     envelopeRenderers.append(new EnvelopeRenderer());
     envelopeRenderers[0]->setEnvelope(envelopes[0]);
     envelopeRenderers[1]->setEnvelope(envelopes[1]);
-
-    // Initialize tool matrices
-    toolRotations.reserve(2);
-    toolRotations.append(new QMatrix4x4());
-    toolRotations.append(new QMatrix4x4());
-    toolToPathTranslations.reserve(2);
-    toolToPathTranslations.append(new QMatrix4x4());
-    toolToPathTranslations.append(new QMatrix4x4());
-    toolTranslations.reserve(2);
-    toolTranslations.append(new QMatrix4x4());
-    toolTranslations.append(new QMatrix4x4());
-    toolTransforms.reserve(2);
-    toolTransforms.append(new QMatrix4x4());
-    toolTransforms.append(new QMatrix4x4());
 
     // First transformation of the cylinder
     modelTranslation.setToIdentity();
@@ -111,7 +97,7 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 
     // Pass initial transformations to the renderers;
     for (int i = 0; i < indicesUsed.size(); i++) {
-        toolRenderers[i]->setModelTransf(*toolTransforms[i]);
+        toolRenderers[i]->setModelTransf(modelTransf);
         envelopeRenderers[i]->setModelTransf(modelTransf);
         moveRenderers[i]->setModelTransf(modelTransf);
     }
@@ -167,26 +153,6 @@ MainView::~MainView()
     }
     envelopeRenderers.clear();
     envelopeRenderers.squeeze();
-    for (auto i : toolRotations){
-        delete i;
-    }
-    toolRotations.clear();
-    toolRotations.squeeze();
-    for (auto i : toolToPathTranslations){
-        delete i;
-    }
-    toolToPathTranslations.clear();
-    toolToPathTranslations.squeeze();
-    for (auto i : toolTranslations){
-        delete i;
-    }
-    toolTranslations.clear();
-    toolTranslations.squeeze();
-    for (auto i : toolTransforms){
-        delete i;
-    }
-    toolTransforms.clear();
-    toolTransforms.squeeze();
 
     makeCurrent();
 }
@@ -345,6 +311,8 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->setModelTransf(modelTransf);
         envelopeRenderers[i]->setModelTransf(modelTransf);
         moveRenderers[i]->setModelTransf(modelTransf);
     }
@@ -373,6 +341,8 @@ void MainView::setScale(float scale)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->setModelTransf(modelTransf);
         envelopeRenderers[i]->setModelTransf(modelTransf);
         moveRenderers[i]->setModelTransf(modelTransf);
     }
@@ -422,65 +392,12 @@ void MainView::setA(float a)
 /**
  * @brief MainView::updateToolTransf Updates the tools transformation matrices.
  */
-// TODO move this and the other toolTransf function to the Envelope class.
-// Their only difference is an if statement to determine if the path relies on another envelope, which the Envelope already knows.
 void MainView::updateToolTransf(){
-    // tool translation towards path
-    toolToPathTranslations[0]->setToIdentity();
-    QVector3D toolPosit = -envelopes[0]->getTool()->getA0()*envelopes[0]->getTool()->getAxisVector();
-    QVector4D shift = QVector4D(toolPosit,0);
-    toolToPathTranslations[0]->translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    // tool translation w.r.t path
-    toolTranslations[0]->setToIdentity();
-    toolPosit = envelopes[0]->getPathAt(settings.time);
-    shift = QVector4D(toolPosit,0);
-    toolTranslations[0]->translate(QVector3D(shift.x(),shift.y(),shift.z()));
-
-    *toolRotations[0] = movements[0]->getMovementRotation(settings.time);
-
-    // Update the model transformation matrix
-    // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
-    *toolTransforms[0] = modelTransf * *toolTranslations[0] * *toolRotations[0] * *toolToPathTranslations[0];
-
-    toolRenderers[0]->setModelTransf(*toolTransforms[0]);
-    toolRenderers[0]->setProjTransf(projTransf);
-
-    if (settings.secondEnv) {
-        updateAdjToolTransf();
+    for (int i = 0; i < indicesUsed.size(); i++) {
+        if (!indicesUsed[i]) continue;
+        if (!envelopes[i]->isActive()) continue;
+        toolRenderers[i]->setToolTransf(envelopes[i]->getToolTransform());
     }
-}
-
-/**
- * @brief MainView::updateAdjToolTransf Updates the tools transformation matrices of a second tool.
- */
-void MainView::updateAdjToolTransf(){
-    // tool translation towards path
-    toolToPathTranslations[1]->setToIdentity();
-    QVector3D toolPosit = -envelopes[1]->getTool()->getA0()*envelopes[1]->getTool()->getAxisVector();
-    QVector4D shift2 = QVector4D(toolPosit,0);
-    toolToPathTranslations[1]->translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
-
-    toolTranslations[1]->setToIdentity();
-    toolPosit = envelopes[1]->getPathAt(settings.time);
-    shift2 = QVector4D(toolPosit,0);
-    toolTranslations[1]->translate(QVector3D(shift2.x(),shift2.y(),shift2.z()));
-
-    if (envelopes[1]->isTanContinuous()) {
-        *toolRotations[1] = envelopes[1]->getAdjMovementRotation(settings.time);
-
-        // Update the model transformation matrix
-        // since the rotation is centered on the path which lies higher on the tool axis we have to translate the tool first
-        *toolTransforms[1] = modelTransf * *toolTranslations[1] * *toolRotations[1] * *toolRotations[0] * *toolToPathTranslations[1];
-    } else {
-        *toolRotations[1] = movements[1]->getMovementRotation(settings.time);
-
-        // Update the model transformation matrix
-        *toolTransforms[1] = modelTransf * *toolTranslations[1] * *toolRotations[1] * *toolToPathTranslations[1];
-    }
-
-    toolRenderers[1]->setModelTransf(*toolTransforms[1]);
-    toolRenderers[1]->setProjTransf(projTransf);
 }
 
 /**

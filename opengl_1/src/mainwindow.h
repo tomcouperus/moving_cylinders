@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QErrorMessage>
+#include <QComboBox>
 
 namespace Ui {
 class MainWindow;
@@ -23,7 +24,19 @@ class MainWindow : public QMainWindow {
   void renderToFile();
   ~MainWindow() override;
 
+ private:
+  void SetComboBoxItemEnabled(QComboBox *comboBox, int index, bool enabled);
+
  private slots:
+
+  void on_envelopeSelectBox_currentIndexChanged(int index);
+  void on_envelopeActiveCheckBox_toggled(bool checked);
+  void on_constraintA0SelectBox_currentIndexChanged(int index);
+  void on_constraintA1SelectBox_currentIndexChanged(int index);
+
+
+
+
 
   void on_reflecLinesCheckBox_toggled(bool checked);
   void on_freqReflSpinBox_valueChanged(int value);

@@ -3,9 +3,11 @@
 /**
  * @brief Envelope::Envelope Creates a new envelope with default values.
  * @param settings Readonly pointer to settings
+ * @param index
  */
-Envelope::Envelope(const Settings *settings) :
+Envelope::Envelope(const Settings *settings, int index) :
     settings(settings),
+    index(index),
     adjEnv(nullptr),
     toolMovement(nullptr),
     tool()
@@ -20,8 +22,9 @@ Envelope::Envelope(const Settings *settings) :
  * @param toolMovement Tool movement.
  * @param tool Tool pointer.
  */
-Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Tool *tool) :
+Envelope::Envelope(const Settings *settings, int index, CylinderMovement *toolMovement, Tool *tool) :
     settings(settings),
+    index(index),
     adjEnv(nullptr),
     toolMovement(toolMovement),
     tool(tool)
@@ -37,8 +40,9 @@ Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Too
  * @param tool Tool pointer.
  * @param adjEnvelope Adjacent envelope.
  */
-Envelope::Envelope(const Settings *settings, CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope) :
+Envelope::Envelope(const Settings *settings, int index, CylinderMovement *toolMovement, Tool *tool, Envelope *adjEnvelope) :
     settings(settings),
+    index(index),
     toolMovement(toolMovement),
     tool(tool)
 {
@@ -77,6 +81,7 @@ void Envelope::registerDependent(Envelope *dependent) {
     // TODO check for circular dependencies when adding
     if (dependentEnvelopes.contains(dependent)) return;
     dependentEnvelopes.append(dependent);
+    qDebug() << "Added dependent";
 }
 
 void Envelope::deregisterDependent(Envelope *dependent) {
@@ -84,6 +89,10 @@ void Envelope::deregisterDependent(Envelope *dependent) {
     qDebug() << "Removed" << num << "dependents";
 }
 
+/**
+ * @brief Envelope::checkDependencies Checks for dependency issues in the envelope's dependents. Issues such as circular dependency.
+ * @return True if no issues were found, False if there is an issue.
+ */
 bool Envelope::checkDependencies() {
     // TODO check for circular dependencies
     return true;
@@ -473,4 +482,52 @@ QVector3D Envelope::computeNormal(float t, float a)
     QVector3D normal = alpha*sa + beta*st + gamma*sNorm;
     normal.normalize();
     return normal;
+}
+
+/**
+ * @brief Envelope::getToolToPathTransform Calculates the transformation to move the tool to the path. Should not really be needed to be called anywhere but Envelope::getToolTransform.
+ * @return
+ */
+QMatrix4x4 Envelope::getToolToPathTransform() {
+    QMatrix4x4 toolToPath;
+    toolToPath.setToIdentity();
+    toolToPath.translate(-tool->getA0() * tool->getAxisVector());
+    return toolToPath;
+}
+
+/**
+ * @brief Envelope::getToolAlongPathTransform Calculates the transformation to move the tool along the path. Should not really be needed to be called anywhere but Envelope::getToolTransform.
+ * @return
+ */
+QMatrix4x4 Envelope::getToolAlongPathTransform() {
+    QMatrix4x4 toolAlongPath;
+    toolAlongPath.setToIdentity();
+    toolAlongPath.translate(getPathAt(settings->time));
+    return toolAlongPath;
+}
+
+/**
+ * @brief Envelope::getToolRotationTransform Calculates the transformation to rotate the tool. Should not really be needed to be called anywhere but Envelope::getToolTransform.
+ * @return
+ */
+QMatrix4x4 Envelope::getToolRotationTransform() {
+    QMatrix4x4 toolRotation;
+    if (isTanContinuous()) {
+        // TODO check for circular dependencies
+        if (!checkDependencies()) {
+            throw new std::runtime_error("Dependency issue. Likely a circular dependency. Should be handled on input of dependency.");
+        }
+        toolRotation = getAdjMovementRotation(settings->time) * adjEnv->getToolRotationTransform();
+    } else {
+        toolRotation = toolMovement->getMovementRotation(settings->time);
+    }
+    return toolRotation;
+}
+
+/**
+ * @brief Envelope::getToolTransform Calculates the transformation matrix of the Envelope's tool relative to the envelope itself. The modelTransform is separate from the toolTransform.
+ * @return
+ */
+QMatrix4x4 Envelope::getToolTransform() {
+    return getToolAlongPathTransform() * getToolRotationTransform() * getToolToPathTransform();
 }

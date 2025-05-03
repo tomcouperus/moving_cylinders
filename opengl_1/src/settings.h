@@ -11,6 +11,7 @@
  */
 typedef struct Settings {
     int selectedIdx = -1;
+    int prevIdx = -1;
     bool showEnvelope = true;
     bool showTool = true;
     bool showPath = false;

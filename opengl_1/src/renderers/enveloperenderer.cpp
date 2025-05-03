@@ -129,8 +129,6 @@ void EnvelopeRenderer::initBuffers()
 void EnvelopeRenderer::updateBuffers()
 {
     qDebug() << "EnvelopeRenderer::updateBuffers";
-    envelope->update();
-
     vertexArrEnv.clear();
     vertexArrEnv = envelope->getVertexArr();
 

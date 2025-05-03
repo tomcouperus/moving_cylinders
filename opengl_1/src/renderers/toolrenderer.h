@@ -25,6 +25,8 @@ class ToolRenderer : public Renderer
 
     QOpenGLShaderProgram shader;
 
+    QMatrix4x4 toolTransform;
+
 public:
     ToolRenderer();
     ToolRenderer(Cylinder *cylinder);
@@ -38,6 +40,7 @@ public:
     void paintGL() override;
 
     inline void setTool(Tool *tool) { this->tool = tool; }
+    inline void setToolTransf(QMatrix4x4 toolTransf) { toolTransform = toolTransf; }
 
 
 };

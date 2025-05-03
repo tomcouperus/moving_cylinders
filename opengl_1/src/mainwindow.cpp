@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include "ui_mainwindow.h"
+#include <QStandardItemModel>
 
 /**
  * @brief MainWindow::MainWindow Constructs a new main window.
@@ -20,8 +21,13 @@ MainWindow::MainWindow(QWidget *parent)
 
   // Populate the envelope select dropdown box here
   for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
-      ui->envelopeSelectBox->addItem("Envelope "+QString::number(i));
+      QString text = "Envelope "+QString::number(i);
+      ui->envelopeSelectBox->addItem(text);
+      ui->constraintA0SelectBox->addItem(text);
+      ui->constraintA1SelectBox->addItem(text);
   }
+
+  on_envelopeSelectBox_currentIndexChanged(0);
 }
 
 /**
@@ -30,20 +36,128 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 /**
+ * @brief SetComboBoxItemEnabled Changes the visibility of an item in a combobox. Thanks to https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox/62261745
+ * @param comboBox
+ * @param index
+ * @param enabled
+ */
+void MainWindow::SetComboBoxItemEnabled(QComboBox *comboBox, int index, bool enabled) {
+    auto * model = qobject_cast<QStandardItemModel*>(comboBox->model());
+    assert(model);
+    if(!model) return;
+
+    auto * item = model->item(index);
+    assert(item);
+    if(!item) return;
+    item->setEnabled(enabled);
+}
+
+void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
+    int idx = index-1;
+    int prevIdx = ui->mainView->settings.selectedIdx;
+    qDebug() << "Selected envelope" << idx;
+    ui->mainView->settings.selectedIdx = idx;
+    ui->mainView->settings.prevIdx = prevIdx;
+
+    // Enable/disable some ui elements
+    bool envelopeSelected = idx != -1;
+    ui->envelopeActiveCheckBox->setEnabled(envelopeSelected);
+    ui->constraintsGroupBox->setEnabled(envelopeSelected);
+
+    QVector<Envelope *> envelopes = ui->mainView->envelopes;
+    // Hide/unhide options from constraint selectors
+    if (prevIdx != -1) {
+        SetComboBoxItemEnabled(ui->constraintA0SelectBox, prevIdx+1, true);
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, prevIdx+1, true);
+        if (envelopes[prevIdx]->isPositContinuous()) {
+            SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[prevIdx]->getAdjEnvelope()->getIndex()+1, true);
+        }
+    }
+
+    if (idx == -1) {
+        // Reset the ui elements
+        // ** Active check box
+        ui->envelopeActiveCheckBox->setChecked(false);
+        // ** Constraint select boxes. Also need to unhide all the currently hidden options,
+        // ** which always has to happen on a switch. So do that outside this if.
+        ui->constraintA0SelectBox->setCurrentIndex(0);
+        ui->constraintA1SelectBox->setCurrentIndex(0);
+    } else {
+        Envelope *env = ui->mainView->envelopes[idx];
+        // Load the selected envelope's data
+        // ** Active check box
+        ui->envelopeActiveCheckBox->setChecked(env->isActive());
+        // ** Constraint select boxes. Also hide the current envelope
+        SetComboBoxItemEnabled(ui->constraintA0SelectBox, idx+1, false);
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, idx+1, false);
+        int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
+        ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
+        on_constraintA0SelectBox_currentIndexChanged(a0Idx);
+    }
+
+}
+
+void MainWindow::on_envelopeActiveCheckBox_toggled(bool checked) {
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    if (ui->mainView->envelopes[idx]->isActive() == checked) return;
+
+    qDebug() << "Changed active state of envelope" << idx;
+    ui->mainView->envelopes[idx]->setActive(checked);
+
+    ui->mainView->update();
+}
+
+
+void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
+    Envelope *envelope = ui->mainView->envelopes[ui->mainView->settings.selectedIdx];
+    // Unhide previous adjacent envelope in a1 constraint
+    if (envelope->isPositContinuous()) {
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjEnvelope()->getIndex()+1, true);
+    }
+
+    // Hide new adjacent envelope in a1 constraint, or if its no longer adjacent to any, disable the a1 constraint
+    SetComboBoxItemEnabled(ui->constraintA1SelectBox, index, index == 0);
+    ui->constraintA1SelectBox->setEnabled(index != 0);
+
+    // Set adjacent envelope
+    Envelope *adjEnv = (index == 0) ? nullptr : ui->mainView->envelopes[index-1];
+    if (envelope->getAdjEnvelope() != adjEnv) {
+        envelope->setAdjacentEnvelope(adjEnv);
+        envelope->update();
+        ui->mainView->updateBuffers();
+        ui->mainView->updateToolTransf(); // TODO find way to target specific tools
+        ui->mainView->updateUniformsRequired = true;
+        ui->mainView->update();
+    }
+
+}
+
+void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
+
+}
+
+
+
+
+
+
+
+/**
  * @brief MainWindow::on_axisSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the cylinder.
  * @param value The new number of sectors.
  */
 void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
-  qDebug() << "Axis sectors changed";
-  ui->aSlider->setMaximum(value);
-  ui->mainView->cylinders[0]->setSectors(value);
-  ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
-  ui->mainView->cylinders[1]->setSectors(value);
-  ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
+    qDebug() << "Axis sectors changed";
+    ui->aSlider->setMaximum(value);
+    ui->mainView->cylinders[0]->setSectors(value);
+    ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
+    ui->mainView->cylinders[1]->setSectors(value);
+    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
 
-  ui->mainView->updateBuffers();
-  ui->mainView->updateToolTransf();
-  ui->mainView->update();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateToolTransf();
+    ui->mainView->update();
 }
 
 /**
@@ -313,7 +427,7 @@ void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
   ui->mainView->drums[1]->setMidRadius(value);
   ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -325,7 +439,7 @@ void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
 void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
   ui->mainView->drums[1]->setRadius(value);
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -339,7 +453,7 @@ void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
 
   ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -355,7 +469,7 @@ void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
 
   ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -377,7 +491,7 @@ void MainWindow::on_orientVector_1_2_returnPressed(){
       error.showMessage("The inputed vector is not a valid orientation 1 vector");
   }
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -399,7 +513,7 @@ void MainWindow::on_orientVector_2_2_returnPressed(){
       error.showMessage("The inputed vector is not a valid orientation 2 vector");
   }
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -444,7 +558,7 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
   ui->mainView->toolRenderers[1]->setTool(tool);
 
   ui->mainView->updateBuffers();
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->update();
 }
 
@@ -477,7 +591,7 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
       ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   }
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -502,7 +616,7 @@ void MainWindow::on_positContCheckBox_toggled(bool checked){
   }
 
   ui->mainView->updateBuffers();
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->update();
 }
 
@@ -514,7 +628,7 @@ void MainWindow::on_positContCheckBox_toggled(bool checked){
 void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
   ui->mainView->envelopes[1]->setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
@@ -527,7 +641,7 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
 void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
   ui->mainView->envelopes[1]->setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
 
-  ui->mainView->updateAdjToolTransf();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }
