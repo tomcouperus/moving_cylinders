@@ -34,8 +34,9 @@ class MainWindow : public QMainWindow {
   void on_constraintA0SelectBox_currentIndexChanged(int index);
   void on_constraintA1SelectBox_currentIndexChanged(int index);
 
-
-
+  void on_tanContCheckBox_toggled(bool checked);
+  void on_angleOrient_1_SpinBox_valueChanged(double value);
+  void on_angleOrient_2_SpinBox_valueChanged(double value);
 
 
   void on_reflecLinesCheckBox_toggled(bool checked);
@@ -62,8 +63,6 @@ class MainWindow : public QMainWindow {
   void on_orientVector_2_returnPressed();
   void on_toolBox_currentIndexChanged(int index);
 
-  void on_tanContCheckBox_toggled(bool checked);
-  void on_positContCheckBox_toggled(bool checked);
   void on_radiusSpinBox_2_valueChanged(double value);
   void on_radius0SpinBox_2_valueChanged(double value);
   void on_angleSpinBox_2_valueChanged(double value);
@@ -71,8 +70,6 @@ class MainWindow : public QMainWindow {
   void on_orientVector_1_2_returnPressed();
   void on_orientVector_2_2_returnPressed();
   void on_toolBox_2_currentIndexChanged(int index);
-  void on_angleOrient_1_SpinBox_valueChanged(double value);
-  void on_angleOrient_2_SpinBox_valueChanged(double value);
 
   void on_spinBox_a_x_valueChanged(int value);
   void on_spinBox_b_x_valueChanged(int value);

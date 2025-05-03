@@ -59,15 +59,8 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
     ui->mainView->settings.selectedIdx = idx;
     ui->mainView->settings.prevIdx = prevIdx;
 
-    // Enable/disable some ui elements
-    bool envelopeSelected = idx != -1;
-    ui->envelopeActiveCheckBox->setEnabled(envelopeSelected);
-    ui->constraintsGroupBox->setEnabled(envelopeSelected);
-    ui->SettingsTabMenu->setTabEnabled(2, envelopeSelected);
-    ui->SettingsTabMenu->setTabEnabled(3, envelopeSelected);
-
-    QVector<Envelope *> envelopes = ui->mainView->envelopes;
     // Hide/unhide options from constraint selectors
+    QVector<Envelope *> envelopes = ui->mainView->envelopes;
     if (prevIdx != -1) {
         SetComboBoxItemEnabled(ui->constraintA0SelectBox, prevIdx+1, true);
         SetComboBoxItemEnabled(ui->constraintA1SelectBox, prevIdx+1, true);
@@ -94,8 +87,13 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         SetComboBoxItemEnabled(ui->constraintA1SelectBox, idx+1, false);
         int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
         ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
-        on_constraintA0SelectBox_currentIndexChanged(a0Idx);
     }
+
+    // Enable/disable some ui elements
+    bool envelopeSelected = idx != -1;
+    ui->envelopeActiveCheckBox->setEnabled(envelopeSelected);
+    ui->constraintsGroupBox->setEnabled(envelopeSelected);
+    ui->SettingsTabMenu->setTabEnabled(2, envelopeSelected);
 
 }
 
@@ -107,12 +105,15 @@ void MainWindow::on_envelopeActiveCheckBox_toggled(bool checked) {
     qDebug() << "Changed active state of envelope" << idx;
     ui->mainView->envelopes[idx]->setActive(checked);
 
+    ui->mainView->updateUniformsRequired = true;
     ui->mainView->update();
 }
 
 
 void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
-    Envelope *envelope = ui->mainView->envelopes[ui->mainView->settings.selectedIdx];
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    Envelope *envelope = ui->mainView->envelopes[idx];
     // Unhide previous adjacent envelope in a1 constraint
     if (envelope->isPositContinuous()) {
         SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjEnvelope()->getIndex()+1, true);
@@ -139,6 +140,80 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
 
 void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
 
+}
+
+/**
+ * @brief MainWindow::on_tanContCheckBox_toggled Updates the tangetial continuity settings of the envelopes.
+ * @param checked The new value of the checkbox.
+ */
+// TODO make this function actually flexible. Will involve math in the Envelope.
+void MainWindow::on_tanContCheckBox_toggled(bool checked){
+    ui->mainView->envelopes[1]->setIsTanContinuous(checked);
+
+    ui->angleOrient_1_SpinBox->setEnabled(checked);
+    ui->angleOrient_2_SpinBox->setEnabled(checked);
+    ui->orientVector_1_2->setEnabled(!checked);
+    ui->orientVector_2_2->setEnabled(!checked);
+
+    QVector3D vector1;
+    QVector3D vector2;
+    if(checked) {
+        ui->positContCheckBox->setChecked(true);
+        ui->positContCheckBox->setDisabled(true);
+        vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
+        vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+    } else {
+        ui->positContCheckBox->setEnabled(true);
+        vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
+        vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
+    }
+    bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
+    if (success){
+        ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
+    }
+
+    ui->mainView->envelopes[1]->update();
+    ui->mainView->updateToolTransf();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateUniformsRequired = true;
+    ui->mainView->update();
+}
+
+
+/**
+ * @brief MainWindow::on_angleOrient_1_SpinBox_valueChanged Updates the angle of the axis initial orientation of the
+ * second tool with respect to the one of the first tool.
+ * @param value new angle.
+ */
+void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
+
+    env->update();
+    ui->mainView->updateToolTransf();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateUniformsRequired = true;
+    ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_angleOrient_2_SpinBox_valueChanged Updates the angle of the axis final orientation of the
+ * second tool with respect to the one of the first tool.
+ * @param value new angle.
+ */
+void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
+
+    env->update();
+    ui->mainView->updateToolTransf();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateUniformsRequired = true;
+    ui->mainView->update();
 }
 
 
@@ -563,90 +638,6 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
 
   ui->mainView->updateBuffers();
   ui->mainView->updateToolTransf();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_tanContCheckBox_toggled Updates the tangetial continuity settings of the envelopes.
- * @param checked The new value of the checkbox.
- */
-void MainWindow::on_tanContCheckBox_toggled(bool checked){
-  ui->mainView->envelopes[1]->setIsTanContinuous(checked);
-
-  ui->angleOrient_1_SpinBox->setEnabled(checked);
-  ui->angleOrient_2_SpinBox->setEnabled(checked);
-  ui->orientVector_1_2->setEnabled(!checked);
-  ui->orientVector_2_2->setEnabled(!checked);
-
-  QVector3D vector1;
-  QVector3D vector2;
-  if(checked) {
-      ui->positContCheckBox->setChecked(true);
-      ui->positContCheckBox->setDisabled(true);
-      vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
-      vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
-  } else {
-      ui->positContCheckBox->setEnabled(true);
-      vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-      vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-  }
-  bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
-  if (success){
-      ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_positContCheckBox_toggled Updates the positional continuity settings of the envelopes.
- * @param checked The new value of the checkbox.
- */
-void MainWindow::on_positContCheckBox_toggled(bool checked){
-    if (checked) {
-        ui->mainView->envelopes[1]->setAdjacentEnvelope(ui->mainView->envelopes[0]);
-    } else {
-        ui->mainView->envelopes[1]->setAdjacentEnvelope(nullptr);
-    }
-
-  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-
-  bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
-  if (success){
-      ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  }
-
-  ui->mainView->updateBuffers();
-  ui->mainView->updateToolTransf();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_angleOrient_1_SpinBox_valueChanged Updates the angle of the axis initial orientation of the
- * second tool with respect to the one of the first tool.
- * @param value new angle.
- */ 
-void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
-  ui->mainView->envelopes[1]->setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_angleOrient_2_SpinBox_valueChanged Updates the angle of the axis final orientation of the
- * second tool with respect to the one of the first tool.
- * @param value new angle.
- */
-void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
-  ui->mainView->envelopes[1]->setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
   ui->mainView->update();
 }
 

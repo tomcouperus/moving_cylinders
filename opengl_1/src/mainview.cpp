@@ -279,7 +279,6 @@ void MainView::resizeGL(int newWidth, int newHeight)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        if (!envelopes[i]->isActive()) continue;
         toolRenderers[i]->setProjTransf(projTransf);
         envelopeRenderers[i]->setProjTransf(projTransf);
         moveRenderers[i]->setProjTransf(projTransf);
@@ -311,7 +310,6 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        if (!envelopes[i]->isActive()) continue;
         toolRenderers[i]->setModelTransf(modelTransf);
         envelopeRenderers[i]->setModelTransf(modelTransf);
         moveRenderers[i]->setModelTransf(modelTransf);
@@ -341,7 +339,6 @@ void MainView::setScale(float scale)
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        if (!envelopes[i]->isActive()) continue;
         toolRenderers[i]->setModelTransf(modelTransf);
         envelopeRenderers[i]->setModelTransf(modelTransf);
         moveRenderers[i]->setModelTransf(modelTransf);

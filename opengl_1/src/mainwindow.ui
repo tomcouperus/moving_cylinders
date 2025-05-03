@@ -36,7 +36,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="RenderTab">
           <attribute name="title">
@@ -288,9 +288,15 @@
                </layout>
               </item>
               <item>
-               <widget class="QCheckBox" name="checkBox">
+               <widget class="QCheckBox" name="tanContCheckBox">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="text">
-                 <string>Tangent continuous</string>
+                 <string>Tangent Continuous</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -810,19 +816,6 @@
            <string>Second Tool</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_18">
-           <item>
-            <widget class="QCheckBox" name="tanContCheckBox">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Tangentially Continuous</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QCheckBox" name="positContCheckBox">
              <property name="enabled">
