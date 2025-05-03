@@ -63,6 +63,8 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
     bool envelopeSelected = idx != -1;
     ui->envelopeActiveCheckBox->setEnabled(envelopeSelected);
     ui->constraintsGroupBox->setEnabled(envelopeSelected);
+    ui->SettingsTabMenu->setTabEnabled(2, envelopeSelected);
+    ui->SettingsTabMenu->setTabEnabled(3, envelopeSelected);
 
     QVector<Envelope *> envelopes = ui->mainView->envelopes;
     // Hide/unhide options from constraint selectors
@@ -119,6 +121,8 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
     // Hide new adjacent envelope in a1 constraint, or if its no longer adjacent to any, disable the a1 constraint
     SetComboBoxItemEnabled(ui->constraintA1SelectBox, index, index == 0);
     ui->constraintA1SelectBox->setEnabled(index != 0);
+    // If adjacent, disable the path menu
+    ui->SettingsTabMenu->setTabEnabled(3, index == 0);
 
     // Set adjacent envelope
     Envelope *adjEnv = (index == 0) ? nullptr : ui->mainView->envelopes[index-1];

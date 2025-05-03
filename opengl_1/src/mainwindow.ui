@@ -28,7 +28,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
-        <widget class="QTabWidget" name="tabWidget_2">
+        <widget class="QTabWidget" name="SettingsTabMenu">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -36,9 +36,9 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
-         <widget class="QWidget" name="Render">
+         <widget class="QWidget" name="RenderTab">
           <attribute name="title">
            <string>Render</string>
           </attribute>
@@ -237,7 +237,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="Envelope">
+         <widget class="QWidget" name="EnvelopeTab">
           <attribute name="title">
            <string>Envelope</string>
           </attribute>
@@ -332,7 +332,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="Tool">
+         <widget class="QWidget" name="ToolTab">
           <attribute name="title">
            <string>Tool</string>
           </attribute>
@@ -539,7 +539,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="Path">
+         <widget class="QWidget" name="PathTab">
           <attribute name="title">
            <string>Path</string>
           </attribute>
