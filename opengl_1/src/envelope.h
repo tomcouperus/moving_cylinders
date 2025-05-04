@@ -11,7 +11,7 @@ class Envelope
     int index;
     bool active;
     Envelope *adjEnv = nullptr;
-    bool contToAdj = false;
+    bool tanContToAdj = false;
     CylinderMovement *toolMovement;
     Tool *tool;
     double adjAxisAngle1;
@@ -64,8 +64,8 @@ public:
     inline bool isActive() { return active; }
     inline void setActive(bool value) { active = value; }
 
-    inline void setIsTanContinuous(bool value){ contToAdj = value; }
-    inline bool isTanContinuous() { return adjEnv != nullptr && contToAdj; }
+    inline void setIsTanContinuous(bool value){ tanContToAdj = value; }
+    inline bool isTanContinuous() { return adjEnv != nullptr && tanContToAdj; }
     inline bool isPositContinuous() { return adjEnv != nullptr; }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline QVector3D getEndCurveArrAt(int idx){ return endCurveArr[idx]; }
@@ -78,6 +78,7 @@ public:
     
     inline Tool* getTool(){ return tool; }
     void setTool(Tool *tool);
+    inline CylinderMovement *getToolMovement() { return toolMovement; }
     void setToolMovement(CylinderMovement *toolMovement);
     void setAdjacentEnvelope(Envelope *env);
     QMatrix4x4 getToolToPathTransform();

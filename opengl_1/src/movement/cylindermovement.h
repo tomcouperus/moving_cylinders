@@ -30,7 +30,6 @@ public:
     inline void setDiscPath(QVector<Vertex> discPath) { this->discPath.clear(); this->discPath = discPath;}
     inline void setPath(SimplePath path) { t0 = path.getT0(); t1 = path.getT1(); this->path = path; discPath = path.getVertexArr(); }
     inline SimplePath getPath() {return path;}
-    inline void setAxisDirections(QVector<QVector3D> axisDirections) {axisDirections.clear(); this->axisDirections = axisDirections;}
     bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);
     inline QVector<QVector3D> getAxisDirections() {return axisDirections;}
 

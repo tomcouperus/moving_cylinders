@@ -78,7 +78,7 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 
     envelopes.append(new Envelope(&settings, 1, movements[1], cylinders[1], envelopes[0]));
     envelopes[1]->initEnvelope();
-    // envelopes[1]->setActive(false);
+    envelopes[1]->setActive(false);
 
     envelopeRenderers.reserve(2);
     envelopeRenderers.append(new EnvelopeRenderer());

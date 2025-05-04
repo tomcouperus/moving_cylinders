@@ -77,6 +77,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         // ** which always has to happen on a switch. So do that outside this if.
         ui->constraintA0SelectBox->setCurrentIndex(0);
         ui->constraintA1SelectBox->setCurrentIndex(0);
+        ui->SettingsTabMenu->setTabEnabled(3, false);
     } else {
         Envelope *env = ui->mainView->envelopes[idx];
         // Load the selected envelope's data
@@ -87,6 +88,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         SetComboBoxItemEnabled(ui->constraintA1SelectBox, idx+1, false);
         int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
         ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
+        on_constraintA0SelectBox_currentIndexChanged(a0Idx);
     }
 
     // Enable/disable some ui elements
@@ -119,8 +121,9 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
         SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjEnvelope()->getIndex()+1, true);
     }
 
-    // Hide new adjacent envelope in a1 constraint, or if its no longer adjacent to any, disable the a1 constraint
+    // Hide new adjacent envelope in a1 constraint, or if its no longer adjacent to any, disable the tangent and a1 constraint
     SetComboBoxItemEnabled(ui->constraintA1SelectBox, index, index == 0);
+    ui->tanContCheckBox->setEnabled(index != 0);
     ui->constraintA1SelectBox->setEnabled(index != 0);
     // If adjacent, disable the path menu
     ui->SettingsTabMenu->setTabEnabled(3, index == 0);
@@ -142,37 +145,68 @@ void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
 
 }
 
+
+/**
+ * @brief MainWindow::on_orientVector_1_returnPressed Updates the orientation vector of the tool.
+ */
+void MainWindow::on_orientVector_1_returnPressed(){
+    int idx = ui->mainView->settings.selectedIdx;
+    qDebug() << "orientation vector changed";
+    QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
+    QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+
+    qDebug() << "to" << vector1 << "and" << vector2;
+
+    bool success = ui->mainView->movements[idx]->setAxisDirections(vector1,vector2);
+    if (!success){
+        error.showMessage("The inputed vector is not a valid orientation 1 vector");
+    }
+
+    ui->mainView->envelopes[idx]->update();
+    ui->mainView->updateToolTransf();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateUniformsRequired = true;
+    ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_orientVector_2_returnPressed Updates the orientation vector of the tool.
+ */
+void MainWindow::on_orientVector_2_returnPressed(){
+    int idx = ui->mainView->settings.selectedIdx;
+    qDebug() << "orientation vector changed";
+    QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
+    QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
+
+    qDebug() << "to" << vector1 << "and" << vector2;
+
+    bool success = ui->mainView->movements[idx]->setAxisDirections(vector1,vector2);
+    if (!success){
+        error.showMessage("The inputed vector is not a valid orientation 2 vector");
+    }
+
+    ui->mainView->envelopes[idx]->update();
+    ui->mainView->updateToolTransf();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateUniformsRequired = true;
+    ui->mainView->update();
+}
+
 /**
  * @brief MainWindow::on_tanContCheckBox_toggled Updates the tangetial continuity settings of the envelopes.
  * @param checked The new value of the checkbox.
  */
-// TODO make this function actually flexible. Will involve math in the Envelope.
 void MainWindow::on_tanContCheckBox_toggled(bool checked){
-    ui->mainView->envelopes[1]->setIsTanContinuous(checked);
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    ui->mainView->envelopes[idx]->setIsTanContinuous(checked);
 
     ui->angleOrient_1_SpinBox->setEnabled(checked);
     ui->angleOrient_2_SpinBox->setEnabled(checked);
     ui->orientVector_1_2->setEnabled(!checked);
     ui->orientVector_2_2->setEnabled(!checked);
 
-    QVector3D vector1;
-    QVector3D vector2;
-    if(checked) {
-        ui->positContCheckBox->setChecked(true);
-        ui->positContCheckBox->setDisabled(true);
-        vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
-        vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
-    } else {
-        ui->positContCheckBox->setEnabled(true);
-        vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-        vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-    }
-    bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
-    if (success){
-        ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-    }
-
-    ui->mainView->envelopes[1]->update();
+    ui->mainView->envelopes[idx]->update();
     ui->mainView->updateToolTransf();
     ui->mainView->updateBuffers();
     ui->mainView->updateUniformsRequired = true;
@@ -355,80 +389,6 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
 
     ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
     ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_orientVector_1_returnPressed Updates the orientation vector of the tool.
- */
-void MainWindow::on_orientVector_1_returnPressed(){
-  qDebug() << "orientation vector changed";
-  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
-  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
-
-  qDebug() << "to" << vector1 << "and" << vector2;
-
-  bool success = ui->mainView->movements[0]->setAxisDirections(vector1,vector2);
-  if (success){
-      ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  } else {
-      error.showMessage("The inputed vector is not a valid orientation 1 vector");
-  }
-
-  if (ui->mainView->settings.secondEnv){
-      ui->orientVector_1_2->setText(ui->orientVector_1->text());
-      ui->orientVector_2_2->setText(ui->orientVector_2->text());
-
-      vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-      vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-
-      success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
-      if (success){
-          ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-      } else {
-          error.showMessage("The inputed vector is not a valid orientation 1 vector");
-      }
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_orientVector_2_returnPressed Updates the orientation vector of the tool.
- */
-void MainWindow::on_orientVector_2_returnPressed(){
-  qDebug() << "orientation vector changed";
-  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
-  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
-
-  qDebug() << "to" << vector1 << "and" << vector2;
-
-  bool success = ui->mainView->movements[0]->setAxisDirections(vector1,vector2);
-  if (success){
-      ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  } else {
-      error.showMessage("The inputed vector is not a valid orientation 2 vector");
-  }
-
-  if (ui->mainView->settings.secondEnv){
-      ui->orientVector_1_2->setText(ui->orientVector_1->text());
-      ui->orientVector_2_2->setText(ui->orientVector_2->text());
-
-      vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-      vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-
-      success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
-      if (success){
-          ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-      } else {
-          error.showMessage("The inputed vector is not a valid orientation 2 vector");
-      }
   }
 
   ui->mainView->updateToolTransf();
@@ -646,6 +606,7 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_x_valueChanged(int value) {
+    int idx = ui->mainView->settings.selectedIdx;
   qDebug() << "a of x(t) updated to: " << value;
 
 
@@ -659,9 +620,11 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
 
   ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
   ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
 
+  ui->mainView->envelopes[idx]->update();
+  ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
+  ui->mainView->updateUniformsRequired = true;
   ui->mainView->update();
 }
 

@@ -340,9 +340,7 @@ QVector3D Envelope::getPathTangentAt(float t){
 QVector3D Envelope::calcToolAxisDirecAt(float t)
 {
     QVector3D axis = toolMovement->getAxisDirectionAt(t);
-    if (axis != axis)
-        qDebug() << "Problem with axis at time " << t;
-    if (adjEnv != nullptr && contToAdj){
+    if (isTanContinuous()){
         QMatrix4x4 rotation = getAdjMovementRotation(t);
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
         axis = QVector3D(axisDirecNew.x(),axisDirecNew.y(),axisDirecNew.z());
@@ -358,7 +356,7 @@ QVector3D Envelope::calcToolAxisDirecAt(float t)
 QVector3D Envelope::calcAxisRateOfChange(float t)
 {
     QVector3D axis = toolMovement->getAxisRateOfChange(t);
-    if (adjEnv != nullptr && contToAdj){
+    if (adjEnv != nullptr && tanContToAdj){
         QMatrix4x4 rotation = getAdjMovementRotation(t);
         QVector4D axisDirecNew = rotation * QVector4D(axis,0);
         axis = QVector3D(axisDirecNew.x(),axisDirecNew.y(),axisDirecNew.z());
