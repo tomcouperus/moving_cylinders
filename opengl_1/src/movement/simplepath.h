@@ -23,6 +23,7 @@ public:
     void initVertexArr() override;
     void updateVertexArr() override;
     QVector3D getTangentAt(float t);
+    QVector3D getAccelerationAt(float t);
 
     inline void setX(Polynomial x) {this->x = x; updateVertexArr();}
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}

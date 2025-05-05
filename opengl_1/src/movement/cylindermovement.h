@@ -12,26 +12,20 @@
 class CylinderMovement
 {
     SimplePath path;
-    float t0;
-    float t1;
 
     QVector3D cylinderAxis; // or tool axis
     QVector3D perpToAxis;
-    QVector<QVector3D> axisDirections;
-    QVector<QVector3D> rotationVectors;
-    QVector<Vertex> discPath;
+
+    QVector<Vertex> discPath; // Path of tip of tool
 public:
     CylinderMovement();
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Cylinder cylinder);
     CylinderMovement(SimplePath path, QVector3D axisDirection1, QVector3D axisDirection2, Drum drum);
-    CylinderMovement(SimplePath path, QVector<QVector3D> axisDirections, Cylinder cylinder);
+    CylinderMovement(SimplePath path, Cylinder cylinder);
 
-    inline QVector<Vertex> getPathVertexArr() { return this->discPath; }
-    inline void setDiscPath(QVector<Vertex> discPath) { this->discPath.clear(); this->discPath = discPath;}
-    inline void setPath(SimplePath path) { t0 = path.getT0(); t1 = path.getT1(); this->path = path; discPath = path.getVertexArr(); }
-    inline SimplePath getPath() {return path;}
+    inline QVector<Vertex>& getPathVertexArr() { return this->discPath; }
+    inline SimplePath& getPath() {return path;}
     bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);
-    inline QVector<QVector3D> getAxisDirections() {return axisDirections;}
 
     QMatrix4x4 getMovementRotation(float time);
     QVector3D getAxisRateOfChange(float time);

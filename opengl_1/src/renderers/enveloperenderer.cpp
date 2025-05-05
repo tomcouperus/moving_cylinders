@@ -50,76 +50,52 @@ void EnvelopeRenderer::initShaders()
  */
 void EnvelopeRenderer::initBuffers()
 {
-    vertexArrEnv.clear();
-    vertexArrEnv = envelope->getVertexArr();
-
     // Create a vertex array object and a vertex buffer object for the envelope
     gl->glGenVertexArrays(1, &vaoEnv);
     gl->glBindVertexArray(vaoEnv);
     gl->glGenBuffers(1, &vboEnv);
-
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
 
     // Set up the vertex attributes
     gl->glEnableVertexAttribArray(0);
-    gl->glEnableVertexAttribArray(1);
-
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
-
-    vertexArrCenters.clear();
-    vertexArrCenters = envelope->getVertexArrCenters();
 
     // Create a vertex array object and a vertex buffer object for the centers
     gl->glGenVertexArrays(1, &vaoCenters);
     gl->glBindVertexArray(vaoCenters);
     gl->glGenBuffers(1, &vboCenters);
-
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrCenters.size() * sizeof(Vertex), vertexArrCenters.data(), GL_STATIC_DRAW);
 
     // Set up the vertex attributes
     gl->glEnableVertexAttribArray(0);
-    gl->glEnableVertexAttribArray(1);
-
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
-
-    vertexArrGrazingCurve.clear();
-    vertexArrGrazingCurve = envelope->getVertexArrGrazingCurve();
 
     // Create a vertex array object and a vertex buffer object for the grazing curve
     gl->glGenVertexArrays(1, &vaoGrazingCurve);
     gl->glBindVertexArray(vaoGrazingCurve);
     gl->glGenBuffers(1, &vboGrazingCurve);
-
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
 
     // Set up the vertex attributes
     gl->glEnableVertexAttribArray(0);
-    gl->glEnableVertexAttribArray(1);
-
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
-
-    vertexArrNormals.clear();
-    vertexArrNormals = envelope->getVertexArrNormalsAt(settings->time);
 
     // Create a vertex array object and a vertex buffer object for the normals
     gl->glGenVertexArrays(1, &vaoNormals);
     gl->glBindVertexArray(vaoNormals);
     gl->glGenBuffers(1, &vboNormals);
-
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrNormals.size() * sizeof(Vertex), vertexArrNormals.data(), GL_STATIC_DRAW);
 
     // Set up the vertex attributes
     gl->glEnableVertexAttribArray(0);
-    gl->glEnableVertexAttribArray(1);
-
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
+    gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
 }
 
@@ -129,26 +105,22 @@ void EnvelopeRenderer::initBuffers()
 void EnvelopeRenderer::updateBuffers()
 {
     qDebug() << "EnvelopeRenderer::updateBuffers";
-    vertexArrEnv.clear();
-    vertexArrEnv = envelope->getVertexArr();
+    QVector<Vertex>& vertexArrEnv = envelope->getVertexArr();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboEnv);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrEnv.size() * sizeof(Vertex), vertexArrEnv.data(), GL_STATIC_DRAW);
 
-    vertexArrCenters.clear();
-    vertexArrCenters = envelope->getVertexArrCenters();
+    QVector<Vertex>& vertexArrCenters = envelope->getVertexArrCenters();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboCenters);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrCenters.size() * sizeof(Vertex), vertexArrCenters.data(), GL_STATIC_DRAW);
 
-    vertexArrGrazingCurve.clear();
-    vertexArrGrazingCurve = envelope->getVertexArrGrazingCurve();
+    QVector<Vertex>& vertexArrGrazingCurve = envelope->getVertexArrGrazingCurve();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
 
-    vertexArrNormals.clear();
-    vertexArrNormals = envelope->getVertexArrNormalsAt(settings->time);
+    QVector<Vertex>& vertexArrNormals = envelope->getVertexArrNormalsAt(settings->time);
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrNormals.size() * sizeof(Vertex), vertexArrNormals.data(), GL_STATIC_DRAW);

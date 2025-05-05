@@ -93,7 +93,6 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
     // Set the initial model transformation to
     // just the translation
     modelTransf = modelTranslation;
-    updateToolTransf();
 
     // Pass initial transformations to the renderers;
     for (int i = 0; i < indicesUsed.size(); i++) {
@@ -205,6 +204,7 @@ void MainView::initializeGL()
         envelopeRenderers[i]->init(gl,&settings);
     }
     updateBuffers();
+    updateToolTransf();
     updateUniformsRequired = true;
 }
 

@@ -35,6 +35,7 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     // NOTE: We do not delete any of pointers in the arrays below to avoid creating and deleting objects.
     // If the pool needs to increase, we do so, and keep track in the indicesUsed array for which objects are in use.
     // There are likely optimizations possible to shrink memory usage when possible, but not for now.
+
     bool updateUniformsRequired;
 
     // Tool rendering

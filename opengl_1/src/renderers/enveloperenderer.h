@@ -14,22 +14,18 @@ class EnvelopeRenderer : public Renderer
 
     GLuint vaoEnv;
     GLuint vboEnv;
-    QVector<Vertex> vertexArrEnv;
 
     // Centers of the 2-param family od spheres that describe the envelope
     GLuint vboCenters;
     GLuint vaoCenters;
-    QVector<Vertex> vertexArrCenters;
 
     // Grazing curve of the tool that describes the envelope
     GLuint vboGrazingCurve;
     GLuint vaoGrazingCurve;
-    QVector<Vertex> vertexArrGrazingCurve;
 
     // Normals for debugging
     GLuint vboNormals;
     GLuint vaoNormals;
-    QVector<Vertex> vertexArrNormals;
 
 public:
     EnvelopeRenderer();

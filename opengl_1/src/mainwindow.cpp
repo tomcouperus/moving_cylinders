@@ -107,6 +107,9 @@ void MainWindow::on_envelopeActiveCheckBox_toggled(bool checked) {
     qDebug() << "Changed active state of envelope" << idx;
     ui->mainView->envelopes[idx]->setActive(checked);
 
+    ui->mainView->envelopes[idx]->update();
+    ui->mainView->updateBuffers();
+    ui->mainView->updateToolTransf();
     ui->mainView->updateUniformsRequired = true;
     ui->mainView->update();
 }
