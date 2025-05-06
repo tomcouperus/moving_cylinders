@@ -152,7 +152,7 @@ void EnvelopeRenderer::paintGL()
         // Bind envelope buffer
         gl->glBindVertexArray(vaoEnv);
         // Draw envelope
-        gl->glDrawArrays(GL_TRIANGLES,0,vertexArrEnv.size());
+        gl->glDrawArrays(GL_TRIANGLES,0,envelope->getVertexArr().size());
     }
 
     if(settings->showToolAxis){
@@ -160,7 +160,7 @@ void EnvelopeRenderer::paintGL()
         // Bind centers buffer
         gl->glBindVertexArray(vaoCenters);
         // Draw centers
-        gl->glDrawArrays(GL_LINES,0,vertexArrCenters.size());
+        gl->glDrawArrays(GL_LINES,0,envelope->getVertexArrCenters().size());
     }
 
     if(settings->showGrazingCurve){
@@ -168,7 +168,7 @@ void EnvelopeRenderer::paintGL()
         // Bind grazing curve buffer
         gl->glBindVertexArray(vaoGrazingCurve);
         // Draw grazing curve
-        gl->glDrawArrays(GL_LINES,0,vertexArrGrazingCurve.size());
+        gl->glDrawArrays(GL_LINES,0,envelope->getVertexArrGrazingCurve().size());
     }
 
     if(settings->showNormals){
@@ -176,7 +176,7 @@ void EnvelopeRenderer::paintGL()
         // Bind normals buffer
         gl->glBindVertexArray(vaoNormals);
         // Draw normals
-        gl->glDrawArrays(GL_LINES,0,vertexArrNormals.size());
+        gl->glDrawArrays(GL_LINES,0,envelope->getVertexArrNormalsAt(settings->time).size());
     }
 
     shader.release();

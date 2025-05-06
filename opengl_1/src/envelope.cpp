@@ -48,6 +48,29 @@ Envelope::Envelope(const Settings *settings, int index, Tool *tool, Envelope *ad
     sectorsT = toolMovement.getPath().getSectors();
 }
 
+
+Envelope::Envelope(const Settings *settings, int index, Tool *tool, CylinderMovement &movement) :
+    settings(settings),
+    index(index),
+    tool(tool),
+    toolMovement(movement)
+{
+    sectorsA = tool->getSectors();
+    sectorsT = toolMovement.getPath().getSectors();
+}
+
+Envelope::Envelope(const Settings *settings, int index, Tool *tool, CylinderMovement &movement, Envelope *adjEnvelope) :
+    settings(settings),
+    index(index),
+    tool(tool),
+    toolMovement(movement)
+{
+    setAdjacentEnvelope(adjEnvelope);
+    sectorsA = tool->getSectors();
+    sectorsT = toolMovement.getPath().getSectors();
+}
+
+
 /**
  * @brief Envelope::initEnvelope Initialises the envelope.
  */
@@ -404,10 +427,7 @@ QVector3D Envelope::getAxisAt(float t)
         }
         else
         {
-            QVector3D axisT0 = toolMovement.getAxisDirectionAt(0);
-            QVector3D axisT1 = toolMovement.getAxisDirectionAt(1);
-            axis =  axisT0 + (axisT1 - axisT0)*t;
-            axis.normalize();
+            axis = toolMovement.getAxisAt(t);
         }
     // }
     // else
@@ -430,11 +450,7 @@ QVector3D Envelope::getAxisDtAt(float t)
         }
         else
         {
-            QVector3D axisT0 = toolMovement.getAxisDirectionAt(0);
-            QVector3D axisT1 = toolMovement.getAxisDirectionAt(1);
-            axis =  axisT0 + (axisT1 - axisT0)*t;
-            axis_t = axisT1 - axisT0;
-            axis_t = MathUtility::normalVectorDerivative(axis, axis_t);
+            axis_t = toolMovement.getAxisDtAt(t);
         }
     // }
     // else
@@ -450,12 +466,16 @@ QVector3D Envelope::getAxisDtAt(float t)
 QVector3D Envelope::getAxisDt2At(float t)
 {
     // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
-    QVector3D axisT0 = toolMovement.getAxisDirectionAt(0);
-    QVector3D axisT1 = toolMovement.getAxisDirectionAt(1);
-    QVector3D axis =  axisT0 + (axisT1 - axisT0)*t;
-    QVector3D axis_t = axisT1 - axisT0;
-    QVector3D axis_tt(0,0,0);
-    return MathUtility::normalVectorDerivative2(axis, axis_t, axis_tt);
+    QVector3D axis_tt = toolMovement.getAxisDt2At(t);
+    return axis_tt;
+}
+
+float Envelope::getToolRadiusAt(float a) {
+    return tool->getRadiusAt(a);
+}
+
+float Envelope::getToolRadiusDaAt(float a) {
+    return tool->getRadiusDerivativeWRTa(a);
 }
 
 /**

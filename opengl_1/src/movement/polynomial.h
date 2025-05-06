@@ -18,6 +18,7 @@ public:
     float getValAt(float t);
     void setParameters(float a, float b, float c, float d);
     float getDerivativeAt(float t);
+    float getDerivative2At(float t);
 
     inline float getA() {return a;}
     inline float getB() {return b;}

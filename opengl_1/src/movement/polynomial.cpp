@@ -55,3 +55,8 @@ float Polynomial::getDerivativeAt(float t)
     float pt = 3*a*t*t + 2*b*t + c;
     return pt;
 }
+
+float Polynomial::getDerivative2At(float t) {
+    float ddp = 6*a*t + 2*b;
+    return ddp;
+}

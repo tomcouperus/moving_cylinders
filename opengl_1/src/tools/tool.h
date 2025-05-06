@@ -40,8 +40,8 @@ public:
 
     inline QVector3D getPosition() {return posit; }
 
-    inline QVector3D getAxisVector() {return axisVector; }
-    inline QVector3D getVectorPerpToAxis() {return perpVector; }
+    inline QVector3D getAxisVector() const {return axisVector.normalized(); }
+    inline QVector3D getVectorPerpToAxis() const {return perpVector; }
     inline int getSectors(){ return sectors; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
 };

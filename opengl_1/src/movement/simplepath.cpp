@@ -94,4 +94,12 @@ QVector3D SimplePath::getTangentAt(float t)
     return tangent;
 }
 
+QVector3D SimplePath::getAccelerationAt(float t) {
+    QVector3D acc = QVector3D();
+    acc.setX(x.getDerivative2At(t));
+    acc.setY(y.getDerivative2At(t));
+    acc.setZ(z.getDerivative2At(t));
+    return acc;
+}
+
 

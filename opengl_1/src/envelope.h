@@ -34,6 +34,8 @@ public:
     Envelope(const Settings *settings, int index);
     Envelope(const Settings *settings, int index, Tool *tool);
     Envelope(const Settings *settings, int index, Tool *tool, Envelope *adjEnvelope);
+    Envelope(const Settings *settings, int index, Tool *tool, CylinderMovement &movement);
+    Envelope(const Settings *settings, int index, Tool *tool, CylinderMovement &movement, Envelope *adjEnvelope);
 
     inline int getIndex() { return index; }
     inline Envelope *getAdjEnvelope() { return adjEnv; }

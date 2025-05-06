@@ -59,11 +59,11 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
     movements[0] = new CylinderMovement(path,
                                         //QVector3D(0.0,0.1,-1.0),
                                         QVector3D(0.0,1.0,0.0),
-                                        QVector3D(0.0,1.0,0.0), *cylinders[0]);
+                                        QVector3D(0.0,1.0,0.0), cylinders[0]);
     movements[1] = new CylinderMovement(path,
                                         //QVector3D(0.0,0.1,-1.0),
                                         QVector3D(0.0,1.0,0.0),
-                                        QVector3D(0.0,1.0,0.0), *cylinders[1]);
+                                        QVector3D(0.0,1.0,0.0), cylinders[1]);
 
     moveRenderers.reserve(2);
     moveRenderers.append(new MoveRenderer());
@@ -73,10 +73,10 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 
     // Define the vertices of the enveloping surface
     envelopes.reserve(2);
-    envelopes.append(new Envelope(&settings, 0, cylinders[0]));
+    envelopes.append(new Envelope(&settings, 0, cylinders[0], *movements[0]));
     envelopes[0]->initEnvelope();
 
-    envelopes.append(new Envelope(&settings, 1, cylinders[1], envelopes[0]));
+    envelopes.append(new Envelope(&settings, 1, cylinders[1], *movements[0], envelopes[0]));
     envelopes[1]->initEnvelope();
     envelopes[1]->setActive(false);
 
