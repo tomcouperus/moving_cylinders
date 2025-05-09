@@ -120,7 +120,7 @@ void EnvelopeRenderer::updateBuffers()
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboGrazingCurve);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrGrazingCurve.size() * sizeof(Vertex), vertexArrGrazingCurve.data(), GL_STATIC_DRAW);
 
-    QVector<Vertex>& vertexArrNormals = envelope->getVertexArrNormalsAt(settings->time);
+    QVector<Vertex>& vertexArrNormals = envelope->getVertexArrNormals()[settings->timeIdx];
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboNormals);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrNormals.size() * sizeof(Vertex), vertexArrNormals.data(), GL_STATIC_DRAW);
@@ -176,7 +176,7 @@ void EnvelopeRenderer::paintGL()
         // Bind normals buffer
         gl->glBindVertexArray(vaoNormals);
         // Draw normals
-        gl->glDrawArrays(GL_LINES,0,envelope->getVertexArrNormalsAt(settings->time).size());
+        gl->glDrawArrays(GL_LINES,0,envelope->getVertexArrNormals()[settings->timeIdx].size());
     }
 
     shader.release();

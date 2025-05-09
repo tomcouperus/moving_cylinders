@@ -15,8 +15,8 @@ ToolRenderer::ToolRenderer()
 ToolRenderer::ToolRenderer(Cylinder *cyl)
 {
     tool = cyl;
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a)*tool->getAxisVector();
-    sphere = Sphere(sphPosit, tool->getRadiusAt(tool->getA0()+settings->a));
+    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
+    sphere = Sphere(sphPosit, tool->getRadiusAt(tool->getA0()+settings->a()));
     vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
     vertexArrSph = sphere.getVertexArr();
@@ -30,8 +30,8 @@ ToolRenderer::ToolRenderer(Cylinder *cyl)
 ToolRenderer::ToolRenderer(Drum *drum)
 {
     tool = drum;
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a)*tool->getAxisVector();
-    sphere = Sphere(sphPosit, tool->getRadiusAt(tool->getA0()+settings->a));
+    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
+    sphere = Sphere(sphPosit, tool->getRadiusAt(tool->getA0()+settings->a()));
     vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
     vertexArrSph = sphere.getVertexArr();
@@ -87,9 +87,9 @@ void ToolRenderer::initBuffers()
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
     gl->glEnableVertexAttribArray(1);
 
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a)*tool->getAxisVector();
+    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
     sphere.setPosition(sphPosit);
-    sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a));
+    sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a()));
     vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
     vertexArrSph = sphere.getVertexArr();
@@ -119,9 +119,9 @@ void ToolRenderer::updateBuffers()
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboTool);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
 
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a)*tool->getAxisVector();
+    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
     sphere.setPosition(sphPosit);
-    sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a));
+    sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a()));
     vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
     vertexArrSph = sphere.getVertexArr();

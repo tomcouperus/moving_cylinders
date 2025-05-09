@@ -19,6 +19,7 @@ public:
     void setAngle(float angle);
     void setHeight(float height)override;
     void setPosit(QVector3D position)override;
+    void update() override;
     
     inline float getRadiusDerivativeWRTa(float a) override {return sin(angle);}
     inline float getRadiusAt(float a) override {return (r*cos(angle) + a*sin(angle));}

@@ -107,10 +107,6 @@ void MainWindow::on_envelopeActiveCheckBox_toggled(bool checked) {
     qDebug() << "Changed active state of envelope" << idx;
     ui->mainView->envelopes[idx]->setActive(checked);
 
-    ui->mainView->envelopes[idx]->update();
-    ui->mainView->updateBuffers();
-    ui->mainView->updateToolTransf();
-    ui->mainView->updateUniformsRequired = true;
     ui->mainView->update();
 }
 
@@ -135,10 +131,10 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
     Envelope *adjEnv = (index == 0) ? nullptr : ui->mainView->envelopes[index-1];
     if (envelope->getAdjEnvelope() != adjEnv) {
         envelope->setAdjacentEnvelope(adjEnv);
-        envelope->update();
-        ui->mainView->updateBuffers();
-        ui->mainView->updateToolTransf(); // TODO find way to target specific tools
-        ui->mainView->updateUniformsRequired = true;
+        // TODO dependency check
+        QSet<int> depEnvs = envelope->getDependentSet();
+        ui->mainView->envelopeMeshUpdates += depEnvs;
+        ui->mainView->toolTransfUpdates += depEnvs;
         ui->mainView->update();
     }
 
@@ -160,15 +156,15 @@ void MainWindow::on_orientVector_1_returnPressed(){
 
     qDebug() << "to" << vector1 << "and" << vector2;
 
-    bool success = ui->mainView->movements[idx]->setAxisDirections(vector1,vector2);
+    Envelope *env = ui->mainView->envelopes[idx];
+    bool success = env->setAxes(vector1,vector2);
     if (!success){
         error.showMessage("The inputed vector is not a valid orientation 1 vector");
     }
 
-    ui->mainView->envelopes[idx]->update();
-    ui->mainView->updateToolTransf();
-    ui->mainView->updateBuffers();
-    ui->mainView->updateUniformsRequired = true;
+    QSet<int> depEnvs = env->getDependentSet();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
 
@@ -183,15 +179,15 @@ void MainWindow::on_orientVector_2_returnPressed(){
 
     qDebug() << "to" << vector1 << "and" << vector2;
 
-    bool success = ui->mainView->movements[idx]->setAxisDirections(vector1,vector2);
+    Envelope *env = ui->mainView->envelopes[idx];
+    bool success = env->setAxes(vector1,vector2);
     if (!success){
         error.showMessage("The inputed vector is not a valid orientation 2 vector");
     }
 
-    ui->mainView->envelopes[idx]->update();
-    ui->mainView->updateToolTransf();
-    ui->mainView->updateBuffers();
-    ui->mainView->updateUniformsRequired = true;
+    QSet<int> depEnvs = env->getDependentSet();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
 
@@ -209,10 +205,9 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
     ui->orientVector_1_2->setEnabled(!checked);
     ui->orientVector_2_2->setEnabled(!checked);
 
-    ui->mainView->envelopes[idx]->update();
-    ui->mainView->updateToolTransf();
-    ui->mainView->updateBuffers();
-    ui->mainView->updateUniformsRequired = true;
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getDependentSet();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
 
@@ -228,10 +223,9 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
     Envelope *env = ui->mainView->envelopes[idx];
     env->setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
 
-    env->update();
-    ui->mainView->updateToolTransf();
-    ui->mainView->updateBuffers();
-    ui->mainView->updateUniformsRequired = true;
+    QSet<int> depEnvs = env->getDependentSet();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
 
@@ -246,10 +240,9 @@ void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
     Envelope *env = ui->mainView->envelopes[idx];
     env->setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
 
-    env->update();
-    ui->mainView->updateToolTransf();
-    ui->mainView->updateBuffers();
-    ui->mainView->updateUniformsRequired = true;
+    QSet<int> depEnvs = env->getDependentSet();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
 
@@ -283,7 +276,7 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
 void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
   qDebug() << "Time sectors changed";
   ui->TimeSlider->setMaximum(value);
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  SimplePath &path = ui->mainView->envelopes[0]->getToolMovement().getPath();
 
   path.setSectors(value);
 
@@ -421,7 +414,7 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
       break;
   }
   ui->aSlider->setValue(0);
-  ui->mainView->setA(0);
+  // ui->mainView->setA(0); TODO
 
   if (ui->mainView->settings.secondEnv){
       ui->toolBox_2->setCurrentIndex(index);
@@ -526,7 +519,7 @@ void MainWindow::on_orientVector_1_2_returnPressed(){
 
   qDebug() << "to" << vector1 << "and" << vector2;
 
-  bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
+  bool success = ui->mainView->envelopes[1]->setAxes(vector1,vector2);
   if (success){
       // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   } else {
@@ -548,7 +541,7 @@ void MainWindow::on_orientVector_2_2_returnPressed(){
 
   qDebug() << "to" << vector1 << "and" << vector2;
 
-  bool success = ui->mainView->movements[1]->setAxisDirections(vector1,vector2);
+  bool success = ui->mainView->envelopes[1]->setAxes(vector1,vector2);
   if (success){
       // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   } else {
@@ -583,7 +576,7 @@ void MainWindow::on_toolBox_2_currentIndexChanged(int index){
       break;
   }
   ui->aSlider->setValue(0);
-  ui->mainView->setA(0);
+  // ui->mainView->setA(0); TODO
 
   Tool *tool = nullptr;
   switch(index) {
@@ -612,8 +605,8 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
     int idx = ui->mainView->settings.selectedIdx;
   qDebug() << "a of x(t) updated to: " << value;
 
-
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial x = path.getX();
   x.setA(value);
 
@@ -627,7 +620,7 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
   ui->mainView->envelopes[idx]->update();
   ui->mainView->updateToolTransf();
   ui->mainView->updateBuffers();
-  ui->mainView->updateUniformsRequired = true;
+  // ui->mainView->updateUniformsRequired = true;
   ui->mainView->update();
 }
 
@@ -638,7 +631,8 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
 void MainWindow::on_spinBox_b_x_valueChanged(int value) {
   qDebug() << "b of x(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial x = path.getX();
   x.setB(value);
 
@@ -661,7 +655,8 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
 void MainWindow::on_spinBox_c_x_valueChanged(int value) {
   qDebug() << "c of x(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial x = path.getX();
   x.setC(value);
 
@@ -684,7 +679,8 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
 void MainWindow::on_spinBox_a_y_valueChanged(int value) {
   qDebug() << "a of y(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial y = path.getY();
   y.setA(value);
 
@@ -707,7 +703,8 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
 void MainWindow::on_spinBox_b_y_valueChanged(int value) {
   qDebug() << "b of y(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial y = path.getY();
   y.setB(value);
 
@@ -730,7 +727,8 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
 void MainWindow::on_spinBox_c_y_valueChanged(int value) {
   qDebug() << "c of y(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial y = path.getY();
   y.setC(value);
 
@@ -754,7 +752,8 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
 void MainWindow::on_spinBox_a_z_valueChanged(int value) {
   qDebug() << "a of z(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial z = path.getZ();
   z.setA(value);
 
@@ -777,7 +776,8 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
 void MainWindow::on_spinBox_b_z_valueChanged(int value) {
   qDebug() << "b of z(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial z = path.getZ();
   z.setB(value);
 
@@ -800,7 +800,8 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
 void MainWindow::on_spinBox_c_z_valueChanged(int value) {
   qDebug() << "c of z(t) updated to: " << value;
 
-  SimplePath path = ui->mainView->movements[0]->getPath();
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
   Polynomial z = path.getZ();
   z.setC(value);
 
@@ -811,56 +812,6 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
   // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
   // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
   ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_spinBox_t_0_valueChanged Updates the lower bound of the time range of the path.
- * @param value The new lower bound.
- */
-void MainWindow::on_spinBox_t_0_valueChanged(int value) {
-  qDebug() << "t0 updated to: " << value;
-
-  ui->spinBox_t_1->setMinimum(value+1);
-
-  SimplePath path = ui->mainView->movements[0]->getPath();
-  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / (path.getRange());
-
-  // path.setRange(value, path.getT1());
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-
-  ui->mainView->setTime(sliderTimePerSector*path.getRange());
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_spinBox_t_1_valueChanged Updates the upper bound of the time range of the path.
- * @param value The new upper bound.
- */
-void MainWindow::on_spinBox_t_1_valueChanged(int value) {
-  qDebug() << "t1 updated to: " << value;
-
-  ui->spinBox_t_0->setMaximum(value-1);
-
-  SimplePath path = ui->mainView->movements[0]->getPath();
-  float sliderTimePerSector = (ui->mainView->settings.time-path.getT0()) / (path.getRange());
-
-  // path.setRange(path.getT0(), value);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-
-  ui->mainView->setTime(sliderTimePerSector*path.getRange());
 
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -959,9 +910,12 @@ void MainWindow::on_sphereCheckBox_toggled(bool checked){
  * @param value The new time value.
  */
 void MainWindow::on_TimeSlider_sliderMoved(int value) {
-  SimplePath path = ui->mainView->movements[0]->getPath();
-  float divisor = path.getSectors() / (path.getRange());
-  ui->mainView->setTime(value / divisor);
+  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
+  SimplePath &path = move.getPath();
+  ui->mainView->settings.timeIdx = value;
+
+  ui->mainView->updateToolTransf();
+  ui->mainView->updateAllUniforms = true;
   ui->mainView->update();
 }
 
@@ -971,8 +925,7 @@ void MainWindow::on_TimeSlider_sliderMoved(int value) {
  * @param value The new a value.
  */
 void MainWindow::on_aSlider_sliderMoved(int value) {
-  ui->mainView->setA(value);
-
+  ui->mainView->settings.aIdx = value;
   ui->mainView->updateBuffers();
   ui->mainView->update();
 }

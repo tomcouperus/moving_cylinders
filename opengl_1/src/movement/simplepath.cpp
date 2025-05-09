@@ -5,10 +5,7 @@
 */
 SimplePath::SimplePath()
     : x(Polynomial()), y(Polynomial()), z(Polynomial())
-{
-    t0 = 0;
-    t1 = 2;
-}
+{}
 
 /**
  * @brief SimplePath::SimplePath Constructor for SimplePath.
@@ -18,10 +15,7 @@ SimplePath::SimplePath()
 */
 SimplePath::SimplePath(Polynomial x, Polynomial y, Polynomial z)
     : x(x), y(y), z(z)
-{
-    t0 = 0;
-    t1 = 2;
-}
+{}
 
 /**
  * @brief SimplePath::getPathAt Returns the path at a given time.
@@ -38,45 +32,16 @@ QVector3D SimplePath::getPathAt(float t)
 }
 
 /**
- * @brief SimplePath::getIdxAtTime Returns the index of the vertex array at a given time.
- * @param time Time.
- * @return Index of the vertex array at time.
-*/
-int SimplePath::getIdxAtTime(float time)
-{
-    float delta = (t1-t0)/(sectors+1);
-    if ((time-t0)/delta > vertexArr.size()-1)
-        return vertexArr.size()-1;
-    return (time-t0)/delta;
-}
-
-/**
- * @brief SimplePath::initVertexArr Initializes the vertex array.
-*/
-void SimplePath::initVertexArr()
-{
-    vertexArr.clear();
-    QVector3D color(0,0,1);
-    float delta = (t1-t0)/sectors;
-    float t = t0;
-    for(int i=0; i<=sectors; ++i){
-        vertexArr.append(Vertex(getPathAt(t), color));
-        t += delta;
-    }
-}
-
-/**
  * @brief SimplePath::updateVertexArr Updates the vertex array.
 */
 void SimplePath::updateVertexArr()
 {
     vertexArr.clear();
     QVector3D color(0,0,1);
-    float delta = (t1-t0)/sectors;
-    float t = t0;
+
     for(int i=0; i<=sectors; ++i){
+        float t = (float) i / sectors;
         vertexArr.append(Vertex(getPathAt(t), color));
-        t += delta;
     }
 }
 

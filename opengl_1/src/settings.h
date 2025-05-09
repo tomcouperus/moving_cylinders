@@ -23,10 +23,15 @@ typedef struct Settings {
     bool reflectionLines = false;
     float reflFreq = 20;
     float percentBlack = 0.5;
-    float a = 0.0f;
-    float time = 0.0f;
+    int aIdx = 0;
+    int timeIdx = 0;
+    int aSectors = 20;
+    int tSectors = 50;
     int toolIdx = 0;
     int tool2Idx = 0;
+
+    inline float a() const { return (float) aIdx / aSectors; }
+    inline float t() const { return (float) timeIdx / tSectors; }
 
     inline QVector3D stringToVector3D(const QString& vector)
     {

@@ -32,11 +32,15 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 
     // Administration
     QVector<bool> indicesUsed;
-    // NOTE: We do not delete any of pointers in the arrays below to avoid creating and deleting objects.
+    // NOTE: We do not delete any of pointers in the arrays below to avoid creating and deleting objectsv all the time.
     // If the pool needs to increase, we do so, and keep track in the indicesUsed array for which objects are in use.
     // There are likely optimizations possible to shrink memory usage when possible, but not for now.
 
-    bool updateUniformsRequired;
+    // TODO change updating of buffers, uniforms, and whatnot by setting a set of indices for each of them. Then in the paintGL call do a similar trick that is currently used for the updateUniformsRequired thing
+    QSet<int> envelopeMeshUpdates;
+    QSet<int> toolMeshUpdates;
+    QSet<int> toolTransfUpdates;
+    bool updateAllUniforms;
 
     // Tool rendering
     QVector<ToolRenderer*> toolRenderers;
@@ -44,7 +48,6 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     QVector<Cylinder*> cylinders;
 
     // Path rendering
-    QVector<CylinderMovement*> movements;
     QVector<MoveRenderer*> moveRenderers;
 
     // Envelope rendering
@@ -67,8 +70,7 @@ public:
     // Functions for widget input events
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
-    void setTime(float time);
-    void setA(float a);
+    void updateToolModels();
     void updateToolTransf();
     void updateBuffers();
 

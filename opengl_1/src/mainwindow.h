@@ -83,8 +83,6 @@ class MainWindow : public QMainWindow {
   void on_spinBox_a_z_valueChanged(int value);
   void on_spinBox_b_z_valueChanged(int value);
   void on_spinBox_c_z_valueChanged(int value);
-  void on_spinBox_t_0_valueChanged(int value);
-  void on_spinBox_t_1_valueChanged(int value);
 
   void on_TimeSlider_sliderMoved(int value);
   void on_aSlider_sliderMoved(int value);

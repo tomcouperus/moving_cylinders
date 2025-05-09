@@ -40,7 +40,6 @@ void Drum::initDrum(){
 
 void Drum::setSectors(int sectors){
     this->sectors = sectors;
-    computeDrum();
 }
 
 void Drum::setRadius(float radius){
@@ -48,7 +47,6 @@ void Drum::setRadius(float radius){
     float phi = asin(height/(2*r0));
     this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
-    computeDrum();
 }
 
 void Drum::setMidRadius(float radius){
@@ -56,7 +54,6 @@ void Drum::setMidRadius(float radius){
     float phi = asin(height/(2*r0));
     this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
-    computeDrum();
 }
 
 void Drum::setHeight(float height){
@@ -64,11 +61,13 @@ void Drum::setHeight(float height){
     float phi = asin(height/(2*r0));
     this->a1 = (r0-rm)*tan(phi);
     this->a0 = -a1;
-    computeDrum();
 }
 
 void Drum::setPosit(QVector3D position){
     posit = position;
+}
+
+void Drum::update() {
     computeDrum();
 }
 

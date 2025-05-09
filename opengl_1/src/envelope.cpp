@@ -21,11 +21,12 @@ Envelope::Envelope(const Settings *settings, int index) :
  * @param settings Readonly pointer to settings
  * @param tool Tool pointer.
  */
-Envelope::Envelope(const Settings *settings, int index, Tool *tool) :
+Envelope::Envelope(const Settings *settings, int index, Tool *tool, const SimplePath &path) :
     settings(settings),
     index(index),
     adjEnv(nullptr),
-    tool(tool)
+    tool(tool),
+    toolMovement(path, tool)
 {
     // TODO: envelope controls everyone else's sectors. They shouldn't even HAVE sectors.
     sectorsA = tool->getSectors();
@@ -38,38 +39,16 @@ Envelope::Envelope(const Settings *settings, int index, Tool *tool) :
  * @param tool Tool pointer.
  * @param adjEnvelope Adjacent envelope.
  */
-Envelope::Envelope(const Settings *settings, int index, Tool *tool, Envelope *adjEnvelope) :
+Envelope::Envelope(const Settings *settings, int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope) :
     settings(settings),
     index(index),
-    tool(tool)
+    tool(tool),
+    toolMovement(path, tool)
 {
     setAdjacentEnvelope(adjEnvelope);
     sectorsA = tool->getSectors();
     sectorsT = toolMovement.getPath().getSectors();
 }
-
-
-Envelope::Envelope(const Settings *settings, int index, Tool *tool, CylinderMovement &movement) :
-    settings(settings),
-    index(index),
-    tool(tool),
-    toolMovement(movement)
-{
-    sectorsA = tool->getSectors();
-    sectorsT = toolMovement.getPath().getSectors();
-}
-
-Envelope::Envelope(const Settings *settings, int index, Tool *tool, CylinderMovement &movement, Envelope *adjEnvelope) :
-    settings(settings),
-    index(index),
-    tool(tool),
-    toolMovement(movement)
-{
-    setAdjacentEnvelope(adjEnvelope);
-    sectorsA = tool->getSectors();
-    sectorsT = toolMovement.getPath().getSectors();
-}
-
 
 /**
  * @brief Envelope::initEnvelope Initialises the envelope.
@@ -84,17 +63,10 @@ void Envelope::initEnvelope()
 }
 
 void Envelope::update() {
-    if (!checkDependencies()) {
-        throw new std::runtime_error("Dependency issue. Likely a circular dependency. Should be handled on input of dependency.");
-    }
     computeEnvelope();
     computeToolCenters();
     computeGrazingCurves();
     computeNormals();
-
-    for (int i = 0; i < dependentEnvelopes.size(); i++) {
-        dependentEnvelopes[i]->update();
-    }
 }
 
 void Envelope::registerDependent(Envelope *dependent) {
@@ -114,8 +86,36 @@ void Envelope::deregisterDependent(Envelope *dependent) {
  * @return True if no issues were found, False if there is an issue.
  */
 bool Envelope::checkDependencies() {
-    // TODO check for circular dependencies
+    QVector<Envelope *> queue(dependentEnvelopes);
+    while (queue.size() > 0) {
+        Envelope *env = queue.takeFirst();
+        for (int i = 0; i < env->dependentEnvelopes.size(); i++) {
+            if (env->dependentEnvelopes[i] == this) {
+                return false;
+            }
+            queue.append(env->dependentEnvelopes[i]);
+        }
+    }
     return true;
+}
+
+/**
+ * @brief Envelope::getDependentSet Gathers all envelopes dependent on this one. Returns empty set on depency error.
+ * @return
+ */
+QSet<int> Envelope::getDependentSet() {
+    QSet<int> dependencySet;
+    QVector<Envelope*> queue;
+    if (!checkDependencies()) {
+        return dependencySet;
+    }
+    queue.append(this);
+    while (queue.size() > 0) {
+        Envelope *env = queue.takeFirst();
+        dependencySet += env->index;
+        queue += env->dependentEnvelopes;
+    }
+    return dependencySet;
 }
 
 void Envelope::setTool(Tool *tool)
@@ -152,8 +152,8 @@ void Envelope::computeEnvelope()
             float tDelta = 1.0f/sectorsT;
             float aDelta = 1.0f/sectorsA;
 
-            float t = tIdx / sectorsT;
-            float a = aIdx / sectorsA;
+            float t = (float) tIdx / sectorsT;
+            float a = (float) aIdx / sectorsA;
 
             e1 = getEnvelopeAt(t, a);
             e2 = getEnvelopeAt(t, a+aDelta);
@@ -183,12 +183,12 @@ void Envelope::computeEnvelope()
 
 QVector3D Envelope::getEnvelopeAt(float t, float a)
 {
-    return getPathAt(t) + a * getAxisAt(t) - getToolRadiusAt(a) * getNormalAt(t, a);
+    return getPathAt(t) + a * getAxisAt(t) + getToolRadiusAt(a) * getNormalAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDtAt(float t, float a)
 {
-    return getPathDtAt(t) + a * getAxisDtAt(t) - getToolRadiusAt(a) * getNormalDtAt(t, a);
+    return getPathDtAt(t) + a * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
 }
 
 /**
@@ -212,7 +212,7 @@ void Envelope::computeToolCenters()
     {
         float tDelta = 1.0f/sectorsT;
 
-        float t = tIdx / sectorsT;
+        float t = (float) tIdx / sectorsT;
 
         v1 = getPathAt(t);
         v2 = getPathAt(t) + getAxisAt(t);
@@ -246,8 +246,8 @@ void Envelope::computeGrazingCurves()
         {
             float aDelta = 1.0f/sectorsA;
 
-            float t = tIdx / sectorsT;
-            float a = aIdx / sectorsA;
+            float t = (float) tIdx / sectorsT;
+            float a = (float) aIdx / sectorsA;
 
             v1 = getEnvelopeAt(t, a);
             v2 = getEnvelopeAt(t, a+aDelta);
@@ -279,8 +279,8 @@ void Envelope::computeNormals(){
         normals.clear();
         for (int aIdx = 0; aIdx <= sectorsA; aIdx++)
         {
-            float t = tIdx / sectorsT;
-            float a = aIdx / sectorsA;
+            float t = (float) tIdx / sectorsT;
+            float a = (float) aIdx / sectorsA;
             p1 = getPathAt(t) + a*getAxisAt(t);
             v1 = getEnvelopeAt(t, a);
 
@@ -298,7 +298,7 @@ QVector3D Envelope::getNormalAt(float t, float a)
     QVector3D st = getPathDtAt(t) + a * getAxisDtAt(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st).normalized();
 
-    float ra = getToolRadiusAt(a);
+    float ra = getToolRadiusDaAt(a);
 
     float E = QVector3D::dotProduct(sa, sa);
     float F = QVector3D::dotProduct(sa, st);
@@ -325,7 +325,7 @@ QVector3D Envelope::getNormalDtAt(float t, float a)
     QVector3D sNormal = QVector3D::crossProduct(sa, st).normalized();
     QVector3D sNormal_t = MathUtility::normalVectorDerivative(QVector3D::crossProduct(sa, st), QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt));
 
-    float ra = getToolRadiusAt(a);
+    float ra = getToolRadiusDaAt(a);
 
     float E = QVector3D::dotProduct(sa, sa);
     float Et = 2 * QVector3D::dotProduct(sa, sat);
@@ -496,7 +496,7 @@ QMatrix4x4 Envelope::getToolToPathTransform() {
 QMatrix4x4 Envelope::getToolAlongPathTransform() {
     QMatrix4x4 toolAlongPath;
     toolAlongPath.setToIdentity();
-    toolAlongPath.translate(getPathAt(settings->time));
+    toolAlongPath.translate(getPathAt(settings->t()));
     return toolAlongPath;
 }
 
@@ -512,10 +512,10 @@ QMatrix4x4 Envelope::getToolRotationTransform() {
             throw new std::runtime_error("Dependency issue. Likely a circular dependency. Should be handled on input of dependency.");
         }
         QMatrix4x4 axisRotation;
-        axisRotation.rotate(calcAxisRotationAt(settings->time));
+        axisRotation.rotate(calcAxisRotationAt(settings->t()));
         toolRotation = axisRotation * adjEnv->getToolRotationTransform();
     } else {
-        toolRotation = toolMovement.getMovementRotation(settings->time);
+        toolRotation = toolMovement.getMovementRotation(settings->t());
     }
     return toolRotation;
 }

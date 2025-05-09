@@ -6,7 +6,18 @@
  * constructor and defines the directional vector of the movement to always be (0,1,0)
  */
 CylinderMovement::CylinderMovement() :
-    perpToAxis(Cylinder().getVectorPerpToAxis()),
+    discPath(path.getVertexArr())
+{}
+
+CylinderMovement::CylinderMovement(SimplePath path) :
+    path(path),
+    discPath(path.getVertexArr())
+{}
+
+
+CylinderMovement::CylinderMovement(SimplePath path, const Tool *tool) :
+    path(path),
+    toolAxis(tool->getAxisVector()),
     discPath(path.getVertexArr())
 {}
 
@@ -26,16 +37,6 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     discPath(path.getVertexArr())
 {}
 
-/**
- * @brief CylinderMovement::CylinderMovement
- * @param path Path that describes the cylinder (bottom) location through time
- * @param cylinder
- */
-CylinderMovement::CylinderMovement(SimplePath path, Cylinder cylinder) :
-    path(path),
-    perpToAxis(cylinder.getVectorPerpToAxis()),
-    discPath(path.getVertexArr())
-{}
 
 /**
  * @brief CylinderMovement::setAxisDirections Sets the axis directions of the cylinder through time

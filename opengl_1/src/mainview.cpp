@@ -47,36 +47,16 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
     }
 
     // Define path for the tool
-    SimplePath path = SimplePath(Polynomial(0.0,0.0,1.0,0.0),
-                                 Polynomial(0.0,1.0,0.0,0.0),
-                                 Polynomial());
-    path.initVertexArr();
-
-    // Define orientation(s) of the tool
-    movements.reserve(2);
-    movements.append(nullptr);
-    movements.append(nullptr);
-    movements[0] = new CylinderMovement(path,
-                                        //QVector3D(0.0,0.1,-1.0),
-                                        QVector3D(0.0,1.0,0.0),
-                                        QVector3D(0.0,1.0,0.0), cylinders[0]);
-    movements[1] = new CylinderMovement(path,
-                                        //QVector3D(0.0,0.1,-1.0),
-                                        QVector3D(0.0,1.0,0.0),
-                                        QVector3D(0.0,1.0,0.0), cylinders[1]);
-
-    moveRenderers.reserve(2);
-    moveRenderers.append(new MoveRenderer());
-    moveRenderers.append(new MoveRenderer());
-    moveRenderers[0]->setMovement(movements[0]);
-    moveRenderers[1]->setMovement(movements[1]);
+    SimplePath path = SimplePath(Polynomial(0.0,0.0,0.0,0.0),
+                                 Polynomial(0.0,0.0,0.0,0.0),
+                                 Polynomial(0.0,0.0,1.0,0.0));
 
     // Define the vertices of the enveloping surface
     envelopes.reserve(2);
-    envelopes.append(new Envelope(&settings, 0, cylinders[0], *movements[0]));
+    envelopes.append(new Envelope(&settings, 0, cylinders[0], path));
     envelopes[0]->initEnvelope();
 
-    envelopes.append(new Envelope(&settings, 1, cylinders[1], *movements[0], envelopes[0]));
+    envelopes.append(new Envelope(&settings, 1, cylinders[1], path, envelopes[0]));
     envelopes[1]->initEnvelope();
     envelopes[1]->setActive(false);
 
@@ -85,6 +65,12 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
     envelopeRenderers.append(new EnvelopeRenderer());
     envelopeRenderers[0]->setEnvelope(envelopes[0]);
     envelopeRenderers[1]->setEnvelope(envelopes[1]);
+
+    moveRenderers.reserve(2);
+    moveRenderers.append(new MoveRenderer());
+    moveRenderers.append(new MoveRenderer());
+    moveRenderers[0]->setMovement(&envelopes[0]->getToolMovement());
+    moveRenderers[1]->setMovement(&envelopes[1]->getToolMovement());
 
     // First transformation of the cylinder
     modelTranslation.setToIdentity();
@@ -132,11 +118,6 @@ MainView::~MainView()
     }
     cylinders.clear();
     cylinders.squeeze();
-    for (auto i : movements){
-        delete i;
-    }
-    movements.clear();
-    movements.squeeze();
     for (auto i : moveRenderers){
         delete i;
     }
@@ -205,7 +186,7 @@ void MainView::initializeGL()
     }
     updateBuffers();
     updateToolTransf();
-    updateUniformsRequired = true;
+    updateAllUniforms = true;
 }
 
 
@@ -218,7 +199,6 @@ void MainView::updateBuffers(){
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        if (!envelopes[i]->isActive()) continue;
         toolRenderers[i]->updateBuffers();
         envelopeRenderers[i]->updateBuffers();
         moveRenderers[i]->updateBuffers();
@@ -230,7 +210,6 @@ void MainView::updateUniforms() {
 
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
-        if (!envelopes[i]->isActive()) continue;
         toolRenderers[i]->updateUniforms();
         moveRenderers[i]->updateUniforms();
         envelopeRenderers[i]->updateUniforms();
@@ -247,9 +226,39 @@ void MainView::paintGL()
     // Clear the screen before rendering
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (updateUniformsRequired) {
+    if (!envelopeMeshUpdates.isEmpty()) {
+        QList<int> indices = envelopeMeshUpdates.values();
+        while (!indices.isEmpty()) {
+            int i = indices.takeFirst();
+            envelopes[i]->update();
+            envelopeRenderers[i]->updateBuffers();
+        }
+        envelopeMeshUpdates.clear();
+    }
+
+    if (!toolMeshUpdates.isEmpty()) {
+        QList<int> indices = toolMeshUpdates.values();
+        while (!indices.isEmpty()) {
+            int i = indices.takeFirst();
+            cylinders[i]->update();
+            drums[i]->update();
+            toolRenderers[i]->updateBuffers();
+        }
+    }
+
+    if (!toolTransfUpdates.isEmpty()) {
+        QList<int> indices = toolTransfUpdates.values();
+        while (!indices.isEmpty()) {
+            int i = indices.takeFirst();
+            toolRenderers[i]->setToolTransf(envelopes[i]->getToolTransform());
+            toolRenderers[i]->updateUniforms();
+        }
+        toolTransfUpdates.clear();
+    }
+
+    if (updateAllUniforms) {
         updateUniforms();
-        updateUniformsRequired = false;
+        updateAllUniforms = false;
     }
 
     for (int i = 0; i < indicesUsed.size(); i++) {
@@ -283,7 +292,7 @@ void MainView::resizeGL(int newWidth, int newHeight)
         envelopeRenderers[i]->setProjTransf(projTransf);
         moveRenderers[i]->setProjTransf(projTransf);
     }
-    updateUniformsRequired = true;
+    updateAllUniforms = true;
 }
 
 /**
@@ -315,7 +324,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
         moveRenderers[i]->setModelTransf(modelTransf);
     }
     updateToolTransf();
-    updateUniformsRequired = true;
+    updateAllUniforms = true;
     update();
 }
 
@@ -324,6 +333,7 @@ void MainView::setRotation(int rotateX, int rotateY, int rotateZ)
  * @param scale The new scale factor. A scale factor of 1.0 should scale the
  * mesh to its original size.
  */
+// TODO remove the update call here and move it to wherever in mainwindow this function is called
 void MainView::setScale(float scale)
 {
     qDebug() << "Scale changed to " << scale;
@@ -344,46 +354,12 @@ void MainView::setScale(float scale)
         moveRenderers[i]->setModelTransf(modelTransf);
     }
     updateToolTransf();
-    updateUniformsRequired = true;
+    updateAllUniforms = true;
     update();
 }
 
-/**
- * @brief MainView::setTime Changes the time of the displayed objects.
- * @param time The new time value.
- */
-void MainView::setTime(float time)
-{
-    qDebug() << "Time changed to " << time;
-
-    settings.time = time + movements[0]->getPath().getT0();
-
-    updateToolTransf();
-    updateUniformsRequired = true;
-    update();
-}
-
-/**
- * @brief MainView::setA Changes the position value a of the displayed objects.
- * @param a The new a value.
- */
-void MainView::setA(float a)
-{
-    float divisor;
-    switch (settings.toolIdx) {
-    case 0:
-        divisor = cylinders[0]->getSectors() / (cylinders[0]->getA1() - cylinders[0]->getA0());
-        break;
-    case 1:
-        divisor = drums[0]->getSectors() / (drums[0]->getA1() - drums[0]->getA0());
-        break;
-    default:
-        break;
-    }
-
-    settings.a = a / divisor;
-    updateUniformsRequired = true;
-    update();
+void MainView::updateToolModels() {
+    qDebug() << "Todo implement";
 }
 
 /**

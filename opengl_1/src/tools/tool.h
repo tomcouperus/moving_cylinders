@@ -28,6 +28,7 @@ public:
     virtual void setSectors(int sectors) = 0;
     virtual void setHeight(float height) = 0;
     virtual void setPosit(QVector3D position) = 0;
+    virtual void update() = 0;
     void setA0(float a0) {this->a0 = a0;}
     void setA1(float a1) {this->a1 = a1;}
 

@@ -20,6 +20,7 @@ public:
     void setMidRadius(float midRadius);
     void setHeight(float height) override;
     void setPosit(QVector3D position) override;
+    void update() override;
 
     inline float getMinR0() { return ((height/2)*(height/2) + rm*rm)/(2*rm);}
 
