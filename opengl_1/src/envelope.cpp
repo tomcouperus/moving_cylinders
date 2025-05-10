@@ -100,10 +100,10 @@ bool Envelope::checkDependencies() {
 }
 
 /**
- * @brief Envelope::getDependentSet Gathers all envelopes dependent on this one. Returns empty set on depency error.
+ * @brief Envelope::getAllDependents Gathers all envelopes dependent on this one. Returns empty set on depency error.
  * @return
  */
-QSet<int> Envelope::getDependentSet() {
+QSet<int> Envelope::getAllDependents() {
     QSet<int> dependencySet;
     QVector<Envelope*> queue;
     if (!checkDependencies()) {
@@ -116,13 +116,6 @@ QSet<int> Envelope::getDependentSet() {
         queue += env->dependentEnvelopes;
     }
     return dependencySet;
-}
-
-void Envelope::setTool(Tool *tool)
-{
-    this->tool = tool;
-    // TODO envelope controls tool's sectors!
-    sectorsA = tool->getSectors();
 }
 
 void Envelope::setAdjacentEnvelope(Envelope *env){
@@ -183,12 +176,12 @@ void Envelope::computeEnvelope()
 
 QVector3D Envelope::getEnvelopeAt(float t, float a)
 {
-    return getPathAt(t) + a * getAxisAt(t) + getToolRadiusAt(a) * getNormalAt(t, a);
+    return getPathAt(t) + a * getAxisAt(t) - getToolRadiusAt(a) * getNormalAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDtAt(float t, float a)
 {
-    return getPathDtAt(t) + a * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
+    return getPathDtAt(t) + a * getAxisDtAt(t) - getToolRadiusAt(a) * getNormalDtAt(t, a);
 }
 
 /**

@@ -19,7 +19,6 @@ typedef struct Settings {
     bool showToolAxis = false;
     bool showNormals = false;
     bool showSpheres = false;
-    bool secondEnv = false;
     bool reflectionLines = false;
     float reflFreq = 20;
     float percentBlack = 0.5;
@@ -27,8 +26,6 @@ typedef struct Settings {
     int timeIdx = 0;
     int aSectors = 20;
     int tSectors = 50;
-    int toolIdx = 0;
-    int tool2Idx = 0;
 
     inline float a() const { return (float) aIdx / aSectors; }
     inline float t() const { return (float) timeIdx / tSectors; }

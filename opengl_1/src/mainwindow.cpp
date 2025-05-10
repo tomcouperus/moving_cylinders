@@ -16,9 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
   ui->orientVector_2->setValidator(new QRegularExpressionValidator(
       QRegularExpression("\\(\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+)\\)")));
 
-  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
-  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2->text());
-
   // Populate the envelope select dropdown box here
   for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
       QString text = "Envelope "+QString::number(i);
@@ -34,6 +31,13 @@ MainWindow::MainWindow(QWidget *parent)
  * @brief MainWindow::~MainWindow Destructor.
  */
 MainWindow::~MainWindow() { delete ui; }
+
+
+
+
+/***********************************************************/
+/********************** Envelope Menu **********************/
+/***********************************************************/
 
 /**
  * @brief SetComboBoxItemEnabled Changes the visibility of an item in a combobox. Thanks to https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox/62261745
@@ -59,7 +63,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
     ui->mainView->settings.selectedIdx = idx;
     ui->mainView->settings.prevIdx = prevIdx;
 
-    // Hide/unhide options from constraint selectors
+    // Unhide options from constraint selectors
     QVector<Envelope *> envelopes = ui->mainView->envelopes;
     if (prevIdx != -1) {
         SetComboBoxItemEnabled(ui->constraintA0SelectBox, prevIdx+1, true);
@@ -83,9 +87,12 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         // Load the selected envelope's data
         // ** Active check box
         ui->envelopeActiveCheckBox->setChecked(env->isActive());
-        // ** Constraint select boxes. Also hide the current envelope
-        SetComboBoxItemEnabled(ui->constraintA0SelectBox, idx+1, false);
-        SetComboBoxItemEnabled(ui->constraintA1SelectBox, idx+1, false);
+        // ** Constraint select boxes. Also hide the current envelope and all its dependents
+        QList<int> dependents = envelopes[idx]->getAllDependents().values();
+        for (int i = 0; i < dependents.size(); i++) {
+            SetComboBoxItemEnabled(ui->constraintA0SelectBox, dependents[i]+1, false);
+            SetComboBoxItemEnabled(ui->constraintA1SelectBox, dependents[i]+1, false);
+        }
         int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
         ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
         on_constraintA0SelectBox_currentIndexChanged(a0Idx);
@@ -132,7 +139,7 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
     if (envelope->getAdjEnvelope() != adjEnv) {
         envelope->setAdjacentEnvelope(adjEnv);
         // TODO dependency check
-        QSet<int> depEnvs = envelope->getDependentSet();
+        QSet<int> depEnvs = envelope->getAllDependents();
         ui->mainView->envelopeMeshUpdates += depEnvs;
         ui->mainView->toolTransfUpdates += depEnvs;
         ui->mainView->update();
@@ -144,6 +151,30 @@ void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
 
 }
 
+/**
+ * @brief MainWindow::on_tanContCheckBox_toggled Updates the tangetial continuity settings of the envelopes.
+ * @param checked The new value of the checkbox.
+ */
+void MainWindow::on_tanContCheckBox_toggled(bool checked){
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    ui->mainView->envelopes[idx]->setIsTanContinuous(checked);
+
+    ui->orientVector_1->setEnabled(!checked);
+    ui->orientVector_2->setEnabled(!checked);
+    ui->angleOrient_1_SpinBox->setEnabled(checked);
+    ui->angleOrient_2_SpinBox->setEnabled(checked);
+
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
+}
+
+
+/***********************************************************/
+/************************ Tool Menu ************************/
+/***********************************************************/
 
 /**
  * @brief MainWindow::on_orientVector_1_returnPressed Updates the orientation vector of the tool.
@@ -162,7 +193,7 @@ void MainWindow::on_orientVector_1_returnPressed(){
         error.showMessage("The inputed vector is not a valid orientation 1 vector");
     }
 
-    QSet<int> depEnvs = env->getDependentSet();
+    QSet<int> depEnvs = env->getAllDependents();
     ui->mainView->envelopeMeshUpdates += depEnvs;
     ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
@@ -185,32 +216,11 @@ void MainWindow::on_orientVector_2_returnPressed(){
         error.showMessage("The inputed vector is not a valid orientation 2 vector");
     }
 
-    QSet<int> depEnvs = env->getDependentSet();
+    QSet<int> depEnvs = env->getAllDependents();
     ui->mainView->envelopeMeshUpdates += depEnvs;
     ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
-
-/**
- * @brief MainWindow::on_tanContCheckBox_toggled Updates the tangetial continuity settings of the envelopes.
- * @param checked The new value of the checkbox.
- */
-void MainWindow::on_tanContCheckBox_toggled(bool checked){
-    int idx = ui->mainView->settings.selectedIdx;
-    if (idx == -1) return;
-    ui->mainView->envelopes[idx]->setIsTanContinuous(checked);
-
-    ui->angleOrient_1_SpinBox->setEnabled(checked);
-    ui->angleOrient_2_SpinBox->setEnabled(checked);
-    ui->orientVector_1_2->setEnabled(!checked);
-    ui->orientVector_2_2->setEnabled(!checked);
-
-    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getDependentSet();
-    ui->mainView->envelopeMeshUpdates += depEnvs;
-    ui->mainView->toolTransfUpdates += depEnvs;
-    ui->mainView->update();
-}
-
 
 /**
  * @brief MainWindow::on_angleOrient_1_SpinBox_valueChanged Updates the angle of the axis initial orientation of the
@@ -223,7 +233,7 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
     Envelope *env = ui->mainView->envelopes[idx];
     env->setAdjacentAxisAngles(value, ui->angleOrient_2_SpinBox->value());
 
-    QSet<int> depEnvs = env->getDependentSet();
+    QSet<int> depEnvs = env->getAllDependents();
     ui->mainView->envelopeMeshUpdates += depEnvs;
     ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
@@ -240,94 +250,29 @@ void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
     Envelope *env = ui->mainView->envelopes[idx];
     env->setAdjacentAxisAngles(ui->angleOrient_1_SpinBox->value(), value);
 
-    QSet<int> depEnvs = env->getDependentSet();
+    QSet<int> depEnvs = env->getAllDependents();
     ui->mainView->envelopeMeshUpdates += depEnvs;
     ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
 }
 
 
-
-
-
-
-
-/**
- * @brief MainWindow::on_axisSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the cylinder.
- * @param value The new number of sectors.
- */
-void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
-    qDebug() << "Axis sectors changed";
-    ui->aSlider->setMaximum(value);
-    ui->mainView->cylinders[0]->setSectors(value);
-    ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
-    ui->mainView->cylinders[1]->setSectors(value);
-    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-
-    ui->mainView->updateBuffers();
-    ui->mainView->updateToolTransf();
-    ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_timeSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the path.
- * @param value The new number of sectors.
- */
-void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
-  qDebug() << "Time sectors changed";
-  ui->TimeSlider->setMaximum(value);
-  SimplePath &path = ui->mainView->envelopes[0]->getToolMovement().getPath();
-
-  path.setSectors(value);
-
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-
-  ui->mainView->updateBuffers();
-  ui->mainView->updateToolTransf();
-  ui->mainView->update();
-}
-
 /**
  * @brief MainWindow::on_radiusSpinBox_valueChanged Updates the radius of the tool.
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
-  ui->mainView->cylinders[0]->setRadius(value);
-  ui->mainView->drums[0]->setMidRadius(value);
-  ui->radius0SpinBox->setMinimum(ui->mainView->drums[0]->getMinR0());
-  switch (ui->mainView->settings.toolIdx){
-  case 0:
-      ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
-      break;
-  case 1:
-      ui->mainView->envelopes[0]->setTool(ui->mainView->drums[0]);
-  default:
-      break;
-  }
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    ui->mainView->cylinders[idx]->setRadius(value);
+    ui->mainView->drums[idx]->setMidRadius(value);
+    ui->radius0SpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0());
 
-  if (ui->mainView->settings.secondEnv){
-    ui->mainView->cylinders[1]->setRadius(value);
-    ui->radiusSpinBox_2->setValue(value);
-    ui->mainView->drums[1]->setMidRadius(value);
-    ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
-    switch (ui->mainView->settings.tool2Idx){
-    case 0:
-        ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-        break;
-    case 1:
-        ui->mainView->envelopes[1]->setTool(ui->mainView->drums[1]);
-    default:
-        break;
-    }
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -335,18 +280,15 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
  * @param value new inner radius.
  */
 void MainWindow::on_radius0SpinBox_valueChanged(double value) {
-  ui->mainView->drums[0]->setRadius(value);
-  ui->mainView->envelopes[0]->setTool(ui->mainView->drums[0]);
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    ui->mainView->drums[idx]->setRadius(value);
 
-  if (ui->mainView->settings.secondEnv){
-    ui->mainView->drums[1]->setRadius(value);
-    ui->radius0SpinBox_2->setValue(value);
-    ui->mainView->envelopes[1]->setTool(ui->mainView->drums[1]);
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -354,18 +296,15 @@ void MainWindow::on_radius0SpinBox_valueChanged(double value) {
  * @param value new opening angle.
  */
 void MainWindow::on_angleSpinBox_valueChanged(double value) {
-  ui->mainView->cylinders[0]->setAngle(value);
-  ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    ui->mainView->cylinders[idx]->setAngle(value);
 
-  if (ui->mainView->settings.secondEnv){
-    ui->mainView->cylinders[1]->setAngle(value);
-    ui->angleSpinBox_2->setValue(value);
-    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -373,23 +312,17 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
-  ui->mainView->cylinders[0]->setHeight(value);
-  ui->mainView->drums[0]->setHeight(value);
-  ui->radius0SpinBox->setMinimum(ui->mainView->drums[0]->getMinR0());
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    ui->mainView->cylinders[idx]->setHeight(value);
+    ui->mainView->drums[idx]->setHeight(value);
+    ui->radius0SpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0()); // TODO why?
 
-  if (ui->mainView->settings.secondEnv){
-    ui->mainView->cylinders[1]->setHeight(value);
-    ui->heightSpinBox_2->setValue(value);
-    ui->mainView->drums[1]->setHeight(value);
-    ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
-
-    ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
-    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -397,205 +330,48 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
  * @param index The index of the tool.
  */
 void MainWindow::on_toolBox_currentIndexChanged(int index){
-  qDebug() << "tool index" << index;
-  ui->mainView->settings.toolIdx = index;
-  switch (index) {
-  case 0:
-      ui->angleSpinBox->setEnabled(true);
-      ui->radius0SpinBox->setEnabled(false);
-      break;
-  case 1:
-      ui->angleSpinBox->setEnabled(false);
-      ui->radius0SpinBox->setEnabled(true);
-      break;
-  default:
-      ui->angleSpinBox->setEnabled(false);
-      ui->radius0SpinBox->setEnabled(false);
-      break;
-  }
-  ui->aSlider->setValue(0);
-  // ui->mainView->setA(0); TODO
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  if (ui->mainView->settings.secondEnv){
-      ui->toolBox_2->setCurrentIndex(index);
+    qDebug() << "tool index" << index;
+    switch (index) {
+    case 0:
+        ui->angleSpinBox->setEnabled(true);
+        ui->radius0SpinBox->setEnabled(false);
+        break;
+    case 1:
+        ui->angleSpinBox->setEnabled(false);
+        ui->radius0SpinBox->setEnabled(true);
+        break;
+    default:
+        ui->angleSpinBox->setEnabled(false);
+        ui->radius0SpinBox->setEnabled(false);
+        break;
+    }
 
-      switch (index) {
-      case 0:
-          ui->angleSpinBox_2->setEnabled(true);
-          ui->radius0SpinBox_2->setEnabled(false);
-          break;
-      case 1:
-          ui->angleSpinBox_2->setEnabled(false);
-          ui->radius0SpinBox_2->setEnabled(true);
-          break;
-      default:
-          ui->angleSpinBox_2->setEnabled(false);
-          ui->radius0SpinBox_2->setEnabled(false);
-          break;
-      }
-  }
+    Tool *tool = nullptr;
+    switch(index) {
+    case 0:
+        tool = ui->mainView->cylinders[idx];
+        break;
+    case 1:
+        tool = ui->mainView->drums[idx];
+        break;
+    }
 
-  Tool *tool = nullptr;
-  switch(index) {
-  case 0:
-      tool = ui->mainView->cylinders[0];
-      break;
-  case 1:
-      tool = ui->mainView->drums[0];
-      break;
-  }
-
-  ui->mainView->envelopes[0]->setTool(tool);
-  ui->mainView->envelopes[0]->update();
-  ui->mainView->toolRenderers[0]->setTool(tool);
-  ui->mainView->updateBuffers();
-  ui->mainView->updateToolTransf();
-  ui->mainView->update();
+    ui->mainView->envelopes[idx]->setTool(tool);
+    ui->mainView->toolRenderers[idx]->setTool(tool);
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
-/**
- * @brief MainWindow::on_radiusSpinBox_2_valueChanged Updates the radius of the second tool.
- * @param value new radius.
- */
-void MainWindow::on_radiusSpinBox_2_valueChanged(double value) {
-  ui->mainView->cylinders[1]->setRadius(value);
-  ui->mainView->drums[1]->setMidRadius(value);
-  ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
 
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_radius0SpinBox_2_valueChanged Updates the inner radius of the second drum.
- * @param value new inner radius.
- */
-void MainWindow::on_radius0SpinBox_2_valueChanged(double value) {
-  ui->mainView->drums[1]->setRadius(value);
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_angleSpinBox_2_valueChanged Updates the opening angle of the second cylinder.
- * @param value new opening angle.
- */
-void MainWindow::on_angleSpinBox_2_valueChanged(double value) {
-  ui->mainView->cylinders[1]->setAngle(value);
-
-  ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_heightSpinBox_2_valueChanged Updates the height (length) of the second tool.
- * @param value new height.
- */
-void MainWindow::on_heightSpinBox_2_valueChanged(double value) {
-  ui->mainView->cylinders[1]->setHeight(value);
-  ui->mainView->drums[1]->setHeight(value);
-  ui->radius0SpinBox_2->setMinimum(ui->mainView->drums[1]->getMinR0());
-
-  ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_orientVector_1_2_returnPressed Updates the orientation vector of the second tool.
- */
-void MainWindow::on_orientVector_1_2_returnPressed(){
-  qDebug() << "orientation vector changed";
-  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-
-  qDebug() << "to" << vector1 << "and" << vector2;
-
-  bool success = ui->mainView->envelopes[1]->setAxes(vector1,vector2);
-  if (success){
-      // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  } else {
-      error.showMessage("The inputed vector is not a valid orientation 1 vector");
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_orientVector_2_2_returnPressed Updates the orientation vector of the second tool.
- */
-void MainWindow::on_orientVector_2_2_returnPressed(){
-  qDebug() << "orientation vector changed";
-  QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1_2->text());
-  QVector3D vector2 = ui->mainView->settings.stringToVector3D(ui->orientVector_2_2->text());
-
-  qDebug() << "to" << vector1 << "and" << vector2;
-
-  bool success = ui->mainView->envelopes[1]->setAxes(vector1,vector2);
-  if (success){
-      // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  } else {
-      error.showMessage("The inputed vector is not a valid orientation 2 vector");
-  }
-
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
-}
-
-/**
- * @brief MainWindow::on_toolBox_2_currentIndexChanged Updates the second tool type. 
- * Activates/Deactivates their corresponding input fields.
- * @param index The index of the tool.
- */
-void MainWindow::on_toolBox_2_currentIndexChanged(int index){
-  qDebug() << "tool index" << index;
-  ui->mainView->settings.tool2Idx = index;
-  switch (index) {
-  case 0:
-      ui->angleSpinBox_2->setEnabled(true);
-      ui->radius0SpinBox_2->setEnabled(false);
-      break;
-  case 1:
-      ui->angleSpinBox_2->setEnabled(false);
-      ui->radius0SpinBox_2->setEnabled(true);
-      break;
-  default:
-      ui->angleSpinBox_2->setEnabled(false);
-      ui->radius0SpinBox_2->setEnabled(false);
-      break;
-  }
-  ui->aSlider->setValue(0);
-  // ui->mainView->setA(0); TODO
-
-  Tool *tool = nullptr;
-  switch(index) {
-  case 0:
-      tool = ui->mainView->cylinders[1];
-      break;
-  case 1:
-      tool = ui->mainView->drums[1];
-      break;
-  }
-
-  ui->mainView->envelopes[1]->setTool(tool);
-  ui->mainView->envelopes[1]->update();
-  ui->mainView->toolRenderers[1]->setTool(tool);
-
-  ui->mainView->updateBuffers();
-  ui->mainView->updateToolTransf();
-  ui->mainView->update();
-}
+/***********************************************************/
+/************************ Path Menu ************************/
+/***********************************************************/
 
 /**
  * @brief MainWindow::on_spinBox_a_x_valueChanged Updates the a coefficient of the x(t) polynomial.
@@ -817,30 +593,11 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
   ui->mainView->update();
 }
 
-/**
- * @brief MainWindow::on_reflecLinesCheckBox_toggled Updates the envelope's shading.
- * @param checked The new value of the checkbox.
- */
-void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
-    ui->fracReflSpinBox->setEnabled(checked);
-    ui->freqReflSpinBox->setEnabled(checked);
 
-    ui->mainView->settings.reflectionLines = checked;
-    ui->mainView->updateBuffers();
-    ui->mainView->update();
-}
 
-void MainWindow::on_freqReflSpinBox_valueChanged(int value){
-    ui->mainView->settings.reflFreq = value;
-    ui->mainView->updateBuffers();
-    ui->mainView->update();
-}
-
-void MainWindow::on_fracReflSpinBox_valueChanged(double value){
-    ui->mainView->settings.percentBlack = value;
-    ui->mainView->updateBuffers();
-    ui->mainView->update();
-}
+/***********************************************************/
+/*********************** Render Menu ***********************/
+/***********************************************************/
 
 /**
  * @brief MainWindow::on_envelopeCheckBox_toggled Updates the envelope(s) visibility.
@@ -904,6 +661,76 @@ void MainWindow::on_sphereCheckBox_toggled(bool checked){
   ui->mainView->settings.showSpheres = checked;
   ui->mainView->update();
 }
+
+/**
+ * @brief MainWindow::on_reflecLinesCheckBox_toggled Updates the envelope's shading.
+ * @param checked The new value of the checkbox.
+ */
+void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
+    ui->fracReflSpinBox->setEnabled(checked);
+    ui->freqReflSpinBox->setEnabled(checked);
+
+    ui->mainView->settings.reflectionLines = checked;
+    ui->mainView->updateBuffers();
+    ui->mainView->update();
+}
+
+void MainWindow::on_freqReflSpinBox_valueChanged(int value){
+    ui->mainView->settings.reflFreq = value;
+    ui->mainView->updateBuffers();
+    ui->mainView->update();
+}
+
+void MainWindow::on_fracReflSpinBox_valueChanged(double value){
+    ui->mainView->settings.percentBlack = value;
+    ui->mainView->updateBuffers();
+    ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_axisSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the cylinder.
+ * @param value The new number of sectors.
+ */
+void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
+    qDebug() << "Axis sectors changed";
+    ui->aSlider->setMaximum(value);
+    ui->mainView->cylinders[0]->setSectors(value);
+    ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
+    ui->mainView->cylinders[1]->setSectors(value);
+    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
+
+    ui->mainView->updateBuffers();
+    ui->mainView->updateToolTransf();
+    ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_timeSectorsSpinBox_valueChanged Updates the number of sectors for the construction of the path.
+ * @param value The new number of sectors.
+ */
+void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
+    qDebug() << "Time sectors changed";
+    ui->TimeSlider->setMaximum(value);
+    SimplePath &path = ui->mainView->envelopes[0]->getToolMovement().getPath();
+
+    path.setSectors(value);
+
+    // ui->mainView->movements[0]->setPath(path);
+    // ui->mainView->movements[1]->setPath(path);
+
+    // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
+    // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
+
+    ui->mainView->updateBuffers();
+    ui->mainView->updateToolTransf();
+    ui->mainView->update();
+}
+
+
+
+/***********************************************************/
+/******************** General Side Menu ********************/
+/***********************************************************/
 
 /**
  * @brief MainWindow::on_TimeSlider_sliderMoved Updates the time value.

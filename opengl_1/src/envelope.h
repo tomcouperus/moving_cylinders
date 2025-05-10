@@ -69,7 +69,7 @@ public:
     void registerDependent(Envelope *dependent);
     void deregisterDependent(Envelope *dependent);
     bool checkDependencies();
-    QSet<int> getDependentSet();
+    QSet<int> getAllDependents();
 
     inline bool isActive() { return active; }
     inline void setActive(bool value) { active = value; }
@@ -82,7 +82,7 @@ public:
 
     inline CylinderMovement& getToolMovement() { return toolMovement; }
     inline Tool* getTool(){ return tool; }
-    void setTool(Tool *tool);
+    inline void setTool(Tool *tool) { this->tool = tool; }
     void setAdjacentEnvelope(Envelope *env);
 
     inline QVector<Vertex>& getVertexArr(){ return vertexArr; }

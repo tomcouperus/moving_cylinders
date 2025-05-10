@@ -33,18 +33,8 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
     drums[0]->initDrum();
     drums[1]->initDrum();
 
-    switch (settings.toolIdx) {
-    case 0:
-        toolRenderers[0]->setTool(cylinders[0]);
-        toolRenderers[1]->setTool(cylinders[1]);
-        break;
-    case 1:
-        toolRenderers[0]->setTool(drums[0]);
-        toolRenderers[1]->setTool(drums[1]);
-        break;
-    default:
-        break;
-    }
+    toolRenderers[0]->setTool(cylinders[0]);
+    toolRenderers[1]->setTool(cylinders[1]);
 
     // Define path for the tool
     SimplePath path = SimplePath(Polynomial(0.0,0.0,0.0,0.0),
