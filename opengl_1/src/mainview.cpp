@@ -43,10 +43,10 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 
     // Define the vertices of the enveloping surface
     envelopes.reserve(2);
-    envelopes.append(new Envelope(&settings, 0, cylinders[0], path));
+    envelopes.append(new Envelope(0, cylinders[0], path));
     envelopes[0]->initEnvelope();
 
-    envelopes.append(new Envelope(&settings, 1, cylinders[1], path, envelopes[0]));
+    envelopes.append(new Envelope(1, cylinders[1], path, envelopes[0]));
     envelopes[1]->initEnvelope();
     envelopes[1]->setActive(false);
 
@@ -240,7 +240,7 @@ void MainView::paintGL()
         QList<int> indices = toolTransfUpdates.values();
         while (!indices.isEmpty()) {
             int i = indices.takeFirst();
-            toolRenderers[i]->setToolTransf(envelopes[i]->getToolTransform());
+            toolRenderers[i]->setToolTransf(envelopes[i]->getToolTransformAt(settings.t()));
             toolRenderers[i]->updateUniforms();
         }
         toolTransfUpdates.clear();
@@ -359,7 +359,7 @@ void MainView::updateToolTransf(){
     for (int i = 0; i < indicesUsed.size(); i++) {
         if (!indicesUsed[i]) continue;
         if (!envelopes[i]->isActive()) continue;
-        toolRenderers[i]->setToolTransf(envelopes[i]->getToolTransform());
+        toolRenderers[i]->setToolTransf(envelopes[i]->getToolTransformAt(settings.t()));
     }
 }
 

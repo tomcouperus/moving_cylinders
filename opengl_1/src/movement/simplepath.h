@@ -26,9 +26,9 @@ public:
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}
     inline void setZ(Polynomial z) {this->z = z; updateVertexArr();}
 
-    inline Polynomial getX() {return x;}
-    inline Polynomial getY() {return y;}
-    inline Polynomial getZ() {return z;}
+    inline Polynomial& getX() {return x;}
+    inline Polynomial& getY() {return y;}
+    inline Polynomial& getZ() {return z;}
 };
 
 #endif // SIMPLEPATH_H

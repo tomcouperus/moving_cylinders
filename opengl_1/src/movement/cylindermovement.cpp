@@ -57,22 +57,6 @@ bool CylinderMovement::setAxisDirections(QVector3D axisDirection1, QVector3D axi
 }
 
 /**
- * @brief CylinderMovement::getMovementRotation Calculates the rotation that the cylinder needs to undergo
- * to be positioned with its axis in the direction described by the movement at time time
- * @param time time of interest
- * @return Matrix describing the rotation
- */
-QMatrix4x4 CylinderMovement::getMovementRotation(float time)
-{
-    QMatrix4x4 cylinderRotation;
-    cylinderRotation.setToIdentity();
-    float angle = acos(QVector3D::dotProduct(getAxisAt(time), toolAxis));
-    angle = qRadiansToDegrees(angle);
-    cylinderRotation.rotate(angle, getRotationVectorAt(time));
-    return cylinderRotation;
-}
-
-/**
  * @brief CylinderMovement::getAxisAt returns the axis direction at time time
  * @param time time of interest
  * @return axis direction

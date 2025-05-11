@@ -33,7 +33,6 @@ public:
     QVector3D getAxisDtAt(float time);
     QVector3D getAxisDt2At(float time);
 
-    QMatrix4x4 getMovementRotation(float time);
     QVector3D getRotationVectorAt(float time);
 
     inline void setToolAxis(const Tool *tool) { toolAxis = tool->getAxisVector(); }

@@ -361,6 +361,7 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
 
     ui->mainView->envelopes[idx]->setTool(tool);
     ui->mainView->toolRenderers[idx]->setTool(tool);
+
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;
     ui->mainView->envelopeMeshUpdates += depEnvs;
@@ -378,25 +379,16 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_x_valueChanged(int value) {
-    int idx = ui->mainView->settings.selectedIdx;
-  qDebug() << "a of x(t) updated to: " << value;
+  int idx = ui->mainView->settings.selectedIdx;
+  if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial x = path.getX();
-  x.setA(value);
+  Envelope *env = ui->mainView->envelopes[idx];
+  env->getToolMovement().getPath().getX().setA(value);
 
-  // path.setX(x);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-
-  ui->mainView->envelopes[idx]->update();
-  ui->mainView->updateToolTransf();
-  ui->mainView->updateBuffers();
-  // ui->mainView->updateUniformsRequired = true;
+  QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+  ui->mainView->toolMeshUpdates += depEnvs;
+  ui->mainView->envelopeMeshUpdates += depEnvs;
+  ui->mainView->toolTransfUpdates += depEnvs;
   ui->mainView->update();
 }
 
@@ -405,23 +397,17 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
  * @param value new b coefficient.
  */
 void MainWindow::on_spinBox_b_x_valueChanged(int value) {
-  qDebug() << "b of x(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial x = path.getX();
-  x.setB(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getX().setB(value);
 
-  // path.setX(x);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -429,23 +415,17 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_c_x_valueChanged(int value) {
-  qDebug() << "c of x(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial x = path.getX();
-  x.setC(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getX().setC(value);
 
-  // path.setX(x);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -453,23 +433,17 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_y_valueChanged(int value) {
-  qDebug() << "a of y(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial y = path.getY();
-  y.setA(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getY().setA(value);
 
-  // path.setY(y);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -477,23 +451,17 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
  * @param value new b coefficient.
  */
 void MainWindow::on_spinBox_b_y_valueChanged(int value) {
-  qDebug() << "b of y(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial y = path.getY();
-  y.setB(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getY().setB(value);
 
-  // path.setY(y);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -501,23 +469,17 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_c_y_valueChanged(int value) {
-  qDebug() << "c of y(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial y = path.getY();
-  y.setC(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getY().setC(value);
 
-  // path.setY(y);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 
@@ -526,23 +488,17 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_z_valueChanged(int value) {
-  qDebug() << "a of z(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial z = path.getZ();
-  z.setA(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getZ().setA(value);
 
-  // path.setZ(z);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -550,23 +506,17 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
  * @param value new b coefficient.
  */
 void MainWindow::on_spinBox_b_z_valueChanged(int value) {
-  qDebug() << "b of z(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial z = path.getZ();
-  z.setB(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getZ().setB(value);
 
-  // path.setZ(z);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 /**
@@ -574,23 +524,17 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_c_z_valueChanged(int value) {
-  qDebug() << "c of z(t) updated to: " << value;
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
 
-  CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
-  SimplePath &path = move.getPath();
-  Polynomial z = path.getZ();
-  z.setC(value);
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getZ().setC(value);
 
-  // path.setZ(z);
-  // ui->mainView->movements[0]->setPath(path);
-  // ui->mainView->movements[1]->setPath(path);
-
-  // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-  // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
-  ui->mainView->updateToolTransf();
-
-  ui->mainView->updateBuffers();
-  ui->mainView->update();
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
 }
 
 

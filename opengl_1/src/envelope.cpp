@@ -3,11 +3,9 @@
 
 /**
  * @brief Envelope::Envelope Creates a new envelope with default values.
- * @param settings Readonly pointer to settings
  * @param index
  */
-Envelope::Envelope(const Settings *settings, int index) :
-    settings(settings),
+Envelope::Envelope(int index) :
     index(index),
     adjEnv(nullptr),
     tool()
@@ -18,11 +16,9 @@ Envelope::Envelope(const Settings *settings, int index) :
 
 /**
  * @brief Envelope::Envelope Creates a new envelope with the given values.
- * @param settings Readonly pointer to settings
  * @param tool Tool pointer.
  */
-Envelope::Envelope(const Settings *settings, int index, Tool *tool, const SimplePath &path) :
-    settings(settings),
+Envelope::Envelope(int index, Tool *tool, const SimplePath &path) :
     index(index),
     adjEnv(nullptr),
     tool(tool),
@@ -35,12 +31,10 @@ Envelope::Envelope(const Settings *settings, int index, Tool *tool, const Simple
 
 /**
  * @brief Envelope::Envelope Creates a new envelope with the given values.
- * @param settigns Readonly pointer to settings
  * @param tool Tool pointer.
  * @param adjEnvelope Adjacent envelope.
  */
-Envelope::Envelope(const Settings *settings, int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope) :
-    settings(settings),
+Envelope::Envelope(int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope) :
     index(index),
     tool(tool),
     toolMovement(path, tool)
@@ -176,12 +170,12 @@ void Envelope::computeEnvelope()
 
 QVector3D Envelope::getEnvelopeAt(float t, float a)
 {
-    return getPathAt(t) + a * getAxisAt(t) - getToolRadiusAt(a) * getNormalAt(t, a);
+    return getPathAt(t) + a * getAxisAt(t) + getToolRadiusAt(a) * getNormalAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDtAt(float t, float a)
 {
-    return getPathDtAt(t) + a * getAxisDtAt(t) - getToolRadiusAt(a) * getNormalDtAt(t, a);
+    return getPathDtAt(t) + a * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
 }
 
 /**
@@ -354,7 +348,7 @@ QVector3D Envelope::getNormalDtAt(float t, float a)
 QVector3D Envelope::getPathAt(float t){
     if (isPositContinuous()){
         // use positional continuity formula
-        return adjEnv->getEnvelopeAt(t, 1) +
+        return adjEnv->getEnvelopeAt(t, 1) -
                getToolRadiusAt(0) * getNormalAt(t, 0);
     } else {
         return toolMovement.getPath().getPathAt(t);
@@ -471,52 +465,29 @@ float Envelope::getToolRadiusDaAt(float a) {
     return tool->getRadiusDerivativeWRTa(a);
 }
 
-/**
- * @brief Envelope::getToolToPathTransform Calculates the transformation to move the tool to the path. Should not really be needed to be called anywhere but Envelope::getToolTransform.
- * @return
- */
-QMatrix4x4 Envelope::getToolToPathTransform() {
-    QMatrix4x4 toolToPath;
-    toolToPath.setToIdentity();
-    toolToPath.translate(-tool->getA0() * tool->getAxisVector());
-    return toolToPath;
-}
-
-/**
- * @brief Envelope::getToolAlongPathTransform Calculates the transformation to move the tool along the path. Should not really be needed to be called anywhere but Envelope::getToolTransform.
- * @return
- */
-QMatrix4x4 Envelope::getToolAlongPathTransform() {
-    QMatrix4x4 toolAlongPath;
-    toolAlongPath.setToIdentity();
-    toolAlongPath.translate(getPathAt(settings->t()));
-    return toolAlongPath;
-}
-
-/**
- * @brief Envelope::getToolRotationTransform Calculates the transformation to rotate the tool. Should not really be needed to be called anywhere but Envelope::getToolTransform.
- * @return
- */
-QMatrix4x4 Envelope::getToolRotationTransform() {
-    QMatrix4x4 toolRotation;
-    if (isTanContinuous()) {
-        // TODO check for circular dependencies
-        if (!checkDependencies()) {
-            throw new std::runtime_error("Dependency issue. Likely a circular dependency. Should be handled on input of dependency.");
-        }
-        QMatrix4x4 axisRotation;
-        axisRotation.rotate(calcAxisRotationAt(settings->t()));
-        toolRotation = axisRotation * adjEnv->getToolRotationTransform();
-    } else {
-        toolRotation = toolMovement.getMovementRotation(settings->t());
-    }
-    return toolRotation;
-}
+// /**
+//  * @brief Envelope::getToolToPathTransform Calculates the transformation to move the tool to the path. Should not really be needed to be called anywhere but Envelope::getToolTransform.
+//  * @return
+//  */
+// QMatrix4x4 Envelope::getToolToPathTransform() {
+//     QMatrix4x4 toolToPath;
+//     toolToPath.setToIdentity();
+//     toolToPath.translate(-tool->getA0() * tool->getAxisVector());
+//     return toolToPath;
+// }
 
 /**
  * @brief Envelope::getToolTransform Calculates the transformation matrix of the Envelope's tool relative to the envelope itself. The modelTransform is separate from the toolTransform.
  * @return
  */
-QMatrix4x4 Envelope::getToolTransform() {
-    return getToolAlongPathTransform() * getToolRotationTransform() * getToolToPathTransform();
+QMatrix4x4 Envelope::getToolTransformAt(float t) {
+    // First rotate such that the tool's axis aligns with the surface axis
+    QVector3D toolAxis = tool->getAxisVector();
+    QMatrix4x4 rotation;
+    rotation.rotate(QQuaternion::rotationTo(toolAxis, getAxisAt(t)));
+
+    // Then translate it to the path
+    QMatrix4x4 translation;
+    translation.translate(getPathAt(t));
+    return translation * rotation;
 }

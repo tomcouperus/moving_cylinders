@@ -28,12 +28,10 @@ class Envelope
     QVector<Vertex> vertexArrGrazingCurve;
     QVector<QVector<Vertex>> vertexArrNormals;
 
-    const Settings *settings;
-
 public:
-    Envelope(const Settings *settings, int index);
-    Envelope(const Settings *settings, int index, Tool *tool, const SimplePath &path);
-    Envelope(const Settings *settings, int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope);
+    Envelope(int index);
+    Envelope(int index, Tool *tool, const SimplePath &path);
+    Envelope(int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope);
 
     inline int getIndex() { return index; }
     inline Envelope *getAdjEnvelope() { return adjEnv; }
@@ -90,10 +88,7 @@ public:
     inline QVector<Vertex>& getVertexArrGrazingCurve(){ return vertexArrGrazingCurve; }
     inline QVector<QVector<Vertex>>& getVertexArrNormals() { return vertexArrNormals; }
 
-    QMatrix4x4 getToolToPathTransform();
-    QMatrix4x4 getToolAlongPathTransform();
-    QMatrix4x4 getToolRotationTransform();
-    QMatrix4x4 getToolTransform();
+    QMatrix4x4 getToolTransformAt(float t);
 };
 
 #endif // ENVELOPE_H
