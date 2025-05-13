@@ -6,7 +6,6 @@
 EnvelopeRenderer::EnvelopeRenderer()
 {
     envelope = nullptr;
-    modelTransform.setToIdentity();
 }
 
 /**
@@ -16,7 +15,6 @@ EnvelopeRenderer::EnvelopeRenderer()
 EnvelopeRenderer::EnvelopeRenderer(Envelope *env)
 {
     envelope = env;
-    modelTransform.setToIdentity();
 }
 
 /**

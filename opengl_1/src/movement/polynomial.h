@@ -20,10 +20,10 @@ public:
     float getDerivativeAt(float t);
     float getDerivative2At(float t);
 
-    inline float getA() {return a;}
-    inline float getB() {return b;}
-    inline float getC() {return c;}
-    inline float getD() {return d;}
+    inline const float getA() const {return a;}
+    inline const float getB() const {return b;}
+    inline const float getC() const {return c;}
+    inline const float getD() const {return d;}
     inline void setA(float a) {this->a = a;}
     inline void setB(float b) {this->b = b;}
     inline void setC(float c) {this->c = c;}

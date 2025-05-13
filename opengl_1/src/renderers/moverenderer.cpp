@@ -6,7 +6,6 @@
 MoveRenderer::MoveRenderer()
 {
     this->move = nullptr;
-    modelTransform.setToIdentity();
 }
 
 /**
@@ -16,7 +15,6 @@ MoveRenderer::MoveRenderer()
 MoveRenderer::MoveRenderer(CylinderMovement *move)
 {
     this->move = move;
-    modelTransform.setToIdentity();
 }
 
 /**

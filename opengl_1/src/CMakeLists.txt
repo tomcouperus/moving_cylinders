@@ -42,6 +42,7 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     renderers/moverenderer.h renderers/moverenderer.cpp
     tools/sphere.h
     mathutility.h mathutility.cpp
+    tooltype.h
 
 
 )

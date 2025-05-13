@@ -26,6 +26,7 @@ class MainWindow : public QMainWindow {
 
  private:
   void SetComboBoxItemEnabled(QComboBox *comboBox, int index, bool enabled);
+  QString QVectorToString(const QVector3D &v);
 
  private slots:
 
@@ -43,7 +44,7 @@ class MainWindow : public QMainWindow {
   void on_angleOrient_2_SpinBox_valueChanged(double value);
 
   void on_radiusSpinBox_valueChanged(double value);
-  void on_radius0SpinBox_valueChanged(double value);
+  void on_drumRadiusSpinBox_valueChanged(double value);
   void on_angleSpinBox_valueChanged(double value);
   void on_heightSpinBox_valueChanged(double value);
   void on_toolBox_currentIndexChanged(int index);
@@ -52,12 +53,15 @@ class MainWindow : public QMainWindow {
   void on_spinBox_a_x_valueChanged(int value);
   void on_spinBox_b_x_valueChanged(int value);
   void on_spinBox_c_x_valueChanged(int value);
+  void on_spinBox_d_x_valueChanged(int value);
   void on_spinBox_a_y_valueChanged(int value);
   void on_spinBox_b_y_valueChanged(int value);
   void on_spinBox_c_y_valueChanged(int value);
+  void on_spinBox_d_y_valueChanged(int value);
   void on_spinBox_a_z_valueChanged(int value);
   void on_spinBox_b_z_valueChanged(int value);
   void on_spinBox_c_z_valueChanged(int value);
+  void on_spinBox_d_z_valueChanged(int value);
 
   // Render menu
   void on_envelopeCheckBox_toggled(bool checked);

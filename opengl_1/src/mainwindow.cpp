@@ -33,12 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 
-
-
-/***********************************************************/
-/********************** Envelope Menu **********************/
-/***********************************************************/
-
 /**
  * @brief SetComboBoxItemEnabled Changes the visibility of an item in a combobox. Thanks to https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox/62261745
  * @param comboBox
@@ -55,6 +49,14 @@ void MainWindow::SetComboBoxItemEnabled(QComboBox *comboBox, int index, bool ena
     if(!item) return;
     item->setEnabled(enabled);
 }
+
+QString MainWindow::QVectorToString(const QVector3D &v) {
+    return QString("(%1,%2,%3)").arg(v.x()).arg(v.y()).arg(v.z());
+}
+
+/***********************************************************/
+/********************** Envelope Menu **********************/
+/***********************************************************/
 
 void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
     int idx = index-1;
@@ -73,7 +75,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         }
     }
 
-    if (idx == -1) {
+    if (idx == -1) { // No Envelope selected
         // Reset the ui elements
         // ** Active check box
         ui->envelopeActiveCheckBox->setChecked(false);
@@ -82,7 +84,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         ui->constraintA0SelectBox->setCurrentIndex(0);
         ui->constraintA1SelectBox->setCurrentIndex(0);
         ui->SettingsTabMenu->setTabEnabled(3, false);
-    } else {
+    } else { // Envelope Selected
         Envelope *env = ui->mainView->envelopes[idx];
         // Load the selected envelope's data
         // ** Active check box
@@ -96,9 +98,41 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
         ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
         on_constraintA0SelectBox_currentIndexChanged(a0Idx);
+        ui->tanContCheckBox->setChecked(env->isTanContinuous());
+        on_tanContCheckBox_toggled(env->isTanContinuous());
+
+        // Tool settings
+        ui->orientVector_1->setText(QVectorToString(env->getToolMovement().getAxisT0()));
+        ui->orientVector_2->setText(QVectorToString(env->getToolMovement().getAxisT1()));
+        ui->angleOrient_1_SpinBox->setValue(env->getAdjAxisAngle1());
+        ui->angleOrient_2_SpinBox->setValue(env->getAdjAxisAngle2());
+
+        Cylinder* cyl = ui->mainView->cylinders[idx];
+        Drum* drum = ui->mainView->drums[idx];
+        ui->radiusSpinBox->setValue(cyl->getRadius());
+        ui->drumRadiusSpinBox->setValue(drum->getRadiusCurvature());
+        ui->angleSpinBox->setValue(cyl->getAngle());
+        ui->heightSpinBox->setValue(cyl->getHeight());
+        int toolTypeIdx = (int) env->getTool()->getType();
+        ui->toolBox->setCurrentIndex(toolTypeIdx);
+
+        // Path Settings
+        SimplePath &path = env->getToolMovement().getPath();
+        ui->spinBox_a_x->setValue(path.getX().getA());
+        ui->spinBox_b_x->setValue(path.getX().getB());
+        ui->spinBox_c_x->setValue(path.getX().getC());
+        ui->spinBox_d_x->setValue(path.getX().getD());
+        ui->spinBox_a_y->setValue(path.getY().getA());
+        ui->spinBox_b_y->setValue(path.getY().getB());
+        ui->spinBox_c_y->setValue(path.getY().getC());
+        ui->spinBox_d_y->setValue(path.getY().getD());
+        ui->spinBox_a_z->setValue(path.getZ().getA());
+        ui->spinBox_b_z->setValue(path.getZ().getB());
+        ui->spinBox_c_z->setValue(path.getZ().getC());
+        ui->spinBox_d_z->setValue(path.getZ().getD());
     }
 
-    // Enable/disable some ui elements
+    // Enable/disable some ui elements always
     bool envelopeSelected = idx != -1;
     ui->envelopeActiveCheckBox->setEnabled(envelopeSelected);
     ui->constraintsGroupBox->setEnabled(envelopeSelected);
@@ -266,7 +300,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setRadius(value);
     ui->mainView->drums[idx]->setMidRadius(value);
-    ui->radius0SpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0());
+    ui->drumRadiusSpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0());
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;
@@ -276,10 +310,10 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
 }
 
 /**
- * @brief MainWindow::on_radius0SpinBox_valueChanged Updates the inner radius of the drum.
+ * @brief MainWindow::on_drumRadiusSpinBox_valueChanged Updates the inner radius of the drum.
  * @param value new inner radius.
  */
-void MainWindow::on_radius0SpinBox_valueChanged(double value) {
+void MainWindow::on_drumRadiusSpinBox_valueChanged(double value) {
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     ui->mainView->drums[idx]->setRadius(value);
@@ -316,7 +350,7 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setHeight(value);
     ui->mainView->drums[idx]->setHeight(value);
-    ui->radius0SpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0()); // TODO why?
+    ui->drumRadiusSpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0()); // TODO why?
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;
@@ -337,15 +371,15 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
     switch (index) {
     case 0:
         ui->angleSpinBox->setEnabled(true);
-        ui->radius0SpinBox->setEnabled(false);
+        ui->drumRadiusSpinBox->setEnabled(false);
         break;
     case 1:
         ui->angleSpinBox->setEnabled(false);
-        ui->radius0SpinBox->setEnabled(true);
+        ui->drumRadiusSpinBox->setEnabled(true);
         break;
     default:
         ui->angleSpinBox->setEnabled(false);
-        ui->radius0SpinBox->setEnabled(false);
+        ui->drumRadiusSpinBox->setEnabled(false);
         break;
     }
 
@@ -429,6 +463,24 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
 }
 
 /**
+ * @brief MainWindow::on_spinBox_d_x_valueChanged Updates the d coefficient of the x(t) polynomial.
+ * @param value new c coefficient.
+ */
+void MainWindow::on_spinBox_d_x_valueChanged(int value) {
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getX().setD(value);
+
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
+}
+
+/**
  * @brief MainWindow::on_spinBox_a_y_valueChanged Updates the a coefficient of the y(t) polynomial.
  * @param value new a coefficient.
  */
@@ -474,6 +526,24 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
 
     Envelope *env = ui->mainView->envelopes[idx];
     env->getToolMovement().getPath().getY().setC(value);
+
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_spinBox_d_y_valueChanged Updates the d coefficient of the y(t) polynomial.
+ * @param value new c coefficient.
+ */
+void MainWindow::on_spinBox_d_y_valueChanged(int value) {
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getY().setD(value);
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;
@@ -529,6 +599,24 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
 
     Envelope *env = ui->mainView->envelopes[idx];
     env->getToolMovement().getPath().getZ().setC(value);
+
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->toolMeshUpdates += depEnvs;
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
+}
+
+/**
+ * @brief MainWindow::on_spinBox_d_z_valueChanged Updates the d coefficient of the z(t) polynomial.
+ * @param value new c coefficient.
+ */
+void MainWindow::on_spinBox_d_z_valueChanged(int value) {
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+
+    Envelope *env = ui->mainView->envelopes[idx];
+    env->getToolMovement().getPath().getZ().setD(value);
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;

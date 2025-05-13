@@ -29,6 +29,9 @@ public:
     bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);
     inline QVector<Vertex>& getPathVertexArr() { return this->discPath; }
 
+    inline QVector3D getAxisT0() const { return axisT0; }
+    inline QVector3D getAxisT1() const { return axisT1; }
+
     QVector3D getAxisAt(float time);
     QVector3D getAxisDtAt(float time);
     QVector3D getAxisDt2At(float time);

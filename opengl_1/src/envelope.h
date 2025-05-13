@@ -33,7 +33,7 @@ public:
     Envelope(int index, Tool *tool, const SimplePath &path);
     Envelope(int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope);
 
-    inline int getIndex() { return index; }
+    inline int getIndex() const { return index; }
     inline Envelope *getAdjEnvelope() { return adjEnv; }
 
     void initEnvelope();
@@ -77,6 +77,8 @@ public:
     inline bool isTanContinuous() { return adjEnv != nullptr && tanContToAdj; }
     inline bool setAxes(QVector3D axisA0, QVector3D axisA1) { return toolMovement.setAxisDirections(axisA0, axisA1); }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
+    inline double getAdjAxisAngle1() const { return adjAxisAngle1; }
+    inline double getAdjAxisAngle2() const { return adjAxisAngle2; }
 
     inline CylinderMovement& getToolMovement() { return toolMovement; }
     inline Tool* getTool(){ return tool; }

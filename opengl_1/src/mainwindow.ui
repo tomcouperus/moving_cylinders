@@ -19,7 +19,7 @@
      <widget class="QGroupBox" name="settingsBox">
       <property name="maximumSize">
        <size>
-        <width>350</width>
+        <width>400</width>
         <height>16777215</height>
        </size>
       </property>
@@ -36,7 +36,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="RenderTab">
           <attribute name="title">
@@ -418,14 +418,17 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_10">
                 <item>
-                 <widget class="QLabel" name="labelRadius0">
+                 <widget class="QLabel" name="labelDrumRadius">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
                   <property name="text">
                    <string>Drum curve radius</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="radius0SpinBox">
+                 <widget class="QDoubleSpinBox" name="drumRadiusSpinBox">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
@@ -491,12 +494,12 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_18">
                 <property name="topMargin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                 <item>
                  <layout class="QVBoxLayout" name="verticalLayout_7">
                   <property name="topMargin">
-                   <number>10</number>
+                   <number>0</number>
                   </property>
                   <item>
                    <widget class="QLabel" name="labelOrient_1">
@@ -536,7 +539,7 @@
                 <item>
                  <layout class="QVBoxLayout" name="verticalLayout_8">
                   <property name="topMargin">
-                   <number>10</number>
+                   <number>0</number>
                   </property>
                   <item>
                    <widget class="QLabel" name="labelOrient_2">
@@ -659,9 +662,12 @@
              <item>
               <widget class="QLabel" name="label_3">
                <property name="text">
-                <string> t + d</string>
+                <string> t +</string>
                </property>
               </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_d_x"/>
              </item>
             </layout>
            </item>
@@ -715,9 +721,12 @@
              <item>
               <widget class="QLabel" name="label_12">
                <property name="text">
-                <string> t + d</string>
+                <string> t +</string>
                </property>
               </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_d_y"/>
              </item>
             </layout>
            </item>
@@ -771,9 +780,12 @@
              <item>
               <widget class="QLabel" name="label_13">
                <property name="text">
-                <string> t + d</string>
+                <string> t +</string>
                </property>
               </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_d_z"/>
              </item>
             </layout>
            </item>

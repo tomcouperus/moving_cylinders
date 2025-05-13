@@ -4,7 +4,7 @@
  * @brief Drum::Drum Creates a new drum with default values.
  */
 Drum::Drum()
-    : r0(2), rm(0.5)
+    : Tool(ToolType::Tool_Drum), r0(2), rm(0.5)
 
 {
     float phi = asin(height/(2*r0));
@@ -21,7 +21,7 @@ Drum::Drum()
  * @param position Position of the drum.
  */
 Drum::Drum(float curveRadius, float midRadius, float height, int sectors, QVector3D position)
-    : r0(curveRadius), rm(midRadius)
+    : Tool(ToolType::Tool_Drum), r0(curveRadius), rm(midRadius)
 {
     this->sectors = sectors;
     this->posit = position;

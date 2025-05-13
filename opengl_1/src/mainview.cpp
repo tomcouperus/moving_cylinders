@@ -14,68 +14,17 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
 {
     qDebug() << "MainView constructor";
 
-    indicesUsed.fill(true, 2);
-
-    toolRenderers.reserve(2);
-    toolRenderers.append(new ToolRenderer());
-    toolRenderers.append(new ToolRenderer());
-
-    // Define the vertices of the tools
-    cylinders.reserve(2);
-    cylinders.append(new Cylinder());
-    cylinders.append(new Cylinder());
-    cylinders[0]->initCylinder();
-    cylinders[1]->initCylinder();
-
-    drums.reserve(2);
-    drums.append(new Drum());
-    drums.append(new Drum());
-    drums[0]->initDrum();
-    drums[1]->initDrum();
-
-    toolRenderers[0]->setTool(cylinders[0]);
-    toolRenderers[1]->setTool(cylinders[1]);
-
-    // Define path for the tool
-    SimplePath path = SimplePath(Polynomial(0.0,0.0,0.0,0.0),
-                                 Polynomial(0.0,0.0,0.0,0.0),
-                                 Polynomial(0.0,0.0,1.0,0.0));
-
-    // Define the vertices of the enveloping surface
-    envelopes.reserve(2);
-    envelopes.append(new Envelope(0, cylinders[0], path));
-    envelopes[0]->initEnvelope();
-
-    envelopes.append(new Envelope(1, cylinders[1], path, envelopes[0]));
-    envelopes[1]->initEnvelope();
-    envelopes[1]->setActive(false);
-
-    envelopeRenderers.reserve(2);
-    envelopeRenderers.append(new EnvelopeRenderer());
-    envelopeRenderers.append(new EnvelopeRenderer());
-    envelopeRenderers[0]->setEnvelope(envelopes[0]);
-    envelopeRenderers[1]->setEnvelope(envelopes[1]);
-
-    moveRenderers.reserve(2);
-    moveRenderers.append(new MoveRenderer());
-    moveRenderers.append(new MoveRenderer());
-    moveRenderers[0]->setMovement(&envelopes[0]->getToolMovement());
-    moveRenderers[1]->setMovement(&envelopes[1]->getToolMovement());
-
-    // First transformation of the cylinder
-    modelTranslation.setToIdentity();
+    // Set model translation
     modelTranslation.translate(-2, 0, -6);
 
     // Set the initial model transformation to
     // just the translation
     modelTransf = modelTranslation;
 
-    // Pass initial transformations to the renderers;
-    for (int i = 0; i < indicesUsed.size(); i++) {
-        toolRenderers[i]->setModelTransf(modelTransf);
-        envelopeRenderers[i]->setModelTransf(modelTransf);
-        moveRenderers[i]->setModelTransf(modelTransf);
-    }
+    // Initial envelopes
+    Envelope *env0 = addNewEnvelope_noInit();
+    Envelope *env1 = addNewEnvelope_noInit();
+    env1->setAdjacentEnvelope(env0);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 }
@@ -127,6 +76,72 @@ MainView::~MainView()
     makeCurrent();
 }
 
+/**
+ * @brief MainView::addNewEnvelope_noInit Creates a new envelope but does not initialize the renderers.
+ * Call MainView::initRenderers(Envelope *) for that.
+ * Separation required due to order of initialization of MainWindow and openGL.
+ * @return
+ */
+Envelope* MainView::addNewEnvelope_noInit() {
+    // Mark a new index as used.
+    // TODO replace with pooling system to avoid repeatedly allocating and freeing memory,
+    // though might not have that big of an impact, the option is there.
+    int idx = indicesUsed.size();
+    indicesUsed.append(true);
+
+    // Tools
+    Cylinder *cyl = new Cylinder();
+    cyl->initCylinder();
+    cylinders.append(cyl);
+    Drum *drum = new Drum();
+    drum->initDrum();
+    drums.append(drum);
+    ToolRenderer *toolRend = new ToolRenderer();
+    toolRend->setTool(cyl);
+    toolRend->setModelTransf(modelTransf);
+    toolRenderers.append(toolRend);
+
+    // Path and envelope
+    SimplePath path = SimplePath(Polynomial(0,0,0,0),
+                                 Polynomial(0,0,0,0),
+                                 Polynomial(0,0,1,0));
+    Envelope *env = new Envelope(idx, cyl, path);
+    env->initEnvelope();
+    envelopes.append(env);
+    EnvelopeRenderer *envRend = new EnvelopeRenderer(env);
+    envRend->setModelTransf(modelTransf);
+    envelopeRenderers.append(envRend);
+
+    // Move Renderer
+    MoveRenderer *moveRend = new MoveRenderer(&env->getToolMovement());
+    moveRend->setModelTransf(modelTransf);
+    moveRenderers.append(moveRend);
+
+    return env;
+}
+
+/**
+ * @brief MainView::initRenderers Initializes the renderers for a given envelope.
+ * Required due to order of initialization of MainWindow and openGL.
+ * @param env
+ */
+void MainView::initRenderers(const Envelope *env) {
+    int idx = env->getIndex();
+    toolRenderers[idx]->init(gl, &settings);
+    envelopeRenderers[idx]->init(gl, &settings);
+    moveRenderers[idx]->init(gl, &settings);
+}
+
+/**
+ * @brief MainView::addNewEnvelope Creates a new envelope
+ * @return
+ */
+Envelope* MainView::addNewEnvelope() {
+    Envelope *env = addNewEnvelope_noInit();
+    initRenderers(env);
+    return env;
+}
+
 // --- OpenGL initialization
 
 /**
@@ -168,12 +183,10 @@ void MainView::initializeGL()
     // This is the background color.
     glClearColor(0.37f, 0.42f, 0.45f, 0.0f);
 
-    // TODO: refactor
-    for (int i = 0; i < indicesUsed.size(); i++) {
-        toolRenderers[i]->init(gl,&settings);
-        moveRenderers[i]->init(gl,&settings);
-        envelopeRenderers[i]->init(gl,&settings);
-    }
+    initRenderers(envelopes[0]);
+    initRenderers(envelopes[1]);
+
+    // Trigger buffer update
     updateBuffers();
     updateToolTransf();
     updateAllUniforms = true;
@@ -346,10 +359,6 @@ void MainView::setScale(float scale)
     updateToolTransf();
     updateAllUniforms = true;
     update();
-}
-
-void MainView::updateToolModels() {
-    qDebug() << "Todo implement";
 }
 
 /**

@@ -4,7 +4,7 @@
  * @brief Cylinder::Cylinder Default constructor builds cylinder to preset size
  */
 Cylinder::Cylinder()
-    : r(0.5), angle(0.0)
+    : Tool(ToolType::Tool_Cylinder), r(0.5), angle(0.0)
 
 {
     this->a0 = r*tan(angle);
@@ -21,7 +21,7 @@ Cylinder::Cylinder()
  * @param position position of the center of the base of the cylinder
  */
 Cylinder::Cylinder(float baseRadius, float angle, float height, int sectors, QVector3D position)
-    : r(baseRadius), angle(angle)
+    : Tool(ToolType::Tool_Cylinder), r(baseRadius), angle(angle)
 {
     this->sectors = sectors;
     this->posit = position;

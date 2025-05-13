@@ -36,7 +36,6 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     // If the pool needs to increase, we do so, and keep track in the indicesUsed array for which objects are in use.
     // There are likely optimizations possible to shrink memory usage when possible, but not for now.
 
-    // TODO change updating of buffers, uniforms, and whatnot by setting a set of indices for each of them. Then in the paintGL call do a similar trick that is currently used for the updateUniformsRequired thing
     QSet<int> envelopeMeshUpdates;
     QSet<int> toolMeshUpdates;
     QSet<int> toolTransfUpdates;
@@ -63,6 +62,9 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
 
+    Envelope* addNewEnvelope_noInit();
+    void initRenderers(const Envelope *env);
+
 public:
     MainView(QWidget *parent = nullptr);
     ~MainView() override;
@@ -70,9 +72,10 @@ public:
     // Functions for widget input events
     void setRotation(int rotateX, int rotateY, int rotateZ);
     void setScale(float scale);
-    void updateToolModels();
-    void updateToolTransf();
+    void updateToolTransf(); //TODO remove need for this, and use the indicesUsed array to set toolTransfUpdates
     void updateBuffers();
+
+    Envelope *addNewEnvelope();
 
 protected:
     void initializeGL() override;

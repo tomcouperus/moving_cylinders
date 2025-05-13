@@ -2,6 +2,7 @@
 #define TOOL_H
 #include <QOpenGLDebugLogger>
 
+#include "tooltype.h"
 #include "../vertex.h"
 
 /**
@@ -10,6 +11,7 @@
 class Tool
 {
 protected:
+    ToolType toolType;
     float height = 2;
 
     float PI = acos(-1.0f);
@@ -23,7 +25,7 @@ protected:
     QVector3D perpVector = QVector3D(1.0,0.0,0.0); // a vector perpendicular to the axis
     QVector<Vertex> vertexArr;
 public:
-    Tool() : vertexArr(), sectors(50), height(2), posit(QVector3D(0,0,0)) {}
+    Tool(ToolType toolType) : toolType(toolType), vertexArr(), sectors(50), height(2), posit(QVector3D(0,0,0)) {}
 
     virtual void setSectors(int sectors) = 0;
     virtual void setHeight(float height) = 0;
@@ -45,5 +47,6 @@ public:
     inline QVector3D getVectorPerpToAxis() const {return perpVector; }
     inline int getSectors(){ return sectors; }
     inline QVector<Vertex> getVertexArr(){ return vertexArr; }
+    inline ToolType getType() { return toolType; }
 };
 #endif // TOOL_H
