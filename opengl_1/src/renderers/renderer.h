@@ -15,7 +15,7 @@ class Renderer {
 public:
     Renderer();
     Renderer(QOpenGLFunctions_4_1_Core *functions, Settings *settings);
-    virtual ~Renderer();
+    ~Renderer();
     void init(QOpenGLFunctions_4_1_Core *f, Settings *s);
 
     inline void setModelTransf(QMatrix4x4 modelTransf) { this->modelTransform = modelTransf; }

@@ -10,33 +10,9 @@ ToolRenderer::ToolRenderer()
 
 /**
  * @brief ToolRenderer::ToolRenderer Creates a new tool renderer with a cylinder.
- * @param cyl Cylinder.
+ * @param tool Tool.
  */
-ToolRenderer::ToolRenderer(Cylinder *cyl)
-{
-    tool = cyl;
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
-    sphere = Sphere(sphPosit, tool->getRadiusAt(tool->getA0()+settings->a()));
-    vertexArrSph.clear();
-    sphere.generateVertexArr(20, 20);
-    vertexArrSph = sphere.getVertexArr();
-    modelTransform.setToIdentity();
-}
-
-/**
- * @brief ToolRenderer::ToolRenderer Creates a new tool renderer with a drum.
- * @param drum Drum.
- */
-ToolRenderer::ToolRenderer(Drum *drum)
-{
-    tool = drum;
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
-    sphere = Sphere(sphPosit, tool->getRadiusAt(tool->getA0()+settings->a()));
-    vertexArrSph.clear();
-    sphere.generateVertexArr(20, 20);
-    vertexArrSph = sphere.getVertexArr();
-    modelTransform.setToIdentity();
-}
+ToolRenderer::ToolRenderer(Tool *tool) : tool(tool) {}
 
 /**
  * @brief ToolRenderer::~ToolRenderer Deconstructs the tool renderer.
@@ -67,44 +43,32 @@ void ToolRenderer::initShaders()
  */
 void ToolRenderer::initBuffers()
 {
-    vertexArrTool.clear();
-    vertexArrTool = tool->getVertexArr();
-
-    // Create a vertex array object
+    // Create a vertex array object and vertex buffer for the tool
     gl->glGenVertexArrays(1, &vaoTool);
     gl->glBindVertexArray(vaoTool);
-
-    // Create a vertex buffer object
     gl->glGenBuffers(1, &vboTool);
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboTool);
 
-    // Copy the vertex data to the VBO
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
-
     // Set the vertex attribute pointers
-    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
     gl->glEnableVertexAttribArray(0);
-    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
+    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
     gl->glEnableVertexAttribArray(1);
+    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
 
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
-    sphere.setPosition(sphPosit);
-    sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a()));
-    vertexArrSph.clear();
-    sphere.generateVertexArr(20, 20);
-    vertexArrSph = sphere.getVertexArr();
-
+    // Create a vertex array object and vertex buffer for the sphere
     gl->glGenVertexArrays(1, &vaoSph);
     gl->glBindVertexArray(vaoSph);
-
     gl->glGenBuffers(1, &vboSph);
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboSph);
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrSph.size() * sizeof(Vertex), vertexArrSph.data(), GL_STATIC_DRAW);
 
-    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+    // Set the vertex attribute pointers
     gl->glEnableVertexAttribArray(0);
-    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
+    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
     gl->glEnableVertexAttribArray(1);
+    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
+
+    // Unbind vertex array
+    gl->glBindVertexArray(0);
 }
 
 /**
@@ -113,8 +77,7 @@ void ToolRenderer::initBuffers()
 void ToolRenderer::updateBuffers()
 {
     qDebug()<< "ToolRenderer::updateBuffers";
-    vertexArrTool.clear();
-    vertexArrTool = tool->getVertexArr();
+    QVector<Vertex>& vertexArrTool = tool->getVertexArr();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboTool);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
@@ -122,9 +85,8 @@ void ToolRenderer::updateBuffers()
     QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
     sphere.setPosition(sphPosit);
     sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a()));
-    vertexArrSph.clear();
     sphere.generateVertexArr(20, 20);
-    vertexArrSph = sphere.getVertexArr();
+    QVector<Vertex>& vertexArrSph = sphere.getVertexArr();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboSph);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrSph.size() * sizeof(Vertex), vertexArrSph.data(), GL_STATIC_DRAW);
@@ -155,7 +117,7 @@ void ToolRenderer::paintGL()
         // Bind cylinder buffer
         gl->glBindVertexArray(vaoTool);
         // Draw cylinder
-        gl->glDrawArrays(GL_TRIANGLES,0,vertexArrTool.size());
+        gl->glDrawArrays(GL_TRIANGLES,0,tool->getVertexArr().size());
     }
 
     if (settings->showSpheres)
@@ -164,8 +126,10 @@ void ToolRenderer::paintGL()
         // Bind sphere buffer
         gl->glBindVertexArray(vaoSph);
         // Draw sphere
-        gl->glDrawArrays(GL_LINES,0,vertexArrSph.size());
+        gl->glDrawArrays(GL_LINES,0,sphere.getVertexArr().size());
     }
+
+    gl->glBindVertexArray(0);
     
     shader.release();
 }

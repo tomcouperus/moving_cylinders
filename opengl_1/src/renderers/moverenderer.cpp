@@ -42,21 +42,19 @@ void MoveRenderer::initShaders()
  */
 void MoveRenderer::initBuffers()
 {
-    vertexArrPath.clear();
-    vertexArrPath = move->getPathVertexArr();
-
+    // Create a vertex array object and vertex buffer for the path
     gl->glGenVertexArrays(1, &vaoPath);
     gl->glBindVertexArray(vaoPath);
-
     gl->glGenBuffers(1, &vboPath);
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboPath);
 
-    gl->glBufferData(GL_ARRAY_BUFFER, vertexArrPath.size() * sizeof(Vertex), vertexArrPath.data(), GL_STATIC_DRAW);
-
-    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+    // Set up the vertex attributes
     gl->glEnableVertexAttribArray(0);
-    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
+    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
     gl->glEnableVertexAttribArray(1);
+    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(3 * sizeof(GLfloat)));
+
+    gl->glBindVertexArray(0);
 }
 
 /**
@@ -64,8 +62,7 @@ void MoveRenderer::initBuffers()
  */
 void MoveRenderer::updateBuffers()
 {
-    vertexArrPath.clear();
-    vertexArrPath = move->getPathVertexArr();
+    QVector<Vertex>& vertexArrPath = move->getPathVertexArr();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboPath);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrPath.size() * sizeof(Vertex), vertexArrPath.data(), GL_STATIC_DRAW);
@@ -94,8 +91,10 @@ void MoveRenderer::paintGL()
     {
         qDebug() << "MoveRenderer::paintGL";
         gl->glBindVertexArray(vaoPath);
-        gl->glDrawArrays(GL_LINE_STRIP, 0, vertexArrPath.size());
-        gl->glBindVertexArray(0);
+        gl->glDrawArrays(GL_LINE_STRIP, 0, move->getPathVertexArr().size());
     }
+
+    gl->glBindVertexArray(0);
+
     shader.release();
 }

@@ -95,6 +95,9 @@ void EnvelopeRenderer::initBuffers()
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, xCoord));
     gl->glEnableVertexAttribArray(1);
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, rVal));
+
+    // Unbind vertex array
+    gl->glBindVertexArray(0);
 }
 
 /**
@@ -176,6 +179,8 @@ void EnvelopeRenderer::paintGL()
         // Draw normals
         gl->glDrawArrays(GL_LINES,0,envelope->getVertexArrNormals()[settings->timeIdx].size());
     }
+
+    gl->glBindVertexArray(0);
 
     shader.release();
 }

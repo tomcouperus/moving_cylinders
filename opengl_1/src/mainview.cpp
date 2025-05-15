@@ -25,6 +25,8 @@ MainView::MainView(QWidget *parent) : QOpenGLWidget(parent)
     Envelope *env0 = addNewEnvelope_noInit();
     Envelope *env1 = addNewEnvelope_noInit();
     env1->setAdjacentEnvelope(env0);
+    env1->update();
+    addNewEnvelope_noInit();
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 }
@@ -99,6 +101,7 @@ Envelope* MainView::addNewEnvelope_noInit() {
     ToolRenderer *toolRend = new ToolRenderer();
     toolRend->setTool(cyl);
     toolRend->setModelTransf(modelTransf);
+    toolRend->setProjTransf(projTransf);
     toolRenderers.append(toolRend);
 
     // Path and envelope
@@ -110,11 +113,13 @@ Envelope* MainView::addNewEnvelope_noInit() {
     envelopes.append(env);
     EnvelopeRenderer *envRend = new EnvelopeRenderer(env);
     envRend->setModelTransf(modelTransf);
+    envRend->setProjTransf(projTransf);
     envelopeRenderers.append(envRend);
 
     // Move Renderer
     MoveRenderer *moveRend = new MoveRenderer(&env->getToolMovement());
     moveRend->setModelTransf(modelTransf);
+    moveRend->setProjTransf(projTransf);
     moveRenderers.append(moveRend);
 
     return env;
@@ -130,6 +135,7 @@ void MainView::initRenderers(const Envelope *env) {
     toolRenderers[idx]->init(gl, &settings);
     envelopeRenderers[idx]->init(gl, &settings);
     moveRenderers[idx]->init(gl, &settings);
+    qDebug() << "Initialized renderers for envelope "+QString::number(env->getIndex());
 }
 
 /**
@@ -185,6 +191,7 @@ void MainView::initializeGL()
 
     initRenderers(envelopes[0]);
     initRenderers(envelopes[1]);
+    initRenderers(envelopes[2]);
 
     // Trigger buffer update
     updateBuffers();

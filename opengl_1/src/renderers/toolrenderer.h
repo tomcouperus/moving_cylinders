@@ -6,7 +6,6 @@
 #include "../tools/sphere.h"
 #include "../tools/cylinder.h"
 #include "../tools/drum.h"
-#include "envelope.h"
 
 /**
  * @brief The ToolRenderer class is a renderer for the tool.
@@ -16,12 +15,10 @@ class ToolRenderer : public Renderer
     Tool *tool;
     GLuint vaoTool;
     GLuint vboTool;
-    QVector<Vertex> vertexArrTool;
 
     Sphere sphere;
     GLuint vaoSph;
     GLuint vboSph;
-    QVector<Vertex> vertexArrSph;
 
     QOpenGLShaderProgram shader;
 
@@ -29,6 +26,7 @@ class ToolRenderer : public Renderer
 
 public:
     ToolRenderer();
+    ToolRenderer(Tool *tool);
     ToolRenderer(Cylinder *cylinder);
     ToolRenderer(Drum *drum);
     ~ToolRenderer();

@@ -13,7 +13,6 @@ class MoveRenderer  : public Renderer
 
     GLuint vaoPath;
     GLuint vboPath;
-    QVector<Vertex> vertexArrPath;
 
     QOpenGLShaderProgram shader;
 

@@ -36,7 +36,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>3</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="RenderTab">
           <attribute name="title">
@@ -335,6 +335,13 @@
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="newEnvelopeButton">
+             <property name="text">
+              <string>New Envelope</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

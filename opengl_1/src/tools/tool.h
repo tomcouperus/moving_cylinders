@@ -46,7 +46,7 @@ public:
     inline QVector3D getAxisVector() const {return axisVector.normalized(); }
     inline QVector3D getVectorPerpToAxis() const {return perpVector; }
     inline int getSectors(){ return sectors; }
-    inline QVector<Vertex> getVertexArr(){ return vertexArr; }
+    inline QVector<Vertex>& getVertexArr(){ return vertexArr; }
     inline ToolType getType() { return toolType; }
 };
 #endif // TOOL_H

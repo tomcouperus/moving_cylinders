@@ -37,6 +37,8 @@ class MainWindow : public QMainWindow {
   void on_constraintA1SelectBox_currentIndexChanged(int index);
   void on_tanContCheckBox_toggled(bool checked);
 
+  void on_newEnvelopeButton_clicked();
+
   // Tool menu
   void on_orientVector_1_returnPressed();
   void on_orientVector_2_returnPressed();
@@ -81,12 +83,12 @@ class MainWindow : public QMainWindow {
   void on_TimeSlider_sliderMoved(int value);
   void on_aSlider_sliderMoved(int value);
 
-  void on_ResetRotationButton_clicked(bool checked);
+  void on_ResetRotationButton_clicked();
   void on_RotationDialX_sliderMoved(int value);
   void on_RotationDialY_sliderMoved(int value);
   void on_RotationDialZ_sliderMoved(int value);
 
-  void on_ResetScaleButton_clicked(bool checked);
+  void on_ResetScaleButton_clicked();
   void on_ScaleSlider_sliderMoved(int value);
 };
 

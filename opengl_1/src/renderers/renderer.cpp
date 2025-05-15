@@ -3,7 +3,9 @@
 /**
  * @brief Renderer::Renderer Creates a new renderer.
  */
-Renderer::Renderer() : gl(nullptr) {}
+Renderer::Renderer() : gl(nullptr), settings(nullptr) {}
+
+Renderer::Renderer(QOpenGLFunctions_4_1_Core *functions, Settings *settings) : gl(functions), settings(settings){}
 
 /**
  * @brief Renderer::~Renderer Deconstructs the renderer by deleting all shaders.

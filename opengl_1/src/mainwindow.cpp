@@ -205,6 +205,19 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
     ui->mainView->update();
 }
 
+void MainWindow::on_newEnvelopeButton_clicked() {
+    Envelope *env = ui->mainView->addNewEnvelope();
+    int idx = env->getIndex();
+    QString name = "Envelope "+QString::number(idx);
+    ui->envelopeSelectBox->addItem(name);
+    ui->constraintA0SelectBox->addItem(name);
+    ui->constraintA1SelectBox->addItem(name);
+
+    QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
+    ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->update();
+}
 
 /***********************************************************/
 /************************ Tool Menu ************************/
@@ -791,10 +804,8 @@ void MainWindow::on_aSlider_sliderMoved(int value) {
 
 /**
  * @brief MainWindow::on_ResetRotationButton_clicked Resets the rotation.
- * @param checked Unused.
  */
-void MainWindow::on_ResetRotationButton_clicked(bool checked) {
-  Q_UNUSED(checked)
+void MainWindow::on_ResetRotationButton_clicked() {
   ui->RotationDialX->setValue(0);
   ui->RotationDialY->setValue(0);
   ui->RotationDialZ->setValue(0);
@@ -833,10 +844,8 @@ void MainWindow::on_RotationDialZ_sliderMoved(int value) {
 
 /**
  * @brief MainWindow::on_ResetScaleButton_clicked Resets the scale factor.
- * @param checked Unused.
  */
-void MainWindow::on_ResetScaleButton_clicked(bool checked) {
-  Q_UNUSED(checked)
+void MainWindow::on_ResetScaleButton_clicked() {
   ui->ScaleSlider->setValue(100);
   ui->mainView->setScale(1);
 }

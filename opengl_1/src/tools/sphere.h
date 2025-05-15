@@ -17,7 +17,7 @@ public:
     Sphere() : position(QVector3D(0, 0, 0)), radius(1) {}
     Sphere(QVector3D position, float radius) : position(position), radius(radius) {}
 
-    inline QVector<Vertex> getVertexArr() { return vertexArr; }
+    inline QVector<Vertex>& getVertexArr() { return vertexArr; }
     inline QVector3D getPosition() { return position; }
     inline float getRadius() { return radius; }
     inline void setPosition(QVector3D position) { this->position = position; }
