@@ -178,6 +178,11 @@ QVector3D Envelope::getEnvelopeDtAt(float t, float a)
     return getPathDtAt(t) + a * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
 }
 
+QVector3D Envelope::getEnvelopeDt2At(float t, float a)
+{
+    return getPathDt2At(t) + a * getAxisDt2At(t) + getToolRadiusAt(a) * getNormalDt2At(t, a);
+}
+
 /**
  * @brief Envelope::computeToolCenters Computes the vertex array of tool centers.
  */
@@ -340,17 +345,85 @@ QVector3D Envelope::getNormalDtAt(float t, float a)
     return MathUtility::normalVectorDerivative(n, nt);
 }
 
+QVector3D Envelope::getNormalDt2At(float t, float a)
+{
+    QVector3D sa = getAxisAt(t);
+    QVector3D sat = getAxisDtAt(t);
+    QVector3D satt = getAxisDt2At(t);
+    QVector3D st = getPathDtAt(t) + a * getAxisDtAt(t);
+    QVector3D stt = getPathDt2At(t) + a * getAxisDt2At(t);
+    QVector3D sttt = getPathDt3At(t) + a * getAxisDt3At(t);
+    QVector3D sNormal = QVector3D::crossProduct(sa, st);
+    QVector3D sNormal_t = QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt);
+    QVector3D sNormal_tt = QVector3D::crossProduct(satt, st) + QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sa, sttt);
+    sNormal_tt = MathUtility::normalVectorDerivative2(sNormal, sNormal_t, sNormal_tt);
+    sNormal_t = MathUtility::normalVectorDerivative(sNormal, sNormal_t);
+    sNormal.normalize();
+
+    float ra = getToolRadiusDaAt(a);
+
+    float E = QVector3D::dotProduct(sa, sa);
+    float Et = 2 * QVector3D::dotProduct(sa, sat);
+    float Ett = 2 * (QVector3D::dotProduct(sat, sat) + QVector3D::dotProduct(sa, satt));
+    float F = QVector3D::dotProduct(sa, st);
+    float Ft = QVector3D::dotProduct(sat, st) + QVector3D::dotProduct(sa, stt);
+    float Ftt = QVector3D::dotProduct(satt, st) + QVector3D::dotProduct(sat, stt) + QVector3D::dotProduct(sat, stt) + QVector3D::dotProduct(sa, sttt);
+    float G = QVector3D::dotProduct(st, st);
+    float Gt = 2 * QVector3D::dotProduct(st, stt);
+    float Gtt = 2 * (QVector3D::dotProduct(stt, stt) + QVector3D::dotProduct(st, sttt));
+    float EG_FF = E * G - F * F;
+    float EG_FF_2 = EG_FF * EG_FF;
+    float EG_FF_t = Et * G + E * Gt - 2 * F * Ft;
+    float EG_FF_2_t = 2 * EG_FF * EG_FF_t;
+    float EG_FF_tt = Ett * G + Et * Gt + Et * Gt + E * Gtt - 2 * (Ft * Ft + F * Ftt);
+
+    float m11 = G / EG_FF;
+    float m11_t = (EG_FF * Gt - G * EG_FF_t) / EG_FF_2;
+    float m11_tt = (EG_FF_2 * ((EG_FF_t * Gt + EG_FF * Gtt) - (Gt * EG_FF_t + G * EG_FF_tt)) - (EG_FF * Gt - G * EG_FF_t) * EG_FF_2_t) / (EG_FF_2 * EG_FF_2);
+    float m21 = -F / EG_FF;
+    float m21_t = -(EG_FF * Ft - F * EG_FF_t) / EG_FF_2;
+    float m21_tt = -(EG_FF_2 * ((EG_FF_t * Ft + EG_FF * Ftt) - (Ft * EG_FF_t + F * EG_FF_tt)) - (EG_FF * Ft - F * EG_FF_t) * EG_FF_2_t) / (EG_FF_2 * EG_FF_2);
+
+    float alpha = -m11 * ra;
+    float alpha_t = -m11_t * ra;
+    float alpha_tt = -m11_tt * ra;
+    float beta = -m21 * ra;
+    float beta_t = -m21_t * ra;
+    float beta_tt = -m21_tt * ra;
+    float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(1 - ra * ra * m11);
+    float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * sqrt(1 - ra * ra * m11));
+    float gamma_tt = 0;
+
+    QVector3D n = alpha * sa +
+                beta * st +
+                gamma * sNormal;
+    QVector3D nt = alpha * sat + alpha_t * sa +
+                 beta * stt + beta_t * st +
+                 gamma * sNormal_t + gamma_t * sNormal;
+    QVector3D ntt = alpha_t * sat + alpha * satt + alpha_tt * sa + alpha_t * sat +
+                  beta_t * stt + beta * sttt + beta_tt * st + beta_t * st +
+                  gamma_t * sNormal_t + gamma * sNormal_tt + gamma_tt * sNormal + gamma_t * sNormal_t;
+    return MathUtility::normalVectorDerivative2(n, nt, ntt);
+}
+
 /**
  * @brief Envelope::getPathAt Returns the path of the tool movement at a given time.
  * @param t Time.
  * @return Path at time t.
  */
 QVector3D Envelope::getPathAt(float t){
-    if (isPositContinuous()){
-        // use positional continuity formula
-        return adjEnv->getEnvelopeAt(t, 1) -
-               getToolRadiusAt(0) * getNormalAt(t, 0);
-    } else {
+    if (isTanContinuous())
+    {
+        return adjEnv->getEnvelopeAt(t, 1) - getToolRadiusAt(0) * adjEnv->getNormalAt(t, 1);
+    }
+    else if (isPositContinuous())
+    {
+        // TODO only works for cylindrical tool, due to the angle between the normal and the axis. General should be possible though
+        QVector3D normal = QVector3D::crossProduct(getAxisAt(t), adjEnv->getEnvelopeDtAt(t, 1)).normalized();
+        return adjEnv->getEnvelopeAt(t, 1) - getToolRadiusAt(0) * normal;
+    }
+    else
+    {
         return toolMovement.getPath().getPathAt(t);
     }
 }
@@ -361,12 +434,25 @@ QVector3D Envelope::getPathAt(float t){
  * @return Path tangent at time t.
  */
 QVector3D Envelope::getPathDtAt(float t){
-    if (isPositContinuous()){
-        // use positional continuity formula
-        return adjEnv->getEnvelopeDtAt(t, 1); /*+
-               getToolRadiusAt(0) * getNormalDtAt(t, 0);*/
-    } else {
-        return toolMovement.getPath().getTangentAt(t);
+    if (isTanContinuous())
+    {
+        return adjEnv->getEnvelopeDtAt(t, 1) - getToolRadiusAt(0) * adjEnv->getNormalDtAt(t, 1);
+    }
+    else if (isPositContinuous())
+    {
+        // TODO only works for cylindrical tool, due to the angle between the normal and the axis. General should be possible though
+        QVector3D axis = getAxisAt(t);
+        QVector3D axis_t = getAxisDtAt(t);
+        QVector3D adjEnv_t = adjEnv->getEnvelopeDtAt(t, 1);
+        QVector3D adjEnv_tt = adjEnv->getEnvelopeDt2At(t, 1);
+        QVector3D normal = QVector3D::crossProduct(axis, adjEnv_t);
+        QVector3D normal_t = QVector3D::crossProduct(axis_t, adjEnv_t) + QVector3D::crossProduct(axis, adjEnv_tt);
+        normal_t = MathUtility::normalVectorDerivative(normal, normal_t);
+        return adjEnv_t - getToolRadiusAt(0) * normal_t;
+    }
+    else
+    {
+        return toolMovement.getPath().getDerivativeAt(t);
     }
 }
 
@@ -376,14 +462,18 @@ QVector3D Envelope::getPathDtAt(float t){
  * @return Path acceleration at time t.
  */
 QVector3D Envelope::getPathDt2At(float t){
-    if (isPositContinuous())
-    {
-        return adjEnv->getPathDt2At(t); // TODO this is wrong, but will do for now
-    }
-    else
-    {
-        return toolMovement.getPath().getAccelerationAt(t);
-    }
+    // Need to check if these are required for chaining position continuous envelopes
+    return toolMovement.getPath().getDerivative2At(t);
+}
+
+/**
+ * @brief Envelope::getPathDt3At Returns the third derivative of path of the tool movement at a given time.
+ * @param t Time.
+ * @return Path third derivative at time t.
+ */
+QVector3D Envelope::getPathDt3At(float t){
+    // Need to check if these are required for chaining position continuous envelopes
+    return toolMovement.getPath().getDerivative3At(t);
 }
 
 QQuaternion Envelope::calcAxisRotationAt(float t)
@@ -455,6 +545,13 @@ QVector3D Envelope::getAxisDt2At(float t)
     // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
     QVector3D axis_tt = toolMovement.getAxisDt2At(t);
     return axis_tt;
+}
+
+QVector3D Envelope::getAxisDt3At(float t)
+{
+    // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
+    QVector3D axis_ttt = toolMovement.getAxisDt3At(t);
+    return axis_ttt;
 }
 
 float Envelope::getToolRadiusAt(float a) {

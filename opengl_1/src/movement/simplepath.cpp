@@ -46,11 +46,11 @@ void SimplePath::updateVertexArr()
 }
 
 /**
- * @brief SimplePath::getTangentAt Returns the tangent at a given time.
+ * @brief SimplePath::getDerivativeAt Returns the tangent at a given time.
  * @param t Time.
  * @return Tangent at time t.
 */
-QVector3D SimplePath::getTangentAt(float t)
+QVector3D SimplePath::getDerivativeAt(float t)
 {
     QVector3D tangent = QVector3D();
     tangent.setX(x.getDerivativeAt(t));
@@ -59,11 +59,19 @@ QVector3D SimplePath::getTangentAt(float t)
     return tangent;
 }
 
-QVector3D SimplePath::getAccelerationAt(float t) {
+QVector3D SimplePath::getDerivative2At(float t) {
     QVector3D acc = QVector3D();
     acc.setX(x.getDerivative2At(t));
     acc.setY(y.getDerivative2At(t));
     acc.setZ(z.getDerivative2At(t));
+    return acc;
+}
+
+QVector3D SimplePath::getDerivative3At(float t) {
+    QVector3D acc = QVector3D();
+    acc.setX(x.getDerivative3At(t));
+    acc.setY(y.getDerivative3At(t));
+    acc.setZ(z.getDerivative3At(t));
     return acc;
 }
 

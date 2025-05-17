@@ -35,6 +35,7 @@ public:
     QVector3D getAxisAt(float time);
     QVector3D getAxisDtAt(float time);
     QVector3D getAxisDt2At(float time);
+    QVector3D getAxisDt3At(float time);
 
     QVector3D getRotationVectorAt(float time);
 

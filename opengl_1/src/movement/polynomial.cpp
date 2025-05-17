@@ -20,17 +20,6 @@ Polynomial::Polynomial(float a, float b, float c, float d)
 {}
 
 /**
- * @brief Polynomial::getValAt Returns the value of the polynomial at a given time.
- * @param t The time.
- * @return The value of the polynomial at time t.
-*/
-float Polynomial::getValAt(float t)
-{
-    float pt = a*t*t*t + b*t*t + c*t + d;
-    return pt;
-}
-
-/**
  * @brief Polynomial::setParameters Sets the parameters of the polynomial.
  * @param a Coefficient for t³.
  * @param b Coefficient for t².
@@ -46,17 +35,29 @@ void Polynomial::setParameters(float a, float b, float c, float d)
 }
 
 /**
+ * @brief Polynomial::getValAt Returns the value of the polynomial at a given time.
+ * @param t The time.
+ * @return The value of the polynomial at time t.
+*/
+float Polynomial::getValAt(float t)
+{
+    return a*t*t*t + b*t*t + c*t + d;
+}
+
+/**
  * @brief Polynomial::getDerivativeAt Returns the value of the derivative of the polynomial at a given time.
  * @param t The time.
  * @return The value of the derivative of the polynomial at time t.
 */
 float Polynomial::getDerivativeAt(float t)
 {
-    float pt = 3*a*t*t + 2*b*t + c;
-    return pt;
+    return 3*a*t*t + 2*b*t + c;
 }
 
 float Polynomial::getDerivative2At(float t) {
-    float ddp = 6*a*t + 2*b;
-    return ddp;
+    return 6*a*t + 2*b;
+}
+
+float Polynomial::getDerivative3At(float t) {
+    return 6*a;
 }

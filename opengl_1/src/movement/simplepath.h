@@ -19,8 +19,9 @@ public:
 
     QVector3D getPathAt(float t) override;
     void updateVertexArr() override;
-    QVector3D getTangentAt(float t);
-    QVector3D getAccelerationAt(float t);
+    QVector3D getDerivativeAt(float t);
+    QVector3D getDerivative2At(float t);
+    QVector3D getDerivative3At(float t);
 
     inline void setX(Polynomial x) {this->x = x; updateVertexArr();}
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}

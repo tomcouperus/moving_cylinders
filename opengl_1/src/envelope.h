@@ -42,6 +42,7 @@ public:
     void computeEnvelope();
     QVector3D getEnvelopeAt(float t, float a);
     QVector3D getEnvelopeDtAt(float t, float a);
+    QVector3D getEnvelopeDt2At(float t, float a);
 
     void computeToolCenters();
 
@@ -50,15 +51,18 @@ public:
     void computeNormals();
     QVector3D getNormalAt(float t, float a);
     QVector3D getNormalDtAt(float t, float a);
+    QVector3D getNormalDt2At(float t, float a);
 
     QVector3D getPathAt(float t);
     QVector3D getPathDtAt(float t);
     QVector3D getPathDt2At(float t);
+    QVector3D getPathDt3At(float t);
 
     QQuaternion calcAxisRotationAt(float t);
     QVector3D getAxisAt(float t);
     QVector3D getAxisDtAt(float t);
     QVector3D getAxisDt2At(float t);
+    QVector3D getAxisDt3At(float t);
 
     float getToolRadiusAt(float a);
     float getToolRadiusDaAt(float a);
