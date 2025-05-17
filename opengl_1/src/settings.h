@@ -27,6 +27,8 @@ typedef struct Settings {
     int aSectors = 20;
     int tSectors = 50;
 
+    const size_t NUM_ENVELOPES = 4;
+
     inline float a() const { return (float) aIdx / aSectors; }
     inline float t() const { return (float) timeIdx / tSectors; }
 

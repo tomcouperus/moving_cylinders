@@ -16,13 +16,9 @@ MainWindow::MainWindow(QWidget *parent)
   ui->orientVector_2->setValidator(new QRegularExpressionValidator(
       QRegularExpression("\\(\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+),\\-?(\\d*\\.?\\d+)\\)")));
 
-  // Populate the envelope select dropdown box here
-  for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
-      QString text = "Envelope "+QString::number(i);
-      ui->envelopeSelectBox->addItem(text);
-      ui->constraintA0SelectBox->addItem(text);
-      ui->constraintA1SelectBox->addItem(text);
-  }
+  ui->envelopeSelectBox->setItemData(0, QVariant(-1));
+  ui->constraintA0SelectBox->setItemData(0, QVariant(-1));
+  ui->constraintA1SelectBox->setItemData(0, QVariant(-1));
 
   on_envelopeSelectBox_currentIndexChanged(0);
 }
@@ -32,6 +28,28 @@ MainWindow::MainWindow(QWidget *parent)
  */
 MainWindow::~MainWindow() { delete ui; }
 
+/**
+ * @brief MainWindow::addEnvToSelectorMenus Adds an envelope to all the selector menus
+ * @param env
+ */
+void MainWindow::addEnvToSelectorMenus(const Envelope *env) {
+    int idx = env->getIndex();
+    QString text = "Envelope "+QString::number(idx);
+    QVariant data = QVariant(idx);
+
+    ui->envelopeSelectBox->addItem(text, data);
+    ui->constraintA0SelectBox->addItem(text, data);
+    ui->constraintA1SelectBox->addItem(text, data);
+}
+
+
+void MainWindow::removeEnvFromSelectorMenus(const Envelope *env) {
+    QVariant data = QVariant(env->getIndex());
+    int i = ui->envelopeSelectBox->findData(data);
+    ui->envelopeSelectBox->removeItem(i);
+    ui->constraintA0SelectBox->removeItem(i);
+    ui->constraintA1SelectBox->removeItem(i);
+}
 
 /**
  * @brief SetComboBoxItemEnabled Changes the visibility of an item in a combobox. Thanks to https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox/62261745
@@ -50,6 +68,17 @@ void MainWindow::SetComboBoxItemEnabled(QComboBox *comboBox, int index, bool ena
     item->setEnabled(enabled);
 }
 
+/**
+ * @brief SetComboBoxItemEnabled Changes the visibility of an item in a combobox. Thanks to https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox/62261745
+ * @param comboBox
+ * @param env
+ * @param enabled
+ */
+void MainWindow::SetComboBoxItemEnabled(QComboBox *comboBox, const Envelope *env, bool enabled) {
+    int idx = comboBox->findData(QVariant(env->getIndex()));
+    SetComboBoxItemEnabled(comboBox, idx, enabled);
+}
+
 QString MainWindow::QVectorToString(const QVector3D &v) {
     return QString("(%1,%2,%3)").arg(v.x()).arg(v.y()).arg(v.z());
 }
@@ -59,7 +88,7 @@ QString MainWindow::QVectorToString(const QVector3D &v) {
 /***********************************************************/
 
 void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
-    int idx = index-1;
+    int idx = ui->envelopeSelectBox->itemData(index).value<int>();
     int prevIdx = ui->mainView->settings.selectedIdx;
     qDebug() << "Selected envelope" << idx;
     ui->mainView->settings.selectedIdx = idx;
@@ -68,10 +97,10 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
     // Unhide options from constraint selectors
     QVector<Envelope *> envelopes = ui->mainView->envelopes;
     if (prevIdx != -1) {
-        SetComboBoxItemEnabled(ui->constraintA0SelectBox, prevIdx+1, true);
-        SetComboBoxItemEnabled(ui->constraintA1SelectBox, prevIdx+1, true);
+        SetComboBoxItemEnabled(ui->constraintA0SelectBox, envelopes[prevIdx], true);
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[prevIdx], true);
         if (envelopes[prevIdx]->isPositContinuous()) {
-            SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[prevIdx]->getAdjEnvelope()->getIndex()+1, true);
+            SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[prevIdx]->getAdjEnvelope(), true);
         }
     }
 
@@ -92,8 +121,8 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         // ** Constraint select boxes. Also hide the current envelope and all its dependents
         QList<int> dependents = envelopes[idx]->getAllDependents().values();
         for (int i = 0; i < dependents.size(); i++) {
-            SetComboBoxItemEnabled(ui->constraintA0SelectBox, dependents[i]+1, false);
-            SetComboBoxItemEnabled(ui->constraintA1SelectBox, dependents[i]+1, false);
+            SetComboBoxItemEnabled(ui->constraintA0SelectBox, envelopes[dependents[i]], false);
+            SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[dependents[i]], false);
         }
         int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
         ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
@@ -158,27 +187,29 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
     Envelope *envelope = ui->mainView->envelopes[idx];
     // Unhide previous adjacent envelope in a1 constraint
     if (envelope->isPositContinuous()) {
-        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjEnvelope()->getIndex()+1, true);
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjEnvelope(), true);
     }
-
-    // Hide new adjacent envelope in a1 constraint, or if its no longer adjacent to any, disable the tangent and a1 constraint
-    SetComboBoxItemEnabled(ui->constraintA1SelectBox, index, index == 0);
-    ui->tanContCheckBox->setEnabled(index != 0);
-    ui->constraintA1SelectBox->setEnabled(index != 0);
-    // If adjacent, disable the path menu
-    ui->SettingsTabMenu->setTabEnabled(3, index == 0);
 
     // Set adjacent envelope
     Envelope *adjEnv = (index == 0) ? nullptr : ui->mainView->envelopes[index-1];
     if (envelope->getAdjEnvelope() != adjEnv) {
         envelope->setAdjacentEnvelope(adjEnv);
-        // TODO dependency check
+
+
         QSet<int> depEnvs = envelope->getAllDependents();
         ui->mainView->envelopeMeshUpdates += depEnvs;
         ui->mainView->toolTransfUpdates += depEnvs;
         ui->mainView->update();
     }
 
+    // Hide new adjacent envelope in a1 constraint, or if its no longer adjacent to any, disable the tangent and a1 constraint
+    if (adjEnv != nullptr) {
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, adjEnv, false);
+    }
+    ui->tanContCheckBox->setEnabled(adjEnv != nullptr);
+    ui->constraintA1SelectBox->setEnabled(adjEnv != nullptr);
+    // If adjacent, disable the path menu
+    ui->SettingsTabMenu->setTabEnabled(3, adjEnv == nullptr);
 }
 
 void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
@@ -207,15 +238,18 @@ void MainWindow::on_tanContCheckBox_toggled(bool checked){
 
 void MainWindow::on_newEnvelopeButton_clicked() {
     Envelope *env = ui->mainView->addNewEnvelope();
+    if (env == nullptr) {
+        qDebug() << "Maximum number of envelopes reached";
+        return;
+    }
     int idx = env->getIndex();
-    QString name = "Envelope "+QString::number(idx);
-    ui->envelopeSelectBox->addItem(name);
-    ui->constraintA0SelectBox->addItem(name);
-    ui->constraintA1SelectBox->addItem(name);
+    addEnvToSelectorMenus(env);
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->envelopeMeshUpdates += depEnvs;
+    ui->mainView->toolMeshUpdates += depEnvs;
     ui->mainView->toolTransfUpdates += depEnvs;
+    ui->mainView->updateAllUniforms = true;
     ui->mainView->update();
 }
 
@@ -738,11 +772,14 @@ void MainWindow::on_fracReflSpinBox_valueChanged(double value){
  */
 void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
     qDebug() << "Axis sectors changed";
+    qDebug() << "TODO change to dynamic";
     ui->aSlider->setMaximum(value);
     ui->mainView->cylinders[0]->setSectors(value);
     ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
+    ui->mainView->envelopes[0]->setSectorsA(value);
     ui->mainView->cylinders[1]->setSectors(value);
     ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
+    ui->mainView->envelopes[1]->setSectorsA(value);
 
     ui->mainView->updateBuffers();
     ui->mainView->updateToolTransf();
@@ -755,6 +792,7 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
  */
 void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
     qDebug() << "Time sectors changed";
+    qDebug() << "TODO change to dynamic";
     ui->TimeSlider->setMaximum(value);
     SimplePath &path = ui->mainView->envelopes[0]->getToolMovement().getPath();
 

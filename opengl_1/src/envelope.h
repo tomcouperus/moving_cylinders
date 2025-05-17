@@ -67,6 +67,9 @@ public:
     float getToolRadiusAt(float a);
     float getToolRadiusDaAt(float a);
 
+    inline void setSectorsA(int n) { sectorsA = n; }
+    inline void setSectorsT(int n) { sectorsT = n; }
+
 
     void registerDependent(Envelope *dependent);
     void deregisterDependent(Envelope *dependent);

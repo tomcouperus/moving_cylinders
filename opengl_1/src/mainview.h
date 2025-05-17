@@ -62,9 +62,6 @@ class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
     // Transformation matrix for the projection
     QMatrix4x4 projTransf;
 
-    Envelope* addNewEnvelope_noInit();
-    void initRenderers(const Envelope *env);
-
 public:
     MainView(QWidget *parent = nullptr);
     ~MainView() override;
@@ -76,6 +73,7 @@ public:
     void updateBuffers();
 
     Envelope *addNewEnvelope();
+    void deleteEnvelope(Envelope *env);
 
 protected:
     void initializeGL() override;

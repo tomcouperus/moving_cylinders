@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QErrorMessage>
 #include <QComboBox>
+#include "envelope.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,7 +27,10 @@ class MainWindow : public QMainWindow {
 
  private:
   void SetComboBoxItemEnabled(QComboBox *comboBox, int index, bool enabled);
+  void SetComboBoxItemEnabled(QComboBox *comboBox, const Envelope *env, bool enabled);
   QString QVectorToString(const QVector3D &v);
+  void addEnvToSelectorMenus(const Envelope *env);
+  void removeEnvFromSelectorMenus(const Envelope *env);
 
  private slots:
 

@@ -3,19 +3,13 @@
 /**
  * @brief EnvelopeRenderer::EnvelopeRenderer Creates a new envelope renderer.
  */
-EnvelopeRenderer::EnvelopeRenderer()
-{
-    envelope = nullptr;
-}
+EnvelopeRenderer::EnvelopeRenderer() : envelope(nullptr) {}
 
 /**
  * @brief EnvelopeRenderer::EnvelopeRenderer Creates a new envelope renderer with an envelope.
  * @param env Envelope.
  */
-EnvelopeRenderer::EnvelopeRenderer(Envelope *env)
-{
-    envelope = env;
-}
+EnvelopeRenderer::EnvelopeRenderer(Envelope *env) : envelope(env) {}
 
 /**
  * @brief EnvelopeRenderer::~EnvelopeRenderer Destroys the envelope renderer.

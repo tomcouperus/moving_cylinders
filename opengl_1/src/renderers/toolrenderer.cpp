@@ -3,7 +3,7 @@
 /**
  * @brief ToolRenderer::ToolRenderer Creates a new tool renderer.
  */
-ToolRenderer::ToolRenderer()
+ToolRenderer::ToolRenderer() : tool(nullptr)
 {
     modelTransform.setToIdentity();
 }

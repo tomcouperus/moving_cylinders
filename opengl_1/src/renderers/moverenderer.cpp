@@ -3,19 +3,13 @@
 /**
  * @brief MoveRenderer::MoveRenderer Creates a new move renderer.
  */
-MoveRenderer::MoveRenderer()
-{
-    this->move = nullptr;
-}
+MoveRenderer::MoveRenderer() : move(nullptr) {}
 
 /**
  * @brief MoveRenderer::MoveRenderer Creates a new move renderer with a movement.
  * @param move Movement.
  */
-MoveRenderer::MoveRenderer(CylinderMovement *move)
-{
-    this->move = move;
-}
+MoveRenderer::MoveRenderer(CylinderMovement *move) : move(move) {}
 
 /**
  * @brief MoveRenderer::~MoveRenderer Destructor of the move renderer.
