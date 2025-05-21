@@ -170,17 +170,17 @@ void Envelope::computeEnvelope()
 
 QVector3D Envelope::getEnvelopeAt(float t, float a)
 {
-    return getPathAt(t) + a * getAxisAt(t) + getToolRadiusAt(a) * getNormalAt(t, a);
+    return getPathAt(t) + a * tool->getHeight() * getAxisAt(t) + getToolRadiusAt(a) * getNormalAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDtAt(float t, float a)
 {
-    return getPathDtAt(t) + a * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
+    return getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDt2At(float t, float a)
 {
-    return getPathDt2At(t) + a * getAxisDt2At(t) + getToolRadiusAt(a) * getNormalDt2At(t, a);
+    return getPathDt2At(t) + a * tool->getHeight() * getAxisDt2At(t) + getToolRadiusAt(a) * getNormalDt2At(t, a);
 }
 
 /**
@@ -286,8 +286,8 @@ void Envelope::computeNormals(){
 
 QVector3D Envelope::getNormalAt(float t, float a)
 {
-    QVector3D sa = getAxisAt(t);
-    QVector3D st = getPathDtAt(t) + a * getAxisDtAt(t);
+    QVector3D sa = tool->getHeight() * getAxisAt(t);
+    QVector3D st = getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st).normalized();
 
     float ra = getToolRadiusDaAt(a);
@@ -310,10 +310,10 @@ QVector3D Envelope::getNormalAt(float t, float a)
 
 QVector3D Envelope::getNormalDtAt(float t, float a)
 {
-    QVector3D sa = getAxisAt(t);
-    QVector3D sat = getAxisDtAt(t);
-    QVector3D st = getPathDtAt(t) + a * getAxisDtAt(t);
-    QVector3D stt = getPathDt2At(t) + a * getAxisDt2At(t);
+    QVector3D sa = tool->getHeight() * getAxisAt(t);
+    QVector3D sat = tool->getHeight() * getAxisDtAt(t);
+    QVector3D st = getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t);
+    QVector3D stt = getPathDt2At(t) + a * tool->getHeight() * getAxisDt2At(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st).normalized();
     QVector3D sNormal_t = MathUtility::normalVectorDerivative(QVector3D::crossProduct(sa, st), QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt));
 
@@ -347,12 +347,12 @@ QVector3D Envelope::getNormalDtAt(float t, float a)
 
 QVector3D Envelope::getNormalDt2At(float t, float a)
 {
-    QVector3D sa = getAxisAt(t);
-    QVector3D sat = getAxisDtAt(t);
-    QVector3D satt = getAxisDt2At(t);
-    QVector3D st = getPathDtAt(t) + a * getAxisDtAt(t);
-    QVector3D stt = getPathDt2At(t) + a * getAxisDt2At(t);
-    QVector3D sttt = getPathDt3At(t) + a * getAxisDt3At(t);
+    QVector3D sa = tool->getHeight() * getAxisAt(t);
+    QVector3D sat = tool->getHeight() * getAxisDtAt(t);
+    QVector3D satt = tool->getHeight() * getAxisDt2At(t);
+    QVector3D st = getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t);
+    QVector3D stt = getPathDt2At(t) + a * tool->getHeight() * getAxisDt2At(t);
+    QVector3D sttt = getPathDt3At(t) + a * tool->getHeight() * getAxisDt3At(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st);
     QVector3D sNormal_t = QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt);
     QVector3D sNormal_tt = QVector3D::crossProduct(satt, st) + QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sa, sttt);
@@ -392,7 +392,9 @@ QVector3D Envelope::getNormalDt2At(float t, float a)
     float beta_tt = -m21_tt * ra;
     float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(1 - ra * ra * m11);
     float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * sqrt(1 - ra * ra * m11));
-    float gamma_tt = 0;
+    float gamma_tt = (EG_FF > 0 ? 1 : -1) *
+                     (2 * sqrt(1 - ra * ra * m11) * -ra * ra * m11_tt - ra * ra * ra * ra * m11_t * m11_t / sqrt(1 - ra * ra * m11)) /
+                     (4 - 4 * ra * ra * m11);
 
     QVector3D n = alpha * sa +
                 beta * st +
@@ -418,8 +420,12 @@ QVector3D Envelope::getPathAt(float t){
     }
     else if (isPositContinuous())
     {
-        // TODO only works for cylindrical tool, due to the angle between the normal and the axis. General should be possible though
+        // The normal is orthogonal to X_t of the adjacent envelope, and at an angle to the axis of its own envelope.
+        // Thus, start with the normal of the adjacent envelope (also orthogonal to X_t of the adjacent envelope by definition),
+        // and rotate it around X_t of the adjacent envelope until the angle with the axis is achieved.
+        // TODO does not actually work yet. Only works for cylindrical case for now, but that is enough for my purposes. If time allows, will expand.
         QVector3D normal = QVector3D::crossProduct(getAxisAt(t), adjEnv->getEnvelopeDtAt(t, 1)).normalized();
+        // QVector3D normal = getNormalRotation(t) * adjEnv->getNormalAt(t, 1);
         return adjEnv->getEnvelopeAt(t, 1) - getToolRadiusAt(0) * normal;
     }
     else
@@ -448,6 +454,8 @@ QVector3D Envelope::getPathDtAt(float t){
         QVector3D normal = QVector3D::crossProduct(axis, adjEnv_t);
         QVector3D normal_t = QVector3D::crossProduct(axis_t, adjEnv_t) + QVector3D::crossProduct(axis, adjEnv_tt);
         normal_t = MathUtility::normalVectorDerivative(normal, normal_t);
+        // QVector3D adjEnv_t = adjEnv->getEnvelopeDtAt(t, 1);
+        // QVector3D normal_t = getNormalRotation(t) * adjEnv->getNormalDtAt(t, 1);
         return adjEnv_t - getToolRadiusAt(0) * normal_t;
     }
     else
@@ -463,7 +471,14 @@ QVector3D Envelope::getPathDtAt(float t){
  */
 QVector3D Envelope::getPathDt2At(float t){
     // Need to check if these are required for chaining position continuous envelopes
-    return toolMovement.getPath().getDerivative2At(t);
+    if (isTanContinuous())
+    {
+        return adjEnv->getEnvelopeDt2At(t, 1) - getToolRadiusAt(0) * adjEnv->getNormalDt2At(t, 1);
+    }
+    else
+    {
+        return toolMovement.getPath().getDerivative2At(t);
+    }
 }
 
 /**
@@ -479,78 +494,93 @@ QVector3D Envelope::getPathDt3At(float t){
 QQuaternion Envelope::calcAxisRotationAt(float t)
 {
     if (!isTanContinuous()) return QQuaternion();
-    // First rotate w.r.t. tangent continuity.
-    float degrees = qRadiansToDegrees(std::acos(-getToolRadiusDaAt(0)));
+    // First rotate the axis of the previous envelope to its normal.
+    // This is to establish a frame of reference for all its derivatives.
     QVector3D adjNormal = adjEnv->getNormalAt(t, 1);
     QVector3D adjAxis = adjEnv->getAxisAt(t);
-    QVector3D rotationAxis = QVector3D::crossProduct(adjNormal, adjAxis);
-    QQuaternion rotation = QQuaternion::fromAxisAndAngle(rotationAxis, degrees);
+    QQuaternion rotationFrame = QQuaternion::rotationTo(adjAxis, adjNormal);
 
-    // Then rotate w.r.t. the last freedom: around the normal of the previous envelope.
+    // Then rotate w.r.t. tangent continuity. Which rotates around the cross product of the adjacent normal and axis
+    float degrees = qRadiansToDegrees(acos(-getToolRadiusDaAt(0)));
+    QVector3D rotationAxis = QVector3D::crossProduct(adjNormal, adjAxis);
+    QQuaternion rotationTangent = QQuaternion::fromAxisAndAngle(rotationAxis, degrees);
+
+    // Lastly rotate w.r.t. the last freedom: around the normal of the previous envelope.
     double angle = adjAxisAngle1 + (adjAxisAngle2-adjAxisAngle1)*t;
     QQuaternion rotationFree = QQuaternion::fromAxisAndAngle(adjNormal, angle);
-    return rotationFree * rotation;
+    return rotationFree * rotationTangent * rotationFrame;
 }
 
 QVector3D Envelope::getAxisAt(float t)
 {
     QVector3D axis;
-    // if (!IsAxisConstrained)
+    // if (IsAxisConstrained)
     // {
-        if (isTanContinuous())
-        {
-            // Rotate the normal of the adjacent envelope around the cross product with the axis of the adjacent envelope
-            axis = calcAxisRotationAt(t) * adjEnv->getNormalAt(t, 1);
-        }
-        else
-        {
-            axis = toolMovement.getAxisAt(t);
-        }
+    //     axis = adjacentEnvelopeA1.getEnvelopeAt(t, 0) - adjEnv->getEnvelopeAt(t, 1);
+    //     axis.normalize();
     // }
     // else
-    // {
-    //     axis = adjacentEnvelopeA1.GetEnvelopeAt(t, 0) - adjacentEnvelopeA0.GetEnvelopeAt(t, 1);
-    //     axis.Normalize();
-    // }
+        if (isTanContinuous())
+    {
+        // Rotate the normal of the adjacent envelope around the cross product with the axis of the adjacent envelope
+        axis = calcAxisRotationAt(t) * adjEnv->getAxisAt(t);
+    }
+    else
+    {
+        axis = toolMovement.getAxisAt(t);
+    }
     return axis;
 }
 
 QVector3D Envelope::getAxisDtAt(float t)
 {
     QVector3D axis, axis_t;
-    // if (!IsAxisConstrained)
+    // if (IsAxisConstrained)
     // {
-        if (isTanContinuous())
-        {
-            // Rotate the normal of the adjacent envelope around the cross product with the axis of the adjacent envelope
-            axis_t = calcAxisRotationAt(t) * adjEnv->getNormalDtAt(t, 1);
-        }
-        else
-        {
-            axis_t = toolMovement.getAxisDtAt(t);
-        }
+    //     axis = adjacentEnvelopeA1.getEnvelopeAt(t, 0) - adjEnv->getEnvelopeAt(t, 1);
+    //     axis_t = adjacentEnvelopeA1.getEnvelopeDtAt(t, 0) - adjEnv->getEnvelopeDtAt(t, 1);
+    //     axis_t = MathUtility::normalVectorDerivative(axis, axis_t);
     // }
     // else
-    // {
-    //     axis = adjacentEnvelopeA1.GetEnvelopeAt(t, 0) - adjacentEnvelopeA0.GetEnvelopeAt(t, 1);
-    //     axis_t = adjacentEnvelopeA1.GetEnvelopeDtAt(t, 0) - adjacentEnvelopeA0.GetEnvelopeDtAt(t, 1);
-    //     axis_t = MathUtility.NormalVectorDerivative(axis, axis_t);
-
-    // }
+        if (isTanContinuous())
+    {
+        // TODO There is still a slight div by 0 error here.
+        axis_t = calcAxisRotationAt(t) * adjEnv->getAxisDtAt(t);
+    }
+    else
+    {
+        axis_t = toolMovement.getAxisDtAt(t);
+    }
     return axis_t;
 }
 
 QVector3D Envelope::getAxisDt2At(float t)
 {
+    QVector3D axis, axis_t, axis_tt;
     // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
-    QVector3D axis_tt = toolMovement.getAxisDt2At(t);
+    if (isTanContinuous())
+    {
+        axis_tt = calcAxisRotationAt(t) * adjEnv->getAxisDt2At(t);
+    }
+    else
+    {
+        axis_tt = toolMovement.getAxisDt2At(t);
+    }
     return axis_tt;
 }
 
 QVector3D Envelope::getAxisDt3At(float t)
 {
     // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
-    QVector3D axis_ttt = toolMovement.getAxisDt3At(t);
+    QVector3D axis, axis_t, axis_tt, axis_ttt;
+    if (isTanContinuous())
+    {
+        axis_ttt = calcAxisRotationAt(t) * adjEnv->getAxisDt3At(t);
+    }
+    else
+    {
+        axis_ttt = toolMovement.getAxisDt3At(t);
+    }
     return axis_ttt;
 }
 
