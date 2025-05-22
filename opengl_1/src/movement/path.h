@@ -19,7 +19,7 @@ public:
 
     inline void setSectors(int s) {sectors = s; updateVertexArr();}
     inline int getSectors() {return sectors;}
-    inline QVector<Vertex> getVertexArr(){ return vertexArr; }
+    inline QVector<Vertex>& getVertexArr(){ return vertexArr; }
 };
 
 #endif // PATH_H

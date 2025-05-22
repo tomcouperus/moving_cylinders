@@ -243,6 +243,7 @@ void MainView::paintGL()
             int i = indices.takeFirst();
             envelopes[i]->update();
             envelopeRenderers[i]->updateBuffers();
+            moveRenderers[i]->updateBuffers();
         }
         envelopeMeshUpdates.clear();
     }

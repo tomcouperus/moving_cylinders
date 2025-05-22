@@ -5,20 +5,16 @@
  * @brief CylinderMovement::CylinderMovement Default constructor, sets the path with default path
  * constructor and defines the directional vector of the movement to always be (0,1,0)
  */
-CylinderMovement::CylinderMovement() :
-    discPath(path.getVertexArr())
-{}
+CylinderMovement::CylinderMovement() {}
 
 CylinderMovement::CylinderMovement(SimplePath path) :
-    path(path),
-    discPath(path.getVertexArr())
+    path(path)
 {}
 
 
 CylinderMovement::CylinderMovement(SimplePath path, const Tool *tool) :
     path(path),
-    toolAxis(tool->getAxisVector()),
-    discPath(path.getVertexArr())
+    toolAxis(tool->getAxisVector())
 {}
 
 /**
@@ -33,8 +29,7 @@ CylinderMovement::CylinderMovement(SimplePath path, QVector3D axisDirection1, QV
     path(path),
     axisT0(axisDirection1),
     axisT1(axisDirection2),
-    toolAxis(tool->getAxisVector()),
-    discPath(path.getVertexArr())
+    toolAxis(tool->getAxisVector())
 {}
 
 

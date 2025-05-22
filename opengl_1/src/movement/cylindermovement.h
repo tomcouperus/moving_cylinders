@@ -18,7 +18,6 @@ class CylinderMovement
     QVector3D axisT0{0.0f, 1.0f, 0.0f};
     QVector3D axisT1{0.0f, 1.0f, 0.0f};
 
-    QVector<Vertex> discPath; // Path of tip of tool
 public:
     CylinderMovement();
     CylinderMovement(SimplePath path);
@@ -27,7 +26,7 @@ public:
 
     inline SimplePath& getPath() {return path;}
     bool setAxisDirections(QVector3D axisDirection1, QVector3D axisDirection2);
-    inline QVector<Vertex>& getPathVertexArr() { return this->discPath; }
+    inline QVector<Vertex>& getPathVertexArr() { return path.getVertexArr(); }
 
     inline QVector3D getAxisT0() const { return axisT0; }
     inline QVector3D getAxisT1() const { return axisT1; }
