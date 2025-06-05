@@ -37,8 +37,6 @@ public:
     QVector3D getAxisDt3At(float time);
 
     QVector3D getRotationVectorAt(float time);
-
-    inline void setToolAxis(const Tool *tool) { toolAxis = tool->getAxisVector(); }
 };
 
 #endif // CYLINDERMOVEMENT_H

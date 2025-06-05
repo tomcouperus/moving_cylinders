@@ -207,7 +207,7 @@ void Envelope::computeToolCenters()
         float t = (float) tIdx / sectorsT;
 
         v1 = getPathAt(t);
-        v2 = getPathAt(t) + getAxisAt(t);
+        v2 = getPathAt(t) + tool->getHeight() * getAxisAt(t);
 
         // Add vertices to array
         vertexArrCenters.append(Vertex(v1, color));
@@ -273,7 +273,7 @@ void Envelope::computeNormals(){
         {
             float t = (float) tIdx / sectorsT;
             float a = (float) aIdx / sectorsA;
-            p1 = getPathAt(t) + a*getAxisAt(t);
+            p1 = getPathAt(t) + a*tool->getHeight()*getAxisAt(t);
             v1 = getEnvelopeAt(t, a);
 
             // Add vertices to array
@@ -589,7 +589,7 @@ float Envelope::getToolRadiusAt(float a) {
 }
 
 float Envelope::getToolRadiusDaAt(float a) {
-    return tool->getRadiusDerivativeWRTa(a);
+    return tool->getRadiusDaAt(a);
 }
 
 // /**

@@ -34,8 +34,13 @@ public:
     void setA0(float a0) {this->a0 = a0;}
     void setA1(float a1) {this->a1 = a1;}
 
-    virtual float getRadiusDerivativeWRTa(float a) = 0;
+    // virtual QVector3D getToolSurfaceAt(float t, float a);
     virtual float getRadiusAt(float a) = 0;
+    virtual float getRadiusDaAt(float a) = 0;
+    // virtual float getSphereCenterHeightAt(float a);
+    // virtual float getSphereCenterHeightDaAt(float a);
+    // virtual float getSphereRadiusAt(float a);
+    // virtual float getSphereRadiusDaAt(float a);
 
     inline float getA0(){ return a0; }
     inline float getA1(){ return a1; }

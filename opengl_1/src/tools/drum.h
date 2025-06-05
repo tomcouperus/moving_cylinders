@@ -24,7 +24,7 @@ public:
 
     inline float getMinR0() { return ((height/2)*(height/2) + rm*rm)/(2*rm);}
 
-    inline float getRadiusDerivativeWRTa(float a) override {float s = sqrt(((r0-rm)*(r0-rm))+(a*a));  return -a/s;}
+    inline float getRadiusDaAt(float a) override {float s = sqrt(((r0-rm)*(r0-rm))+(a*a));  return -a/s;}
     inline float getRadiusAt(float a) override {return r0-sqrt(((r0-rm)*(r0-rm))+(a*a));}
 
     inline float getRadiusCurvature(){ return r0; }
