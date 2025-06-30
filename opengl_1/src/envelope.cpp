@@ -125,8 +125,9 @@ void Envelope::computeEnvelope()
 {
     vertexArr.clear();
 
-    QVector3D e1, e2, e3, e4;
-    QVector3D c1, c2, c3, c4;
+    QVector3D env[4];
+    QVector3D norm[4];
+    QVector3D col[4];
     // SimplePath path = toolMovement->getPath();
     // float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
     // float a1 = tool->getA1()-aDelta;
@@ -142,20 +143,34 @@ void Envelope::computeEnvelope()
             float t = (float) tIdx / sectorsT;
             float a = (float) aIdx / sectorsA;
 
-            e1 = getEnvelopeAt(t, a);
-            e2 = getEnvelopeAt(t, a+aDelta);
-            e3 = getEnvelopeAt(t+tDelta, a);
-            e4 = getEnvelopeAt(t+tDelta, a+aDelta);
+            env[0] = getEnvelopeAt(t, a);
+            env[1] = getEnvelopeAt(t, a+aDelta);
+            env[2] = getEnvelopeAt(t+tDelta, a);
+            env[3] = getEnvelopeAt(t+tDelta, a+aDelta);
 
-            c1 = getNormalAt(t, a);
-            c2 = getNormalAt(t, a+aDelta);
-            c3 = getNormalAt(t+tDelta, a);
-            c4 = getNormalAt(t+tDelta, a+aDelta);
+            norm[0] = getNormalAt(t, a);
+            norm[1] = getNormalAt(t, a+aDelta);
+            norm[2] = getNormalAt(t+tDelta, a);
+            norm[3] = getNormalAt(t+tDelta, a+aDelta);
 
-            Vertex v1{e1, c1};
-            Vertex v2{e2, c2};
-            Vertex v3{e3, c3};
-            Vertex v4{e4, c4};
+            for (int i = 0; i < 4; i++) {
+                if (reflectionLines){
+                    float alpha;
+                    alpha = acos(QVector3D::dotProduct(norm[i],QVector3D(1,0,0)));
+                    float aux = alpha * reflFreq;
+                    if (aux -(int)aux <= percentBlack)
+                        col[i] = QVector3D(0,0,0);
+                    else
+                        col[i] = QVector3D(1,1,1);
+                } else {
+                    col[i] = norm[i];
+                }
+            }
+
+            Vertex v1{env[0], col[0]};
+            Vertex v2{env[1], col[1]};
+            Vertex v3{env[2], col[2]};
+            Vertex v4{env[3], col[3]};
 
             // Add vertices to array
             vertexArr.append(v1);

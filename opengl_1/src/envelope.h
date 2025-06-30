@@ -28,10 +28,22 @@ class Envelope
     QVector<Vertex> vertexArrGrazingCurve;
     QVector<QVector<Vertex>> vertexArrNormals;
 
+    // Render settings for reflection lines
+    bool reflectionLines=false;
+    float reflFreq=20;
+    float percentBlack=0.5;
+
+
 public:
     Envelope(int index);
     Envelope(int index, Tool *tool, const SimplePath &path);
     Envelope(int index, Tool *tool, const SimplePath &path, Envelope *adjEnvelope);
+
+    inline void updateRenderSettings(const Settings &settings) {
+        reflectionLines=settings.reflectionLines;
+        reflFreq=settings.reflFreq;
+        percentBlack=settings.percentBlack;
+    }
 
     inline int getIndex() const { return index; }
     inline Envelope *getAdjEnvelope() { return adjEnv; }

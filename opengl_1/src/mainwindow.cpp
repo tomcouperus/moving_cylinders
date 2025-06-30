@@ -750,19 +750,31 @@ void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
     ui->freqReflSpinBox->setEnabled(checked);
 
     ui->mainView->settings.reflectionLines = checked;
-    ui->mainView->updateBuffers();
+    for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
+        if (!ui->mainView->indicesUsed[i]) continue;
+        ui->mainView->envelopes[i]->updateRenderSettings(ui->mainView->settings);
+        ui->mainView->envelopeMeshUpdates += i;
+    }
     ui->mainView->update();
 }
 
 void MainWindow::on_freqReflSpinBox_valueChanged(int value){
     ui->mainView->settings.reflFreq = value;
-    ui->mainView->updateBuffers();
+    for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
+        if (!ui->mainView->indicesUsed[i]) continue;
+        ui->mainView->envelopes[i]->updateRenderSettings(ui->mainView->settings);
+        ui->mainView->envelopeMeshUpdates += i;
+    }
     ui->mainView->update();
 }
 
 void MainWindow::on_fracReflSpinBox_valueChanged(double value){
     ui->mainView->settings.percentBlack = value;
-    ui->mainView->updateBuffers();
+    for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
+        if (!ui->mainView->indicesUsed[i]) continue;
+        ui->mainView->envelopes[i]->updateRenderSettings(ui->mainView->settings);
+        ui->mainView->envelopeMeshUpdates += i;
+    }
     ui->mainView->update();
 }
 
@@ -774,12 +786,12 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
     qDebug() << "Axis sectors changed";
     qDebug() << "TODO change to dynamic";
     ui->aSlider->setMaximum(value);
-    ui->mainView->cylinders[0]->setSectors(value);
-    ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
-    ui->mainView->envelopes[0]->setSectorsA(value);
-    ui->mainView->cylinders[1]->setSectors(value);
-    ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-    ui->mainView->envelopes[1]->setSectorsA(value);
+    // ui->mainView->cylinders[0]->setSectors(value);
+    // ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
+    // ui->mainView->envelopes[0]->setSectorsA(value);
+    // ui->mainView->cylinders[1]->setSectors(value);
+    // ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
+    // ui->mainView->envelopes[1]->setSectorsA(value);
 
     ui->mainView->updateBuffers();
     ui->mainView->updateToolTransf();
