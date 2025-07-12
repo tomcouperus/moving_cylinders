@@ -9,29 +9,31 @@
 
 class Drum : public Tool
 {
-    float r0, rm;
+    float r, rho;
 public:
     Drum();
     Drum(float curveRadius, float midRadius, float height, int sectors, QVector3D position);
-    void initDrum();
 
-    void setSectors(int sectors) override;
-    void setRadius(float radius);
-    void setMidRadius(float midRadius);
-    void setHeight(float height) override;
-    void setPosit(QVector3D position) override;
-    void update() override;
+    inline void setRadius(float radius) {r=radius;}
+    inline float getRadius(){ return r; }
 
-    inline float getMinR0() { return ((height/2)*(height/2) + rm*rm)/(2*rm);}
+    inline void setCurvatureRadius(float curveRadius) {rho=curveRadius;}
+    inline float getCurvatureRadius(){ return rho; }
 
-    inline float getRadiusDaAt(float a) override {float s = sqrt(((r0-rm)*(r0-rm))+(a*a));  return -a/s;}
-    inline float getRadiusAt(float a) override {return r0-sqrt(((r0-rm)*(r0-rm))+(a*a));}
+    float getRadiusAt(float a) override;
+    float getRadiusDaAt(float a) override;
+    float getSphereCenterHeightAt(float a) override;
+    float getSphereCenterHeightDaAt(float a) override;
+    float getSphereRadiusAt(float a) override;
+    float getSphereRadiusDaAt(float a) override;
 
-    inline float getRadiusCurvature(){ return r0; }
-    inline float getMidRadius(){ return rm; }
+    Vertex getToolSurfaceAt(float a, float tRad) override;
+
 private:
-    void computeDrum();
-    Vertex calcCircleBound(float theta, float h);
+    inline float D() {return rho-r;}
+
+    float getAngleAt(float a);
+    float getAngleDaAt(float a);
 };
 
 #endif // DRUM_H

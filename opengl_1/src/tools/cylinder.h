@@ -12,23 +12,21 @@ class Cylinder : public Tool
 public:
     Cylinder();
     Cylinder(float baseRadius, float angle, float height, int sectors, QVector3D position);
-    void initCylinder();
 
-    void setSectors(int sectors) override;
-    void setRadius(float radius);
-    void setAngle(float angle);
-    void setHeight(float height)override;
-    void setPosit(QVector3D position)override;
-    void update() override;
-    
-    inline float getRadiusDaAt(float a) override {return sin(angle);}
-    inline float getRadiusAt(float a) override {return (r*cos(angle) + a*sin(angle));}
-
+    inline void setRadius(float radius) {r=radius;}
     inline float getRadius(){ return r; }
+
+    inline void setAngle(float angle) {this->angle=angle;}
     inline float getAngle(){ return angle; }
-private:
-    void computeCylinder();
-    Vertex calcCircleBound(float r1, float theta, float h);
+    
+    inline float getRadiusAt(float a) override {return r + a * height * tan(angle);}
+    inline float getRadiusDaAt(float a) override {return height * tan(angle);}
+    inline float getSphereCenterHeightAt(float a) override {return a * height + getRadiusAt(a) * tan(angle);}
+    inline float getSphereCenterHeightDaAt(float a) override {return height + getRadiusDaAt(a) * tan(angle);}
+    inline float getSphereRadiusAt(float a) override {return getRadiusAt(a) / cos(angle);}
+    inline float getSphereRadiusDaAt(float a) override {return getRadiusDaAt(a) / cos(angle);}
+
+    Vertex getToolSurfaceAt(float a, float tRad) override;
 };
 
 #endif // CYLINDER_H

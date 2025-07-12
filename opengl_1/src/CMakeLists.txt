@@ -43,6 +43,7 @@ qt_add_executable(OpenGL_1 WIN32 MACOSX_BUNDLE
     tools/sphere.h
     mathutility.h mathutility.cpp
     tooltype.h
+    tools/tool.cpp
 
 
 )

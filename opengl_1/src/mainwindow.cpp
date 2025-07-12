@@ -139,7 +139,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         Cylinder* cyl = ui->mainView->cylinders[idx];
         Drum* drum = ui->mainView->drums[idx];
         ui->radiusSpinBox->setValue(cyl->getRadius());
-        ui->drumRadiusSpinBox->setValue(drum->getRadiusCurvature());
+        ui->drumRadiusSpinBox->setValue(drum->getCurvatureRadius());
         ui->angleSpinBox->setValue(cyl->getAngle());
         ui->heightSpinBox->setValue(cyl->getHeight());
         int toolTypeIdx = (int) env->getTool()->getType();
@@ -346,8 +346,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setRadius(value);
-    ui->mainView->drums[idx]->setMidRadius(value);
-    ui->drumRadiusSpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0());
+    ui->mainView->drums[idx]->setRadius(value);
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;
@@ -363,7 +362,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
 void MainWindow::on_drumRadiusSpinBox_valueChanged(double value) {
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
-    ui->mainView->drums[idx]->setRadius(value);
+    ui->mainView->drums[idx]->setCurvatureRadius(value);
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;
@@ -397,7 +396,6 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setHeight(value);
     ui->mainView->drums[idx]->setHeight(value);
-    ui->drumRadiusSpinBox->setMinimum(ui->mainView->drums[idx]->getMinR0()); // TODO why?
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->toolMeshUpdates += depEnvs;

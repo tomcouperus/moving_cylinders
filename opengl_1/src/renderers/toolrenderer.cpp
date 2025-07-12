@@ -82,9 +82,9 @@ void ToolRenderer::updateBuffers()
     gl->glBindBuffer(GL_ARRAY_BUFFER, vboTool);
     gl->glBufferData(GL_ARRAY_BUFFER, vertexArrTool.size() * sizeof(Vertex), vertexArrTool.data(), GL_STATIC_DRAW);
 
-    QVector3D sphPosit = tool->getPosition()+(tool->getA0()+settings->a())*tool->getAxisVector();
+    QVector3D sphPosit = tool->getPosition()+ tool->getSphereCenterHeightAt(settings->a())*tool->getAxisVector();
     sphere.setPosition(sphPosit);
-    sphere.setRadius(tool->getRadiusAt(tool->getA0()+settings->a()));
+    sphere.setRadius(tool->getSphereRadiusAt(settings->a()));
     sphere.generateVertexArr(20, 20);
     QVector<Vertex>& vertexArrSph = sphere.getVertexArr();
 

@@ -74,10 +74,10 @@ Envelope* MainView::addNewEnvelope() {
 
     // Tools
     Cylinder *cyl = new Cylinder();
-    cyl->initCylinder();
+    cyl->initTool();
     cylinders[idx] = cyl;
     Drum *drum = new Drum();
-    drum->initDrum();
+    drum->initTool();
     drums[idx] = drum;
 
     // Path and envelope
