@@ -76,3 +76,12 @@ QVector3D SimplePath::getDerivative3At(float t) {
 }
 
 
+QVector3D SimplePath::getDerivative4PlusAt(float t) {
+    return QVector3D(
+        x.getDerivative4PlusAt(t),
+        y.getDerivative4PlusAt(t),
+        z.getDerivative4PlusAt(t)
+    );
+}
+
+

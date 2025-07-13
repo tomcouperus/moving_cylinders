@@ -20,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent)
   ui->constraintA0SelectBox->setItemData(0, QVariant(-1));
   ui->constraintA1SelectBox->setItemData(0, QVariant(-1));
 
+  ui->aSlider->setMaximum(ui->mainView->settings.aSectors);
+  ui->TimeSlider->setMaximum(ui->mainView->settings.tSectors);
+
   on_envelopeSelectBox_currentIndexChanged(0);
 }
 
@@ -784,12 +787,19 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
     qDebug() << "Axis sectors changed";
     qDebug() << "TODO change to dynamic";
     ui->aSlider->setMaximum(value);
-    // ui->mainView->cylinders[0]->setSectors(value);
-    // ui->mainView->envelopes[0]->setTool(ui->mainView->cylinders[0]);
-    // ui->mainView->envelopes[0]->setSectorsA(value);
-    // ui->mainView->cylinders[1]->setSectors(value);
-    // ui->mainView->envelopes[1]->setTool(ui->mainView->cylinders[1]);
-    // ui->mainView->envelopes[1]->setSectorsA(value);
+    ui->mainView->settings.aSectors = value;
+
+    for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
+        if (!ui->mainView->indicesUsed[i]) continue;
+        ui->mainView->envelopes[i]->setSectorsA(value);
+        ui->mainView->envelopes[i]->update();
+
+        ui->mainView->cylinders[i]->setSectors(value);
+        ui->mainView->cylinders[i]->update();
+
+        ui->mainView->drums[i]->setSectors(value);
+        ui->mainView->drums[i]->update();
+    }
 
     ui->mainView->updateBuffers();
     ui->mainView->updateToolTransf();
@@ -802,17 +812,16 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
  */
 void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
     qDebug() << "Time sectors changed";
-    qDebug() << "TODO change to dynamic";
     ui->TimeSlider->setMaximum(value);
-    SimplePath &path = ui->mainView->envelopes[0]->getToolMovement().getPath();
+    ui->mainView->settings.tSectors = value;
 
-    path.setSectors(value);
-
-    // ui->mainView->movements[0]->setPath(path);
-    // ui->mainView->movements[1]->setPath(path);
-
-    // ui->mainView->envelopes[0]->setToolMovement(ui->mainView->movements[0]);
-    // ui->mainView->envelopes[1]->setToolMovement(ui->mainView->movements[1]);
+    for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
+        if (!ui->mainView->indicesUsed[i]) continue;
+        ui->mainView->envelopes[i]->setSectorsT(value);
+        ui->mainView->envelopes[i]->update();
+        SimplePath &path = ui->mainView->envelopes[i]->getToolMovement().getPath();
+        path.setSectors(value);
+    }
 
     ui->mainView->updateBuffers();
     ui->mainView->updateToolTransf();
@@ -845,6 +854,7 @@ void MainWindow::on_TimeSlider_sliderMoved(int value) {
  * @param value The new a value.
  */
 void MainWindow::on_aSlider_sliderMoved(int value) {
+    qDebug() <<  value;
   ui->mainView->settings.aIdx = value;
   ui->mainView->updateBuffers();
   ui->mainView->update();

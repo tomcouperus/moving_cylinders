@@ -15,7 +15,8 @@ class Envelope
     Tool *tool;
 
     QVector<Envelope*> dependentEnvelopes;
-    Envelope *adjEnv = nullptr;
+    Envelope *adjEnvA0 = nullptr;
+    Envelope *adjEnvA1 = nullptr;
     bool tanContToAdj = false;
     double adjAxisAngle1;
     double adjAxisAngle2;
@@ -46,7 +47,7 @@ public:
     }
 
     inline int getIndex() const { return index; }
-    inline Envelope *getAdjEnvelope() { return adjEnv; }
+    inline Envelope *getAdjEnvelope() { return adjEnvA0; }
 
     void initEnvelope();
     void update();
@@ -55,6 +56,7 @@ public:
     QVector3D getEnvelopeAt(float t, float a);
     QVector3D getEnvelopeDtAt(float t, float a);
     QVector3D getEnvelopeDt2At(float t, float a);
+    QVector3D getEnvelopeDt3At(float t, float a);
 
     void computeToolCenters();
 
@@ -64,20 +66,20 @@ public:
     QVector3D getNormalAt(float t, float a);
     QVector3D getNormalDtAt(float t, float a);
     QVector3D getNormalDt2At(float t, float a);
+    QVector3D getNormalDt3At(float t, float a);
 
     QVector3D getPathAt(float t);
     QVector3D getPathDtAt(float t);
     QVector3D getPathDt2At(float t);
     QVector3D getPathDt3At(float t);
+    QVector3D getPathDt4At(float t);
 
     QQuaternion calcAxisRotationAt(float t);
     QVector3D getAxisAt(float t);
     QVector3D getAxisDtAt(float t);
     QVector3D getAxisDt2At(float t);
     QVector3D getAxisDt3At(float t);
-
-    float getToolRadiusAt(float a);
-    float getToolRadiusDaAt(float a);
+    QVector3D getAxisDt4At(float t);
 
     inline void setSectorsA(int n) { sectorsA = n; }
     inline void setSectorsT(int n) { sectorsT = n; }
@@ -91,9 +93,12 @@ public:
     inline bool isActive() { return active; }
     inline void setActive(bool value) { active = value; }
 
-    inline bool isPositContinuous() { return adjEnv != nullptr; }
+    inline bool isPositContinuous() { return adjEnvA0 != nullptr; }
     inline void setIsTanContinuous(bool value){ tanContToAdj = value; }
-    inline bool isTanContinuous() { return adjEnv != nullptr && tanContToAdj; }
+    inline bool isTanContinuous() { return !isAxisConstrained() && isPositContinuous() && tanContToAdj; }
+    inline bool isAxisConstrained() {return isPositContinuous() && adjEnvA1 != nullptr; }
+
+
     inline bool setAxes(QVector3D axisA0, QVector3D axisA1) { return toolMovement.setAxisDirections(axisA0, axisA1); }
     inline void setAdjacentAxisAngles(double angle1, double angle2) { adjAxisAngle1 = angle1; adjAxisAngle2 = angle2; }
     inline double getAdjAxisAngle1() const { return adjAxisAngle1; }

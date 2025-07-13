@@ -103,6 +103,21 @@ QVector3D CylinderMovement::getAxisDt3At(float time)
 }
 
 /**
+ * @brief CylinderMovement::getAxisDt4At returns the fourth derivative of the axis direction at time time
+ * @param time time of interest
+ * @return axis direction
+ */
+QVector3D CylinderMovement::getAxisDt4At(float time)
+{
+    QVector3D axis = axisT0 + (axisT1 - axisT0)*time;
+    QVector3D axis_t = axisT1 - axisT0;
+    QVector3D axis_tt(0,0,0);
+    QVector3D axis_ttt(0,0,0);
+    QVector3D axis_tttt(0,0,0);
+    return MathUtility::normalVectorDerivative4(axis, axis_t, axis_tt, axis_ttt, axis_tttt);
+}
+
+/**
  * @brief CylinderMovement::getRotationVectorAt returns the vector that the tool should be rotated around at time
  * @param time time of interest
  * @return rotation vector

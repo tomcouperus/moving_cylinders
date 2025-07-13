@@ -61,3 +61,7 @@ float Polynomial::getDerivative2At(float t) {
 float Polynomial::getDerivative3At(float t) {
     return 6*a;
 }
+
+float Polynomial::getDerivative4PlusAt(float t) {
+    return 0;
+}

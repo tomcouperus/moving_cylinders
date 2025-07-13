@@ -7,7 +7,7 @@
  */
 Envelope::Envelope(int index) :
     index(index),
-    adjEnv(nullptr),
+    adjEnvA0(nullptr),
     tool()
 {
     sectorsA = 20;
@@ -20,7 +20,7 @@ Envelope::Envelope(int index) :
  */
 Envelope::Envelope(int index, Tool *tool, const SimplePath &path) :
     index(index),
-    adjEnv(nullptr),
+    adjEnvA0(nullptr),
     tool(tool),
     toolMovement(path, tool)
 {
@@ -113,8 +113,8 @@ QSet<int> Envelope::getAllDependents() {
 }
 
 void Envelope::setAdjacentEnvelope(Envelope *env){
-    if (adjEnv != nullptr) this->adjEnv->deregisterDependent(this);
-    adjEnv = env;
+    if (adjEnvA0 != nullptr) this->adjEnvA0->deregisterDependent(this);
+    adjEnvA0 = env;
     if (env != nullptr) env->registerDependent(this);
 }
 
@@ -183,20 +183,27 @@ void Envelope::computeEnvelope()
     }
 }
 
+
 QVector3D Envelope::getEnvelopeAt(float t, float a)
 {
-    return getPathAt(t) + a * tool->getHeight() * getAxisAt(t) + getToolRadiusAt(a) * getNormalAt(t, a);
+    return getPathAt(t) + tool->getSphereCenterHeightAt(a) * getAxisAt(t) + tool->getSphereRadiusAt(a) * getNormalAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDtAt(float t, float a)
 {
-    return getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t) + getToolRadiusAt(a) * getNormalDtAt(t, a);
+    return getPathDtAt(t) + tool->getSphereCenterHeightAt(a) * getAxisDtAt(t) + tool->getSphereRadiusAt(a) * getNormalDtAt(t, a);
 }
 
 QVector3D Envelope::getEnvelopeDt2At(float t, float a)
 {
-    return getPathDt2At(t) + a * tool->getHeight() * getAxisDt2At(t) + getToolRadiusAt(a) * getNormalDt2At(t, a);
+    return getPathDt2At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt2At(t) + tool->getSphereRadiusAt(a) * getNormalDt2At(t, a);
 }
+
+QVector3D Envelope::getEnvelopeDt3At(float t, float a)
+{
+    return getPathDt3At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt3At(t) + tool->getSphereRadiusAt(a) * getNormalDt3At(t, a);
+}
+
 
 /**
  * @brief Envelope::computeToolCenters Computes the vertex array of tool centers.
@@ -301,11 +308,11 @@ void Envelope::computeNormals(){
 
 QVector3D Envelope::getNormalAt(float t, float a)
 {
-    QVector3D sa = tool->getHeight() * getAxisAt(t);
-    QVector3D st = getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t);
+    QVector3D sa = tool->getSphereCenterHeightDaAt(a) * getAxisAt(t);
+    QVector3D st = getPathDtAt(t) + tool->getSphereCenterHeightAt(a) * getAxisDtAt(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st).normalized();
 
-    float ra = getToolRadiusDaAt(a);
+    float ra = tool->getSphereRadiusDaAt(a);
 
     float E = QVector3D::dotProduct(sa, sa);
     float F = QVector3D::dotProduct(sa, st);
@@ -317,7 +324,9 @@ QVector3D Envelope::getNormalAt(float t, float a)
 
     float alpha = -m11 * ra;
     float beta = -m21 * ra;
-    float gamma = (EG_FF > 0 ? 1 : -1) * std::sqrt(1 - ra * ra * m11);
+
+    float sqrt_term = 1 - ra * ra * m11;
+    float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(sqrt_term);
 
     QVector3D n = alpha * sa + beta * st + gamma * sNormal;
     return n.normalized();
@@ -325,14 +334,14 @@ QVector3D Envelope::getNormalAt(float t, float a)
 
 QVector3D Envelope::getNormalDtAt(float t, float a)
 {
-    QVector3D sa = tool->getHeight() * getAxisAt(t);
-    QVector3D sat = tool->getHeight() * getAxisDtAt(t);
-    QVector3D st = getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t);
-    QVector3D stt = getPathDt2At(t) + a * tool->getHeight() * getAxisDt2At(t);
+    QVector3D sa = tool->getSphereCenterHeightDaAt(a) * getAxisAt(t);
+    QVector3D sat = tool->getSphereCenterHeightDaAt(a) * getAxisDtAt(t);
+    QVector3D st = getPathDtAt(t) + tool->getSphereCenterHeightAt(a) * getAxisDtAt(t);
+    QVector3D stt = getPathDt2At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt2At(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st).normalized();
     QVector3D sNormal_t = MathUtility::normalVectorDerivative(QVector3D::crossProduct(sa, st), QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt));
 
-    float ra = getToolRadiusDaAt(a);
+    float ra = tool->getSphereRadiusDaAt(a);
 
     float E = QVector3D::dotProduct(sa, sa);
     float Et = 2 * QVector3D::dotProduct(sa, sat);
@@ -345,15 +354,19 @@ QVector3D Envelope::getNormalDtAt(float t, float a)
 
     float m11 = G / EG_FF;
     float m11_t = (EG_FF * Gt - G * EG_FF_t) / (EG_FF * EG_FF);
+
     float m21 = -F / EG_FF;
     float m21_t = -(EG_FF * Ft - F * EG_FF_t) / (EG_FF * EG_FF);
 
     float alpha = -m11 * ra;
     float alpha_t = -m11_t * ra;
+
     float beta = -m21 * ra;
     float beta_t = -m21_t * ra;
-    float gamma = (EG_FF > 0 ? 1 : -1) * std::sqrt(1 - ra * ra * m11);
-    float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * std::sqrt(1 - ra * ra * m11));
+
+    float sqrt_term = 1 - ra * ra * m11;
+    float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(sqrt_term);
+    float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * sqrt(sqrt_term));
 
     QVector3D n = alpha * sa + beta * st + gamma * sNormal;
     QVector3D nt = alpha * sat + alpha_t * sa + beta * stt + beta_t * st + gamma * sNormal_t + gamma_t * sNormal;
@@ -362,12 +375,12 @@ QVector3D Envelope::getNormalDtAt(float t, float a)
 
 QVector3D Envelope::getNormalDt2At(float t, float a)
 {
-    QVector3D sa = tool->getHeight() * getAxisAt(t);
-    QVector3D sat = tool->getHeight() * getAxisDtAt(t);
-    QVector3D satt = tool->getHeight() * getAxisDt2At(t);
-    QVector3D st = getPathDtAt(t) + a * tool->getHeight() * getAxisDtAt(t);
-    QVector3D stt = getPathDt2At(t) + a * tool->getHeight() * getAxisDt2At(t);
-    QVector3D sttt = getPathDt3At(t) + a * tool->getHeight() * getAxisDt3At(t);
+    QVector3D sa = tool->getSphereCenterHeightDaAt(a) * getAxisAt(t);
+    QVector3D sat = tool->getSphereCenterHeightDaAt(a) * getAxisDtAt(t);
+    QVector3D satt = tool->getSphereCenterHeightDaAt(a) * getAxisDt2At(t);
+    QVector3D st = getPathDtAt(t) + tool->getSphereCenterHeightAt(a) * getAxisDtAt(t);
+    QVector3D stt = getPathDt2At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt2At(t);
+    QVector3D sttt = getPathDt3At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt3At(t);
     QVector3D sNormal = QVector3D::crossProduct(sa, st);
     QVector3D sNormal_t = QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt);
     QVector3D sNormal_tt = QVector3D::crossProduct(satt, st) + QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sa, sttt);
@@ -375,41 +388,52 @@ QVector3D Envelope::getNormalDt2At(float t, float a)
     sNormal_t = MathUtility::normalVectorDerivative(sNormal, sNormal_t);
     sNormal.normalize();
 
-    float ra = getToolRadiusDaAt(a);
+    float ra = tool->getSphereRadiusDaAt(a);
 
     float E = QVector3D::dotProduct(sa, sa);
     float Et = 2 * QVector3D::dotProduct(sa, sat);
-    float Ett = 2 * (QVector3D::dotProduct(sat, sat) + QVector3D::dotProduct(sa, satt));
+    float Ett = 2 * QVector3D::dotProduct(sat, sat) + 2 * QVector3D::dotProduct(sa, satt);
     float F = QVector3D::dotProduct(sa, st);
     float Ft = QVector3D::dotProduct(sat, st) + QVector3D::dotProduct(sa, stt);
-    float Ftt = QVector3D::dotProduct(satt, st) + QVector3D::dotProduct(sat, stt) + QVector3D::dotProduct(sat, stt) + QVector3D::dotProduct(sa, sttt);
+    float Ftt = QVector3D::dotProduct(satt, st) + 2 * QVector3D::dotProduct(sat, stt) + QVector3D::dotProduct(sa, sttt);
     float G = QVector3D::dotProduct(st, st);
     float Gt = 2 * QVector3D::dotProduct(st, stt);
-    float Gtt = 2 * (QVector3D::dotProduct(stt, stt) + QVector3D::dotProduct(st, sttt));
+    float Gtt = 2 * QVector3D::dotProduct(stt, stt) + 2 * QVector3D::dotProduct(st, sttt);
     float EG_FF = E * G - F * F;
     float EG_FF_2 = EG_FF * EG_FF;
+    float EG_FF_3 = EG_FF * EG_FF * EG_FF;
     float EG_FF_t = Et * G + E * Gt - 2 * F * Ft;
-    float EG_FF_2_t = 2 * EG_FF * EG_FF_t;
-    float EG_FF_tt = Ett * G + Et * Gt + Et * Gt + E * Gtt - 2 * (Ft * Ft + F * Ftt);
+    float EG_FF_tt = Ett * G + 2 * Et * Gt + E * Gtt - 2 * (Ft * Ft + F * Ftt);
 
     float m11 = G / EG_FF;
     float m11_t = (EG_FF * Gt - G * EG_FF_t) / EG_FF_2;
-    float m11_tt = (EG_FF_2 * ((EG_FF_t * Gt + EG_FF * Gtt) - (Gt * EG_FF_t + G * EG_FF_tt)) - (EG_FF * Gt - G * EG_FF_t) * EG_FF_2_t) / (EG_FF_2 * EG_FF_2);
+    float m11_tt = (Gtt * EG_FF_2 -
+                    2 * Gt * EG_FF_t * EG_FF -
+                    G * EG_FF * EG_FF_tt +
+                    2 * G * EG_FF_t * EG_FF_t) / EG_FF_3;
+
     float m21 = -F / EG_FF;
     float m21_t = -(EG_FF * Ft - F * EG_FF_t) / EG_FF_2;
-    float m21_tt = -(EG_FF_2 * ((EG_FF_t * Ft + EG_FF * Ftt) - (Ft * EG_FF_t + F * EG_FF_tt)) - (EG_FF * Ft - F * EG_FF_t) * EG_FF_2_t) / (EG_FF_2 * EG_FF_2);
+    float m21_tt = -(Ftt * EG_FF_2 -
+                     2 * Ft * EG_FF_t * EG_FF -
+                     F * EG_FF * EG_FF_tt +
+                     2 * F * EG_FF_t * EG_FF_t) / EG_FF_3;
 
     float alpha = -m11 * ra;
     float alpha_t = -m11_t * ra;
     float alpha_tt = -m11_tt * ra;
+
     float beta = -m21 * ra;
     float beta_t = -m21_t * ra;
     float beta_tt = -m21_tt * ra;
-    float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(1 - ra * ra * m11);
-    float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * sqrt(1 - ra * ra * m11));
+
+    float sqrt_term = 1 - ra * ra * m11;
+    float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(sqrt_term);
+    float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * sqrt(sqrt_term));
     float gamma_tt = (EG_FF > 0 ? 1 : -1) *
-                     (2 * sqrt(1 - ra * ra * m11) * -ra * ra * m11_tt - ra * ra * ra * ra * m11_t * m11_t / sqrt(1 - ra * ra * m11)) /
-                     (4 - 4 * ra * ra * m11);
+                     -ra * ra / 2 *
+                     (m11_tt / sqrt(sqrt_term) +
+                      (ra * ra * m11_t * m11_t) / (2 * pow(sqrt_term, 1.5f)));
 
     QVector3D n = alpha * sa +
                 beta * st +
@@ -417,31 +441,171 @@ QVector3D Envelope::getNormalDt2At(float t, float a)
     QVector3D nt = alpha * sat + alpha_t * sa +
                  beta * stt + beta_t * st +
                  gamma * sNormal_t + gamma_t * sNormal;
-    QVector3D ntt = alpha_t * sat + alpha * satt + alpha_tt * sa + alpha_t * sat +
-                  beta_t * stt + beta * sttt + beta_tt * st + beta_t * st +
-                  gamma_t * sNormal_t + gamma * sNormal_tt + gamma_tt * sNormal + gamma_t * sNormal_t;
+    QVector3D ntt = alpha * satt +
+                  2 * alpha_t * sat +
+                  alpha_tt * sa +
+                  beta * sttt +
+                  2 * beta_t * stt +
+                  beta_tt * st +
+                  gamma * sNormal_tt +
+                  2 * +gamma_t * sNormal_t +
+                  gamma_tt * sNormal;
     return MathUtility::normalVectorDerivative2(n, nt, ntt);
 }
 
-/**
- * @brief Envelope::getPathAt Returns the path of the tool movement at a given time.
- * @param t Time.
- * @return Path at time t.
- */
-QVector3D Envelope::getPathAt(float t){
+QVector3D Envelope::getNormalDt3At(float t, float a)
+{
+    QVector3D sa = tool->getSphereCenterHeightDaAt(a) * getAxisAt(t);
+    QVector3D sat = tool->getSphereCenterHeightDaAt(a) * getAxisDtAt(t);
+    QVector3D satt = tool->getSphereCenterHeightDaAt(a) * getAxisDt2At(t);
+    QVector3D sattt = tool->getSphereCenterHeightDaAt(a) * getAxisDt3At(t);
+    QVector3D st = getPathDtAt(t) + tool->getSphereCenterHeightAt(a) * getAxisDtAt(t);
+    QVector3D stt = getPathDt2At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt2At(t);
+    QVector3D sttt = getPathDt3At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt3At(t);
+    QVector3D stttt = getPathDt4At(t) + tool->getSphereCenterHeightAt(a) * getAxisDt4At(t);
+    QVector3D sNormal = QVector3D::crossProduct(sa, st);
+    QVector3D sNormal_t = QVector3D::crossProduct(sat, st) + QVector3D::crossProduct(sa, stt);
+    QVector3D sNormal_tt = QVector3D::crossProduct(satt, st) + 2 * QVector3D::crossProduct(sat, stt) + QVector3D::crossProduct(sa, sttt);
+    QVector3D sNormal_ttt = QVector3D::crossProduct(sattt, st) + 3 * QVector3D::crossProduct(satt, stt) + 3 * QVector3D::crossProduct(sat, sttt) + QVector3D::crossProduct(sa, stttt);
+    sNormal_ttt = MathUtility::normalVectorDerivative3(sNormal, sNormal_t, sNormal_tt, sNormal_ttt);
+    sNormal_tt = MathUtility::normalVectorDerivative2(sNormal, sNormal_t, sNormal_tt);
+    sNormal_t = MathUtility::normalVectorDerivative(sNormal, sNormal_t);
+    sNormal.normalize();
+
+    float ra = tool->getSphereRadiusDaAt(a);
+
+    float E = QVector3D::dotProduct(sa, sa);
+    float Et = 2 * QVector3D::dotProduct(sa, sat);
+    float Ett = 2 * QVector3D::dotProduct(sat, sat) + 2 * QVector3D::dotProduct(sa, satt);
+    float Ettt = 6 * QVector3D::dotProduct(sat, satt) + 2 * QVector3D::dotProduct(sa, sattt);
+    float F = QVector3D::dotProduct(sa, st);
+    float Ft = QVector3D::dotProduct(sat, st) + QVector3D::dotProduct(sa, stt);
+    float Ftt = QVector3D::dotProduct(satt, st) + 2 * QVector3D::dotProduct(sat, stt) + QVector3D::dotProduct(sa, sttt);
+    float Fttt = QVector3D::dotProduct(sattt, st) + 3 * QVector3D::dotProduct(satt, stt) + 3 * QVector3D::dotProduct(sat, sttt) + QVector3D::dotProduct(sa, stttt);
+    float G = QVector3D::dotProduct(st, st);
+    float Gt = 2 * QVector3D::dotProduct(st, stt);
+    float Gtt = 2 * QVector3D::dotProduct(stt, stt) + 2 * QVector3D::dotProduct(st, sttt);
+    float Gttt = 6 * QVector3D::dotProduct(stt, sttt) + 2 * QVector3D::dotProduct(st, stttt);
+    float EG_FF = E * G - F * F;
+    float EG_FF_2 = EG_FF * EG_FF;
+    float EG_FF_3 = EG_FF * EG_FF * EG_FF;
+    float EG_FF_4 = EG_FF_2 * EG_FF_2;
+    float EG_FF_t = Et * G + E * Gt - 2 * F * Ft;
+    float EG_FF_tt = Ett * G + 2 * Et * Gt + E * Gtt - 2 * (Ft * Ft + F * Ftt);
+    float EG_FF_ttt = Ettt * G + 3 * Ett * Gt + 3 * Et * Gtt + E * Gttt - 2 * (3 * Ft * Ftt + F * Fttt);
+
+    float m11 = G / EG_FF;
+    float m11_t = (EG_FF * Gt - G * EG_FF_t) / EG_FF_2;
+    float m11_tt = (Gtt * EG_FF_2 -
+                    2 * Gt * EG_FF_t * EG_FF -
+                    G * EG_FF * EG_FF_tt +
+                    2 * G * EG_FF_t * EG_FF_t) / EG_FF_3;
+    float m11_ttt = (Gttt * EG_FF_3 -
+                     3 * Gtt * EG_FF_t * EG_FF_2 -
+                     3 * Gt * EG_FF_tt * EG_FF_2 +
+                     6 * Gt * EG_FF * EG_FF_t * EG_FF_t +
+                     6 * G * EG_FF_tt * EG_FF_t * EG_FF -
+                     G * EG_FF_t * EG_FF_2 -
+                     6 * G * EG_FF_t * EG_FF_t * EG_FF_t) / EG_FF_4;
+
+    float m21 = -F / EG_FF;
+    float m21_t = -(EG_FF * Ft - F * EG_FF_t) / EG_FF_2;
+    float m21_tt = -(Ftt * EG_FF_2 -
+                     2 * Ft * EG_FF_t * EG_FF -
+                     F * EG_FF * EG_FF_tt +
+                     2 * F * EG_FF_t * EG_FF_t) / EG_FF_3;
+    float m21_ttt = -(Fttt * EG_FF_3 -
+                      3 * Ftt * EG_FF_t * EG_FF_2 -
+                      3 * Ft * EG_FF_tt * EG_FF_2 +
+                      6 * Ft * EG_FF * EG_FF_t * EG_FF_t +
+                      6 * F * EG_FF_tt * EG_FF_t * EG_FF -
+                      F * EG_FF_t * EG_FF_2 -
+                      6 * F * EG_FF_t * EG_FF_t * EG_FF_t) / EG_FF_4;
+
+    float alpha = -m11 * ra;
+    float alpha_t = -m11_t * ra;
+    float alpha_tt = -m11_tt * ra;
+    float alpha_ttt = -m11_ttt * ra;
+
+    float beta = -m21 * ra;
+    float beta_t = -m21_t * ra;
+    float beta_tt = -m21_tt * ra;
+    float beta_ttt = -m21_ttt * ra;
+
+    float sqrt_term = 1 - ra * ra * m11;
+    float gamma = (EG_FF > 0 ? 1 : -1) * sqrt(sqrt_term);
+    float gamma_t = (EG_FF > 0 ? 1 : -1) * -ra * ra * m11_t / (2 * sqrt(sqrt_term));
+    float gamma_tt = (EG_FF > 0 ? 1 : -1) *
+                     -ra * ra / 2 *
+                     (m11_tt / sqrt(sqrt_term) +
+                      (ra * ra * m11_t * m11_t) / (2 * pow(sqrt_term, 1.5f)));
+    float gamma_ttt = (EG_FF > 0 ? 1 : -1) *
+                      -ra * ra / 2 *
+                      ((m11_ttt * sqrt(sqrt_term) + (ra * ra * m11_t * m11_tt) / (2 * sqrt(sqrt_term))) / (sqrt_term) +
+                       (ra * ra * m11_t * m11_tt * sqrt_term + 1.5f * pow(ra, 4) * pow(m11_t, 3)) / (pow(sqrt_term, 2.5f)));
+
+    QVector3D n = alpha * sa +
+                beta * st +
+                gamma * sNormal;
+    QVector3D nt = alpha * sat + alpha_t * sa +
+                 beta * stt + beta_t * st +
+                 gamma * sNormal_t + gamma_t * sNormal;
+    QVector3D ntt = alpha * satt +
+                  2 * alpha_t * sat +
+                  alpha_tt * sa +
+                  beta * sttt +
+                  2 * beta_t * stt +
+                  beta_tt * st +
+                  gamma * sNormal_tt +
+                  2 * gamma_t * sNormal_t +
+                  gamma_tt * sNormal;
+    QVector3D nttt = alpha * sattt +
+                   3 * alpha_t * satt +
+                   3 * alpha_tt * sat +
+                   alpha_ttt * sa +
+                   beta * stttt +
+                   3 * beta_t * sttt +
+                   3 * beta_tt * stt +
+                   beta_ttt * st +
+                   gamma * sNormal_ttt +
+                   3 * gamma_t * sNormal_tt +
+                   3 * gamma_tt * sNormal_t +
+                   gamma_ttt * sNormal;
+    return MathUtility::normalVectorDerivative3(n, nt, ntt, nttt);
+}
+
+
+
+QVector3D Envelope::getPathAt(float t)
+{
     if (isTanContinuous())
     {
-        return adjEnv->getEnvelopeAt(t, 1) - getToolRadiusAt(0) * adjEnv->getNormalAt(t, 1);
+        return adjEnvA0->getEnvelopeAt(t, 1) - tool->getSphereRadiusAt(0) * adjEnvA0->getNormalAt(t, 1) - tool->getSphereCenterHeightAt(0) * getAxisAt(t);
     }
     else if (isPositContinuous())
     {
         // The normal is orthogonal to X_t of the adjacent envelope, and at an angle to the axis of its own envelope.
-        // Thus, start with the normal of the adjacent envelope (also orthogonal to X_t of the adjacent envelope by definition),
-        // and rotate it around X_t of the adjacent envelope until the angle with the axis is achieved.
-        // TODO does not actually work yet. Only works for cylindrical case for now, but that is enough for my purposes. If time allows, will expand.
-        QVector3D normal = QVector3D::crossProduct(getAxisAt(t), adjEnv->getEnvelopeDtAt(t, 1)).normalized();
-        // QVector3D normal = getNormalRotation(t) * adjEnv->getNormalAt(t, 1);
-        return adjEnv->getEnvelopeAt(t, 1) - getToolRadiusAt(0) * normal;
+        // Thus start with the cross product of these two, and rotate it a certain amount around X_t of the adjacent.
+        QVector3D adjEnv = adjEnvA0->getEnvelopeAt(t, 1);
+        QVector3D adjEnv_t = adjEnvA0->getEnvelopeDtAt(t, 1);
+        QVector3D axis = getAxisAt(t);
+        float dotValue = -tool->getSphereRadiusDaAt(0) / tool->getSphereCenterHeightDaAt(0);
+
+        // MATH
+        QVector3D v = adjEnv_t.normalized();
+        QVector3D p = QVector3D(0,1,0);
+        if (p == v) p = QVector3D(1,0,0);
+        QVector3D w1 = (p - QVector3D::dotProduct(p, v) * v).normalized();
+        QVector3D w2 = QVector3D::crossProduct(v, w1);
+        float a_dot_w1 = QVector3D::dotProduct(axis, w1);
+        float a_dot_w2 = QVector3D::dotProduct(axis, w2);
+
+        float phi = atan2(a_dot_w2, a_dot_w1);
+        float theta = phi - acos(dotValue / sqrt(a_dot_w1 * a_dot_w1 + a_dot_w2 * a_dot_w2));
+
+        QVector3D normal = w1 * cos(theta) + w2 * sin(theta);
+
+        return adjEnv - tool->getSphereRadiusAt(0) * normal - tool->getSphereCenterHeightAt(0) * axis;
     }
     else
     {
@@ -449,29 +613,46 @@ QVector3D Envelope::getPathAt(float t){
     }
 }
 
-/**
- * @brief Envelope::getPathDtAt Returns the tangent of path of the tool movement at a given time.
- * @param t Time.
- * @return Path tangent at time t.
- */
-QVector3D Envelope::getPathDtAt(float t){
+QVector3D Envelope::getPathDtAt(float t)
+{
     if (isTanContinuous())
     {
-        return adjEnv->getEnvelopeDtAt(t, 1) - getToolRadiusAt(0) * adjEnv->getNormalDtAt(t, 1);
+        return adjEnvA0->getEnvelopeDtAt(t, 1) - tool->getSphereRadiusAt(0) * adjEnvA0->getNormalDtAt(t, 1) - tool->getSphereCenterHeightAt(0) * getAxisDtAt(t);
     }
     else if (isPositContinuous())
     {
-        // TODO only works for cylindrical tool, due to the angle between the normal and the axis. General should be possible though
-        QVector3D axis = getAxisAt(t);
-        QVector3D axis_t = getAxisDtAt(t);
-        QVector3D adjEnv_t = adjEnv->getEnvelopeDtAt(t, 1);
-        QVector3D adjEnv_tt = adjEnv->getEnvelopeDt2At(t, 1);
-        QVector3D normal = QVector3D::crossProduct(axis, adjEnv_t);
-        QVector3D normal_t = QVector3D::crossProduct(axis_t, adjEnv_t) + QVector3D::crossProduct(axis, adjEnv_tt);
-        normal_t = MathUtility::normalVectorDerivative(normal, normal_t);
-        // QVector3D adjEnv_t = adjEnv->getEnvelopeDtAt(t, 1);
-        // QVector3D normal_t = getNormalRotation(t) * adjEnv->getNormalDtAt(t, 1);
-        return adjEnv_t - getToolRadiusAt(0) * normal_t;
+        QVector3D axis = getAxisAt(t); // unit vector
+        QVector3D axis_t = getAxisDtAt(t); // derivative of unit vector
+        QVector3D adjEnv_t = adjEnvA0->getEnvelopeDtAt(t, 1); // not yet unit vector
+        QVector3D adjEnv_tt = adjEnvA0->getEnvelopeDt2At(t, 1); // not yet derivative of unit vector
+        float dotValue = -tool->getSphereRadiusDaAt(0) / tool->getSphereCenterHeightDaAt(0);
+
+        // MATH
+        QVector3D v = adjEnv_t.normalized();
+        QVector3D v_t = MathUtility::normalVectorDerivative(adjEnv_t, adjEnv_tt);
+        QVector3D p = QVector3D(0,1,0);
+        if (p == v) p = QVector3D(1,0,0);
+        QVector3D w1 = p - QVector3D::dotProduct(p, v) * v;
+        QVector3D w1_t = -(QVector3D::dotProduct(p, v) * v_t + QVector3D::dotProduct(p, v_t) * v);
+        w1_t = MathUtility::normalVectorDerivative(w1, w1_t);
+        w1.normalize();
+        QVector3D w2 = QVector3D::crossProduct(v, w1);
+        QVector3D w2_t = QVector3D::crossProduct(v_t, w1) + QVector3D::crossProduct(v, w1_t);
+        float a_dot_w1 = QVector3D::dotProduct(axis, w1);
+        float a_dot_w1_t = QVector3D::dotProduct(axis_t, w1) + QVector3D::dotProduct(axis, w1_t);
+        float a_dot_w2 = QVector3D::dotProduct(axis, w2);
+        float a_dot_w2_t = QVector3D::dotProduct(axis_t, w2) + QVector3D::dotProduct(axis, w2_t);
+
+        float phi = atan2(a_dot_w2, a_dot_w1);
+        float theta = phi - acos(dotValue / sqrt(a_dot_w1 * a_dot_w1 + a_dot_w2 * a_dot_w2));
+        float c_theta = cos(theta);
+        float s_theta = sin(theta);
+        float theta_t = -(c_theta * a_dot_w1_t + s_theta * a_dot_w2_t) /
+                        (-s_theta * a_dot_w1 + c_theta * a_dot_w2);
+
+        QVector3D normal_t = theta_t * (-s_theta * w1 + c_theta * w2) + c_theta * w1_t + s_theta * w2_t;
+
+        return adjEnv_t - tool->getSphereRadiusAt(0) * normal_t - tool->getSphereCenterHeightAt(0) * axis_t;
     }
     else
     {
@@ -479,16 +660,69 @@ QVector3D Envelope::getPathDtAt(float t){
     }
 }
 
-/**
- * @brief Envelope::getPathDt2At Returns the acceleration of path of the tool movement at a given time.
- * @param t Time.
- * @return Path acceleration at time t.
- */
-QVector3D Envelope::getPathDt2At(float t){
-    // Need to check if these are required for chaining position continuous envelopes
+QVector3D Envelope::getPathDt2At(float t)
+{
     if (isTanContinuous())
     {
-        return adjEnv->getEnvelopeDt2At(t, 1) - getToolRadiusAt(0) * adjEnv->getNormalDt2At(t, 1);
+        return adjEnvA0->getEnvelopeDt2At(t, 1) - tool->getSphereRadiusAt(0) * adjEnvA0->getNormalDt2At(t, 1) - tool->getSphereCenterHeightAt(0) * getAxisDt2At(t);
+    }
+    else if (isPositContinuous())
+    {
+        QVector3D axis = getAxisAt(t); // unit vector
+        QVector3D axis_t = getAxisDtAt(t); // derivative of unit vector
+        QVector3D axis_tt = getAxisDt2At(t); // 2nd derivative of unit vector
+        QVector3D adjEnv_t = adjEnvA0->getEnvelopeDtAt(t, 1); // not yet unit vector
+        QVector3D adjEnv_tt = adjEnvA0->getEnvelopeDt2At(t, 1); // not yet derivative of unit vector
+        QVector3D adjEnv_ttt = adjEnvA0->getEnvelopeDt3At(t, 1); // not yet derivative of unit vector
+        float dotValue = -tool->getSphereRadiusDaAt(0) / tool->getSphereCenterHeightDaAt(0);
+
+        // MATH
+        QVector3D v = adjEnv_t.normalized();
+        QVector3D v_t = MathUtility::normalVectorDerivative(adjEnv_t, adjEnv_tt);
+        QVector3D v_tt = MathUtility::normalVectorDerivative2(adjEnv_t, adjEnv_tt, adjEnv_ttt);
+        QVector3D p = QVector3D(0,1,0);
+        if (p == v) p = QVector3D(1,0,0);
+        QVector3D w1 = p - QVector3D::dotProduct(p, v) * v;
+        QVector3D w1_t = -(QVector3D::dotProduct(p, v_t) * v + QVector3D::dotProduct(p, v) * v_t);
+        QVector3D w1_tt = -(QVector3D::dotProduct(p, v_tt) * v + 2 * QVector3D::dotProduct(p, v_t) * v_t + QVector3D::dotProduct(p, v) * v_tt);
+        w1_tt = MathUtility::normalVectorDerivative2(w1, w1_t, w1_tt);
+        w1_t = MathUtility::normalVectorDerivative(w1, w1_t);
+        w1.normalize();
+        QVector3D w2 = QVector3D::crossProduct(v, w1);
+        QVector3D w2_t = QVector3D::crossProduct(v_t, w1) + QVector3D::crossProduct(v, w1_t);
+        QVector3D w2_tt = QVector3D::crossProduct(v_tt, w1) + 2 * QVector3D::crossProduct(v_t, w1_t) + QVector3D::crossProduct(v, w1_tt);
+        float a_dot_w1 = QVector3D::dotProduct(axis, w1);
+        float a_dot_w1_t = QVector3D::dotProduct(axis_t, w1) + QVector3D::dotProduct(axis, w1_t);
+        float a_dot_w1_tt = QVector3D::dotProduct(axis_tt, w1) + 2 * QVector3D::dotProduct(axis_t, w1_t) + QVector3D::dotProduct(axis, w1_tt);
+        float a_dot_w2 = QVector3D::dotProduct(axis, w2);
+        float a_dot_w2_t = QVector3D::dotProduct(axis_t, w2) + QVector3D::dotProduct(axis, w2_t);
+        float a_dot_w2_tt = QVector3D::dotProduct(axis_tt, w2) + 2 * QVector3D::dotProduct(axis_t, w2_t) + QVector3D::dotProduct(axis, w2_tt);
+
+        float phi = atan2(a_dot_w2, a_dot_w1);
+        float theta = phi - acos(dotValue / sqrt(a_dot_w1 * a_dot_w1 + a_dot_w2 * a_dot_w2));
+        float c_theta = cos(theta);
+        float s_theta = sin(theta);
+
+        float k = c_theta * a_dot_w1_t + s_theta * a_dot_w2_t;
+        float l = -s_theta * a_dot_w1 + c_theta * a_dot_w2;
+        float theta_t = -k / l;
+
+        float dk = theta_t * -s_theta * a_dot_w1_t + c_theta * a_dot_w1_tt +
+                   theta_t * c_theta * a_dot_w2_t + s_theta * a_dot_w2_tt;
+        float dl = -(theta_t * c_theta * a_dot_w1 + s_theta * a_dot_w1_t) +
+                   theta_t * -s_theta * a_dot_w2 + c_theta + a_dot_w2_t;
+        float theta_tt = -(l * dk - k * dl) / (l * l);
+
+
+        QVector3D i = -s_theta * w1 + c_theta * w2;
+        QVector3D di = -(theta_t * c_theta * w1 + s_theta * w1_t) +
+                     theta_t * -s_theta * w2 + c_theta * w2_t;
+        QVector3D normal_t = theta_t * i + c_theta * w1_t + s_theta * w2_t;
+        QVector3D normal_tt = theta_tt * i + theta_t * di +
+                            theta_t * -s_theta * w1_t + c_theta * w1_tt +
+                            theta_t * c_theta * w2_t + s_theta * w2_tt;
+
+        return adjEnv_tt - tool->getSphereRadiusAt(0) * normal_tt - tool->getSphereCenterHeightAt(0) * axis_tt;
     }
     else
     {
@@ -496,27 +730,30 @@ QVector3D Envelope::getPathDt2At(float t){
     }
 }
 
-/**
- * @brief Envelope::getPathDt3At Returns the third derivative of path of the tool movement at a given time.
- * @param t Time.
- * @return Path third derivative at time t.
- */
-QVector3D Envelope::getPathDt3At(float t){
+QVector3D Envelope::getPathDt3At(float t)
+{
     // Need to check if these are required for chaining position continuous envelopes
     return toolMovement.getPath().getDerivative3At(t);
 }
+
+QVector3D Envelope::getPathDt4At(float t)
+{
+    // Need to check if these are required for chaining position continuous envelopes
+    return toolMovement.getPath().getDerivative4PlusAt(t);
+}
+
 
 QQuaternion Envelope::calcAxisRotationAt(float t)
 {
     if (!isTanContinuous()) return QQuaternion();
     // First rotate the axis of the previous envelope to its normal.
     // This is to establish a frame of reference for all its derivatives.
-    QVector3D adjNormal = adjEnv->getNormalAt(t, 1);
-    QVector3D adjAxis = adjEnv->getAxisAt(t);
+    QVector3D adjNormal = adjEnvA0->getNormalAt(t, 1);
+    QVector3D adjAxis = adjEnvA0->getAxisAt(t);
     QQuaternion rotationFrame = QQuaternion::rotationTo(adjAxis, adjNormal);
 
     // Then rotate w.r.t. tangent continuity. Which rotates around the cross product of the adjacent normal and axis
-    float degrees = qRadiansToDegrees(acos(-getToolRadiusDaAt(0)));
+    float degrees = qRadiansToDegrees(acos(-tool->getSphereRadiusDaAt(0) / tool->getSphereCenterHeightDaAt(0)));
     QVector3D rotationAxis = QVector3D::crossProduct(adjNormal, adjAxis);
     QQuaternion rotationTangent = QQuaternion::fromAxisAndAngle(rotationAxis, degrees);
 
@@ -529,16 +766,57 @@ QQuaternion Envelope::calcAxisRotationAt(float t)
 QVector3D Envelope::getAxisAt(float t)
 {
     QVector3D axis;
-    // if (IsAxisConstrained)
-    // {
-    //     axis = adjacentEnvelopeA1.getEnvelopeAt(t, 0) - adjEnv->getEnvelopeAt(t, 1);
-    //     axis.normalize();
-    // }
-    // else
-        if (isTanContinuous())
+    if (isAxisConstrained())
+    {
+        QVector3D x1 = adjEnvA0->getEnvelopeAt(t, 1);
+        QVector3D x2 = adjEnvA1->getEnvelopeAt(t, 0);
+        QVector3D deltaX = x2 - x1;
+        QVector3D deltaX_hat = deltaX.normalized();
+
+        QVector3D x1_t = adjEnvA0->getEnvelopeDtAt(t, 1);
+        QVector3D x2_t = adjEnvA1->getEnvelopeDtAt(t, 0);
+        QVector3D x1_t_hat = x1_t.normalized();
+        QVector3D x2_t_hat = x2_t.normalized();
+
+        // The following method only works when Delta X can be made with a cylinder of hight and radius of 1, where x1 lies on the bottom ring of the cylinder and x2 on the top ring.
+
+        // Separately find the parts of the axis parallel and perpendicular to Delta X
+        // By utilizing Delta X dot A = 1 we can calculate the angle between Delta X and A
+        float c_theta = 1.0f / deltaX.length();
+        float s_theta = sqrt(1 - c_theta * c_theta);
+        QVector3D axis_par_deltaX = c_theta * deltaX_hat;
+
+        // For the perpendicular part we make an orthonormal basis on the plane perpendicular to Delta X, with radius Sin(theta)
+        QVector3D v = QVector3D(0,1,0);
+        if (v == deltaX_hat) v = QVector3D(1,0,0);
+        QVector3D v1 = v - QVector3D::dotProduct(v, deltaX_hat) * deltaX_hat;
+        v1 = s_theta * v1.normalized();
+        QVector3D v2 = QVector3D::crossProduct(deltaX_hat, v1);
+
+        // The normals at x1 and x2 are perpendicular to the respective time derivates, as well as the axis.
+        // This means each normal is the cross product of the time derivative and the axis (which is split in the parallel and perpendicular part).
+        // This eventually leads to the form A*cos(phi) + B*sin(phi)=C, where A, B, and C are all coplanar vectors (by construction), which is the only reason this works.
+        QVector3D A = v1 - QVector3D::crossProduct(x2_t_hat, v1) + QVector3D::crossProduct(x1_t_hat, v1);
+        QVector3D B = v2 - QVector3D::crossProduct(x2_t_hat, v2) + QVector3D::crossProduct(x1_t_hat, v2);
+        QVector3D C = deltaX + QVector3D::crossProduct(x2_t_hat, axis_par_deltaX) - QVector3D::crossProduct(x1_t_hat, axis_par_deltaX) - axis_par_deltaX;
+
+        // By using dot product we can find phi
+        float a = QVector3D::dotProduct(A, A);
+        float b = QVector3D::dotProduct(A, B);
+        float c = QVector3D::dotProduct(B, B);
+        float d = QVector3D::dotProduct(A, C);
+        float e = QVector3D::dotProduct(B, C);
+        float phi = atan2(e * a - d * b, d * c - e * b);
+        float c_phi = cos(phi);
+        float s_phi = sin(phi);
+
+        QVector3D axis_perp_deltaX = v1 * c_phi + v2 * s_phi;
+        axis = axis_par_deltaX + axis_perp_deltaX;
+    }
+    else if (isTanContinuous())
     {
         // Rotate the normal of the adjacent envelope around the cross product with the axis of the adjacent envelope
-        axis = calcAxisRotationAt(t) * adjEnv->getAxisAt(t);
+        axis = calcAxisRotationAt(t) * adjEnvA0->getAxisAt(t);
     }
     else
     {
@@ -550,17 +828,94 @@ QVector3D Envelope::getAxisAt(float t)
 QVector3D Envelope::getAxisDtAt(float t)
 {
     QVector3D axis, axis_t;
-    // if (IsAxisConstrained)
-    // {
-    //     axis = adjacentEnvelopeA1.getEnvelopeAt(t, 0) - adjEnv->getEnvelopeAt(t, 1);
-    //     axis_t = adjacentEnvelopeA1.getEnvelopeDtAt(t, 0) - adjEnv->getEnvelopeDtAt(t, 1);
-    //     axis_t = MathUtility::normalVectorDerivative(axis, axis_t);
-    // }
-    // else
-        if (isTanContinuous())
+    if (isAxisConstrained())
     {
-        // TODO There is still a slight div by 0 error here.
-        axis_t = calcAxisRotationAt(t) * adjEnv->getAxisDtAt(t);
+        QVector3D x0 = adjEnvA0->getEnvelopeAt(t, 1);
+        QVector3D x1 = adjEnvA1->getEnvelopeAt(t, 0);
+        QVector3D deltaX = x1 - x0;
+        QVector3D deltaX_hat = deltaX.normalized();
+
+        QVector3D x0_t = adjEnvA0->getEnvelopeDtAt(t, 1);
+        QVector3D x1_t = adjEnvA1->getEnvelopeDtAt(t, 0);
+        QVector3D deltaX_t = x1_t - x0_t;
+        QVector3D deltaX_hat_t = MathUtility::normalVectorDerivative(deltaX, deltaX_t);
+        QVector3D x0_t_hat = x0_t.normalized();
+        QVector3D x1_t_hat = x1_t.normalized();
+
+        QVector3D x0_tt = adjEnvA0->getEnvelopeDt2At(t, 1);
+        QVector3D x1_tt = adjEnvA1->getEnvelopeDt2At(t, 0);
+        QVector3D x0_t_hat_t = MathUtility::normalVectorDerivative(x0_t, x0_tt);
+        QVector3D x1_t_hat_t = MathUtility::normalVectorDerivative(x1_t, x1_tt);
+
+        // The following method only works when Delta X can be made with a cylinder of hight and radius of 1, where x1 lies on the bottom ring of the cylinder and x2 on the top ring.
+
+        // Separately find the parts of the axis parallel and perpendicular to Delta X
+        // By utilizing Delta X dot A = 1 we can calculate the angle between Delta X and A
+        float c_theta = 1.0f / deltaX.length();
+        float c_theta_t = -QVector3D::dotProduct(deltaX, deltaX_t) / pow(deltaX.length(), 3);
+        float s_theta = sqrt(1 - c_theta * c_theta);
+        float s_theta_t = -c_theta * c_theta_t / s_theta;
+        if (s_theta == 0)
+        {
+            s_theta_t = 0;
+        }
+        QVector3D axis_par_deltaX = c_theta * deltaX_hat;
+        QVector3D axis_par_deltaX_t = c_theta_t * deltaX_hat + c_theta * deltaX_hat_t;
+
+        // For the perpendicular part we make an orthonormal basis on the plane perpendicular to Delta X, with radius Sin(theta)
+        QVector3D v = QVector3D(0,1,0);
+        if (v == deltaX_hat) v = QVector3D(1,0,0);
+        QVector3D v1 = v - QVector3D::dotProduct(v, deltaX_hat) * deltaX_hat;
+        QVector3D v1_t = -(QVector3D::dotProduct(v, deltaX_hat_t) * deltaX_hat + QVector3D::dotProduct(v, deltaX_hat) * deltaX_hat_t);
+        v1_t = s_theta_t * v1.normalized() + s_theta * MathUtility::normalVectorDerivative(v1, v1_t);
+        v1 = s_theta * v1.normalized();
+        QVector3D v2 = QVector3D::crossProduct(deltaX_hat, v1);
+        QVector3D v2_t = QVector3D::crossProduct(deltaX_hat_t, v1) + QVector3D::crossProduct(deltaX_hat, v1_t);
+
+        // The normals at x1 and x2 are perpendicular to the respective time derivates, as well as the axis.
+        // This means each normal is the cross product of the time derivative and the axis (which is split in the parallel and perpendicular part).
+        // This eventually leads to the form A*cos(phi) + B*sin(phi)=C, where A, B, and C are all coplanar vectors (by construction), which is the only reason this works.
+        QVector3D D = v1 - QVector3D::crossProduct(x1_t_hat, v1) + QVector3D::crossProduct(x0_t_hat, v1);
+        QVector3D D_t = v1_t -
+                      (QVector3D::crossProduct(x1_t_hat_t, v1) + QVector3D::crossProduct(x1_t_hat, v1_t)) +
+                      (QVector3D::crossProduct(x0_t_hat_t, v1) + QVector3D::crossProduct(x0_t_hat, v1_t));
+        QVector3D E = v2 - QVector3D::crossProduct(x1_t_hat, v2) + QVector3D::crossProduct(x0_t_hat, v2);
+        QVector3D E_t = v2_t -
+                      (QVector3D::crossProduct(x1_t_hat_t, v2) + QVector3D::crossProduct(x1_t_hat, v2_t)) +
+                      (QVector3D::crossProduct(x0_t_hat_t, v2) + QVector3D::crossProduct(x0_t_hat, v2_t));
+        QVector3D F = deltaX + QVector3D::crossProduct(x1_t_hat, axis_par_deltaX) - QVector3D::crossProduct(x0_t_hat, axis_par_deltaX) - axis_par_deltaX;
+        QVector3D F_t = deltaX_t +
+                      (QVector3D::crossProduct(x1_t_hat_t, axis_par_deltaX) + QVector3D::crossProduct(x1_t_hat, axis_par_deltaX_t)) -
+                      (QVector3D::crossProduct(x0_t_hat_t, axis_par_deltaX) + QVector3D::crossProduct(x0_t_hat, axis_par_deltaX_t)) -
+                      axis_par_deltaX_t;
+
+        // By using dot product we can find phi
+        float h = QVector3D::dotProduct(D, D);
+        float i = QVector3D::dotProduct(D, E);
+        float j = QVector3D::dotProduct(E, E);
+        float k = QVector3D::dotProduct(D, F);
+        float l = QVector3D::dotProduct(E, F);
+        float phi = atan2(l * h - k * i, k * j - l * i);
+        float c_phi = cos(phi);
+        float s_phi = sin(phi);
+
+        QVector3D helper = -D * s_phi + E * c_phi;
+        float phi_t = QVector3D::dotProduct(helper, F_t - D_t * c_phi - E_t * s_phi) / helper.lengthSquared();
+        if (helper.lengthSquared() == 0)
+        {
+            phi_t = 0;
+        }
+
+        QVector3D axis_perp_deltaX = v1 * c_phi + v2 * s_phi;
+        QVector3D axis_perp_deltaX_t = v1_t * c_phi + v1 * phi_t * -s_phi +
+                                     v2_t * s_phi + v2 * phi_t * c_phi;
+        axis = axis_par_deltaX + axis_perp_deltaX;
+
+        axis_t = axis_par_deltaX_t + axis_perp_deltaX_t;
+    }
+    else if (isTanContinuous())
+    {
+        axis_t = calcAxisRotationAt(t) * adjEnvA0->getAxisDtAt(t);
     }
     else
     {
@@ -571,11 +926,11 @@ QVector3D Envelope::getAxisDtAt(float t)
 
 QVector3D Envelope::getAxisDt2At(float t)
 {
+    // TODO: for now the axis constrained case only works once. If the tool isn't big enough, chaining constrained envelopes together won't work as it needs higher the higher derivatives of the envelope and normal.
     QVector3D axis, axis_t, axis_tt;
-    // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
     if (isTanContinuous())
     {
-        axis_tt = calcAxisRotationAt(t) * adjEnv->getAxisDt2At(t);
+        axis_tt = calcAxisRotationAt(t) * adjEnvA0->getAxisDt2At(t);
     }
     else
     {
@@ -586,11 +941,11 @@ QVector3D Envelope::getAxisDt2At(float t)
 
 QVector3D Envelope::getAxisDt3At(float t)
 {
-    // TODO should find a solution for the axis constrained and tangent continuous cases. For now works, but only in narrow cases.
+    // TODO: for now the axis constrained case only works once. If the tool isn't big enough, chaining constrained envelopes together won't work as it needs higher the higher derivatives of the envelope and normal.
     QVector3D axis, axis_t, axis_tt, axis_ttt;
     if (isTanContinuous())
     {
-        axis_ttt = calcAxisRotationAt(t) * adjEnv->getAxisDt3At(t);
+        axis_ttt = calcAxisRotationAt(t) * adjEnvA0->getAxisDt3At(t);
     }
     else
     {
@@ -599,24 +954,21 @@ QVector3D Envelope::getAxisDt3At(float t)
     return axis_ttt;
 }
 
-float Envelope::getToolRadiusAt(float a) {
-    return tool->getRadiusAt(a);
+QVector3D Envelope::getAxisDt4At(float t)
+{
+    // TODO: for now the axis constrained case only works once. If the tool isn't big enough, chaining constrained envelopes together won't work as it needs higher the higher derivatives of the envelope and normal.
+    QVector3D axis, axis_t, axis_tt, axis_ttt, axis_tttt;
+    if (isTanContinuous())
+    {
+        axis_tttt = calcAxisRotationAt(t) * adjEnvA0->getAxisDt4At(t);
+    }
+    else
+    {
+        axis_tttt = toolMovement.getAxisDt4At(t);
+    }
+    return axis_tttt;
 }
 
-float Envelope::getToolRadiusDaAt(float a) {
-    return tool->getRadiusDaAt(a);
-}
-
-// /**
-//  * @brief Envelope::getToolToPathTransform Calculates the transformation to move the tool to the path. Should not really be needed to be called anywhere but Envelope::getToolTransform.
-//  * @return
-//  */
-// QMatrix4x4 Envelope::getToolToPathTransform() {
-//     QMatrix4x4 toolToPath;
-//     toolToPath.setToIdentity();
-//     toolToPath.translate(-tool->getA0() * tool->getAxisVector());
-//     return toolToPath;
-// }
 
 /**
  * @brief Envelope::getToolTransform Calculates the transformation matrix of the Envelope's tool relative to the envelope itself. The modelTransform is separate from the toolTransform.

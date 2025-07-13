@@ -22,6 +22,7 @@ public:
     QVector3D getDerivativeAt(float t);
     QVector3D getDerivative2At(float t);
     QVector3D getDerivative3At(float t);
+    QVector3D getDerivative4PlusAt(float t);
 
     inline void setX(Polynomial x) {this->x = x; updateVertexArr();}
     inline void setY(Polynomial y) {this->y = y; updateVertexArr();}

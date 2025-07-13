@@ -20,6 +20,7 @@ public:
     float getDerivativeAt(float t);
     float getDerivative2At(float t);
     float getDerivative3At(float t);
+    float getDerivative4PlusAt(float t);
 
     inline const float getA() const {return a;}
     inline const float getB() const {return b;}
