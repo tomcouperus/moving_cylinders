@@ -32,8 +32,10 @@ class MainWindow : public QMainWindow {
   void addEnvToSelectorMenus(const Envelope *env);
   void removeEnvFromSelectorMenus(const Envelope *env);
 
- private slots:
+  void updateUI();
+  void updateUI(int prevIdx);
 
+ private slots:
   // Envelope Menu
   void on_envelopeSelectBox_currentIndexChanged(int index);
   void on_envelopeActiveCheckBox_toggled(bool checked);

@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
   ui->aSlider->setMaximum(ui->mainView->settings.aSectors);
   ui->TimeSlider->setMaximum(ui->mainView->settings.tSectors);
 
-  on_envelopeSelectBox_currentIndexChanged(0);
+  updateUI();
 }
 
 /**
@@ -86,52 +86,57 @@ QString MainWindow::QVectorToString(const QVector3D &v) {
     return QString("(%1,%2,%3)").arg(v.x()).arg(v.y()).arg(v.z());
 }
 
-/***********************************************************/
-/********************** Envelope Menu **********************/
-/***********************************************************/
+void MainWindow::updateUI() {
+    updateUI(ui->mainView->settings.selectedIdx);
+}
 
-void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
-    int idx = ui->envelopeSelectBox->itemData(index).value<int>();
-    int prevIdx = ui->mainView->settings.selectedIdx;
-    qDebug() << "Selected envelope" << idx;
-    ui->mainView->settings.selectedIdx = idx;
-    ui->mainView->settings.prevIdx = prevIdx;
-
-    // Unhide options from constraint selectors
+void MainWindow::updateUI(int prevIdx) {
+    int idx = ui->mainView->settings.selectedIdx;
+    // if (idx == prevIdx) {
+    //     qDebug() << ":: ERROR -- UI update for unchanged selection";
+    //     return;
+    // }
     QVector<Envelope *> envelopes = ui->mainView->envelopes;
-    if (prevIdx != -1) {
-        SetComboBoxItemEnabled(ui->constraintA0SelectBox, envelopes[prevIdx], true);
-        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[prevIdx], true);
-        if (envelopes[prevIdx]->isPositContinuous()) {
-            SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[prevIdx]->getAdjEnvelope(), true);
-        }
+
+    // Update the constraint selectors content
+    QList<int> dependents = idx ==-1 ? QList<int>() : envelopes[idx]->getAllDependents().values();
+    for (int i = 0; i < envelopes.size(); i++) {
+        if (!ui->mainView->indicesUsed[i]) continue;
+        bool showInConstraintBox = !dependents.contains(i);
+        SetComboBoxItemEnabled(ui->constraintA0SelectBox, envelopes[i], showInConstraintBox);
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[i], showInConstraintBox);
+    }
+    if (idx != -1 && envelopes[idx]->isPositContinuous()) {
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[idx]->getAdjA0Envelope(), false);
     }
 
-    if (idx == -1) { // No Envelope selected
-        // Reset the ui elements
-        // ** Active check box
-        ui->envelopeActiveCheckBox->setChecked(false);
-        // ** Constraint select boxes. Also need to unhide all the currently hidden options,
-        // ** which always has to happen on a switch. So do that outside this if.
-        ui->constraintA0SelectBox->setCurrentIndex(0);
-        ui->constraintA1SelectBox->setCurrentIndex(0);
-        ui->SettingsTabMenu->setTabEnabled(3, false);
-    } else { // Envelope Selected
-        Envelope *env = ui->mainView->envelopes[idx];
-        // Load the selected envelope's data
-        // ** Active check box
-        ui->envelopeActiveCheckBox->setChecked(env->isActive());
-        // ** Constraint select boxes. Also hide the current envelope and all its dependents
-        QList<int> dependents = envelopes[idx]->getAllDependents().values();
-        for (int i = 0; i < dependents.size(); i++) {
-            SetComboBoxItemEnabled(ui->constraintA0SelectBox, envelopes[dependents[i]], false);
-            SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelopes[dependents[i]], false);
-        }
-        int a0Idx = env->isPositContinuous() ? env->getAdjEnvelope()->getIndex()+1 : 0;
+    // Enable tabs if an envelope is selected
+    ui->envelopeActiveCheckBox->setEnabled(idx != -1);
+    ui->constraintsGroupBox->setEnabled(idx != -1);
+    ui->SettingsTabMenu->setTabEnabled(2, idx != -1);
+    ui->SettingsTabMenu->setTabEnabled(3, idx != -1);
+
+    if (idx != -1) {
+        Envelope *env = envelopes[idx];
+
+        // Envelope Settings
+        bool envelopeActive = env->isActive();
+        ui->envelopeActiveCheckBox->setChecked(envelopeActive);
+
+        int a0Idx = env->isPositContinuous() ? env->getAdjA0Envelope()->getIndex()+1 : 0;
         ui->constraintA0SelectBox->setCurrentIndex(a0Idx);
-        on_constraintA0SelectBox_currentIndexChanged(a0Idx);
-        ui->tanContCheckBox->setChecked(env->isTanContinuous());
-        on_tanContCheckBox_toggled(env->isTanContinuous());
+
+        bool tanCont = env->getTanContinuity();
+        ui->tanContCheckBox->setChecked(tanCont);
+        ui->tanContCheckBox->setEnabled(env->isPositContinuous());
+        ui->orientVector_1->setEnabled(!tanCont);
+        ui->orientVector_2->setEnabled(!tanCont);
+        ui->angleOrient_1_SpinBox->setEnabled(tanCont);
+        ui->angleOrient_2_SpinBox->setEnabled(tanCont);
+
+        int a1Idx = env->isAxisConstrained() ? env->getAdjA1Envelope()->getIndex()+1 : 0;
+        ui->constraintA1SelectBox->setCurrentIndex(a1Idx);
+        ui->constraintA1SelectBox->setEnabled(env->isPositContinuous());
 
         // Tool settings
         ui->orientVector_1->setText(QVectorToString(env->getToolMovement().getAxisT0()));
@@ -149,6 +154,7 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         ui->toolBox->setCurrentIndex(toolTypeIdx);
 
         // Path Settings
+        ui->SettingsTabMenu->setTabEnabled(3, !env->isPositContinuous());
         SimplePath &path = env->getToolMovement().getPath();
         ui->spinBox_a_x->setValue(path.getX().getA());
         ui->spinBox_b_x->setValue(path.getX().getB());
@@ -162,17 +168,30 @@ void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
         ui->spinBox_b_z->setValue(path.getZ().getB());
         ui->spinBox_c_z->setValue(path.getZ().getC());
         ui->spinBox_d_z->setValue(path.getZ().getD());
+    } else {
+        // if no envelope is selected, clear the constraint boxes
+        ui->constraintA0SelectBox->setCurrentIndex(0);
+        ui->constraintA1SelectBox->setCurrentIndex(0);
+        ui->tanContCheckBox->setChecked(false);
     }
+}
 
-    // Enable/disable some ui elements always
-    bool envelopeSelected = idx != -1;
-    ui->envelopeActiveCheckBox->setEnabled(envelopeSelected);
-    ui->constraintsGroupBox->setEnabled(envelopeSelected);
-    ui->SettingsTabMenu->setTabEnabled(2, envelopeSelected);
+/***********************************************************/
+/********************** Envelope Menu **********************/
+/***********************************************************/
 
+void MainWindow::on_envelopeSelectBox_currentIndexChanged(int index) {
+    qDebug() << ":: on_envelopeSelectBox_currentIndexChanged";
+    int idx = ui->envelopeSelectBox->itemData(index).value<int>();
+    int prevIdx = ui->mainView->settings.selectedIdx;
+    qDebug() << "Selected envelope" << idx;
+    ui->mainView->settings.selectedIdx = idx;
+
+    updateUI(prevIdx);
 }
 
 void MainWindow::on_envelopeActiveCheckBox_toggled(bool checked) {
+    qDebug() << ":: on_envelopeActiveCheckBox_toggled";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     if (ui->mainView->envelopes[idx]->isActive() == checked) return;
@@ -185,19 +204,19 @@ void MainWindow::on_envelopeActiveCheckBox_toggled(bool checked) {
 
 
 void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
+    qDebug() << ":: on_constraintA0SelectBox_currentIndexChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     Envelope *envelope = ui->mainView->envelopes[idx];
     // Unhide previous adjacent envelope in a1 constraint
     if (envelope->isPositContinuous()) {
-        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjEnvelope(), true);
+        SetComboBoxItemEnabled(ui->constraintA1SelectBox, envelope->getAdjA0Envelope(), true);
     }
 
     // Set adjacent envelope
     Envelope *adjEnv = (index == 0) ? nullptr : ui->mainView->envelopes[index-1];
-    if (envelope->getAdjEnvelope() != adjEnv) {
-        envelope->setAdjacentEnvelope(adjEnv);
-
+    if (envelope->getAdjA0Envelope() != adjEnv) {
+        envelope->setAdjacentA0Envelope(adjEnv);
 
         QSet<int> depEnvs = envelope->getAllDependents();
         ui->mainView->envelopeMeshUpdates += depEnvs;
@@ -216,7 +235,26 @@ void MainWindow::on_constraintA0SelectBox_currentIndexChanged(int index) {
 }
 
 void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
+    qDebug() << ":: on_constraintA1SelectBox_currentIndexChanged";
+    int idx = ui->mainView->settings.selectedIdx;
+    if (idx == -1) return;
+    Envelope *envelope = ui->mainView->envelopes[idx];
 
+    // Set adjacent envelope
+    Envelope *adjEnv = (index == 0) ? nullptr : ui->mainView->envelopes[index-1];
+    if (envelope->getAdjA1Envelope() != adjEnv) {
+        envelope->setAdjacentA1Envelope(adjEnv);
+
+        QSet<int> depEnvs = envelope->getAllDependents();
+        ui->mainView->envelopeMeshUpdates += depEnvs;
+        ui->mainView->toolTransfUpdates += depEnvs;
+        ui->mainView->update();
+    }
+    ui->tanContCheckBox->setEnabled(adjEnv == nullptr);
+    ui->orientVector_1->setEnabled(adjEnv == nullptr && !envelope->getTanContinuity());
+    ui->orientVector_2->setEnabled(adjEnv == nullptr && !envelope->getTanContinuity());
+    ui->angleOrient_1_SpinBox->setEnabled(adjEnv == nullptr && envelope->getTanContinuity());
+    ui->angleOrient_2_SpinBox->setEnabled(adjEnv == nullptr && envelope->getTanContinuity());
 }
 
 /**
@@ -224,22 +262,21 @@ void MainWindow::on_constraintA1SelectBox_currentIndexChanged(int index) {
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_tanContCheckBox_toggled(bool checked){
+    qDebug() << ":: on_tanContCheckBox_toggled";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
-    ui->mainView->envelopes[idx]->setIsTanContinuous(checked);
-
-    ui->orientVector_1->setEnabled(!checked);
-    ui->orientVector_2->setEnabled(!checked);
-    ui->angleOrient_1_SpinBox->setEnabled(checked);
-    ui->angleOrient_2_SpinBox->setEnabled(checked);
+    ui->mainView->envelopes[idx]->setTanContinuity(checked);
 
     QSet<int> depEnvs = ui->mainView->envelopes[idx]->getAllDependents();
     ui->mainView->envelopeMeshUpdates += depEnvs;
     ui->mainView->toolTransfUpdates += depEnvs;
     ui->mainView->update();
+
+    updateUI();
 }
 
 void MainWindow::on_newEnvelopeButton_clicked() {
+    qDebug() << ":: on_newEnvelopeButton_clicked";
     Envelope *env = ui->mainView->addNewEnvelope();
     if (env == nullptr) {
         qDebug() << "Maximum number of envelopes reached";
@@ -264,6 +301,7 @@ void MainWindow::on_newEnvelopeButton_clicked() {
  * @brief MainWindow::on_orientVector_1_returnPressed Updates the orientation vector of the tool.
  */
 void MainWindow::on_orientVector_1_returnPressed(){
+    qDebug() << ":: on_orientVector_1_returnPressed";
     int idx = ui->mainView->settings.selectedIdx;
     qDebug() << "orientation vector changed";
     QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
@@ -287,6 +325,7 @@ void MainWindow::on_orientVector_1_returnPressed(){
  * @brief MainWindow::on_orientVector_2_returnPressed Updates the orientation vector of the tool.
  */
 void MainWindow::on_orientVector_2_returnPressed(){
+    qDebug() << ":: on_orientVector_2_returnPressed";
     int idx = ui->mainView->settings.selectedIdx;
     qDebug() << "orientation vector changed";
     QVector3D vector1 = ui->mainView->settings.stringToVector3D(ui->orientVector_1->text());
@@ -312,6 +351,7 @@ void MainWindow::on_orientVector_2_returnPressed(){
  * @param value new angle.
  */
 void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
+    qDebug() << ":: on_angleOrient_1_SpinBox_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     Envelope *env = ui->mainView->envelopes[idx];
@@ -329,6 +369,7 @@ void MainWindow::on_angleOrient_1_SpinBox_valueChanged(double value) {
  * @param value new angle.
  */
 void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
+    qDebug() << ":: on_angleOrient_2_SpinBox_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     Envelope *env = ui->mainView->envelopes[idx];
@@ -346,6 +387,7 @@ void MainWindow::on_angleOrient_2_SpinBox_valueChanged(double value) {
  * @param value new radius.
  */
 void MainWindow::on_radiusSpinBox_valueChanged(double value) {
+    qDebug() << ":: on_radiusSpinBox_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setRadius(value);
@@ -363,6 +405,7 @@ void MainWindow::on_radiusSpinBox_valueChanged(double value) {
  * @param value new inner radius.
  */
 void MainWindow::on_drumRadiusSpinBox_valueChanged(double value) {
+    qDebug() << ":: on_drumRadiusSpinBox_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     ui->mainView->drums[idx]->setCurvatureRadius(value);
@@ -379,6 +422,7 @@ void MainWindow::on_drumRadiusSpinBox_valueChanged(double value) {
  * @param value new opening angle.
  */
 void MainWindow::on_angleSpinBox_valueChanged(double value) {
+    qDebug() << ":: on_angleSpinBox_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setAngle(value);
@@ -395,6 +439,7 @@ void MainWindow::on_angleSpinBox_valueChanged(double value) {
  * @param value new height.
  */
 void MainWindow::on_heightSpinBox_valueChanged(double value) {
+    qDebug() << ":: on_heightSpinBox_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
     ui->mainView->cylinders[idx]->setHeight(value);
@@ -412,6 +457,7 @@ void MainWindow::on_heightSpinBox_valueChanged(double value) {
  * @param index The index of the tool.
  */
 void MainWindow::on_toolBox_currentIndexChanged(int index){
+    qDebug() << ":: on_toolBox_currentIndexChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -461,6 +507,7 @@ void MainWindow::on_toolBox_currentIndexChanged(int index){
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_x_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_a_x_valueChanged";
   int idx = ui->mainView->settings.selectedIdx;
   if (idx == -1) return;
 
@@ -479,6 +526,7 @@ void MainWindow::on_spinBox_a_x_valueChanged(int value) {
  * @param value new b coefficient.
  */
 void MainWindow::on_spinBox_b_x_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_b_x_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -497,6 +545,7 @@ void MainWindow::on_spinBox_b_x_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_c_x_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_c_x_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -515,6 +564,7 @@ void MainWindow::on_spinBox_c_x_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_d_x_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_d_x_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -533,6 +583,7 @@ void MainWindow::on_spinBox_d_x_valueChanged(int value) {
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_y_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_a_y_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -551,6 +602,7 @@ void MainWindow::on_spinBox_a_y_valueChanged(int value) {
  * @param value new b coefficient.
  */
 void MainWindow::on_spinBox_b_y_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_b_y_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -569,6 +621,7 @@ void MainWindow::on_spinBox_b_y_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_c_y_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_c_y_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -587,6 +640,7 @@ void MainWindow::on_spinBox_c_y_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_d_y_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_d_y_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -606,6 +660,7 @@ void MainWindow::on_spinBox_d_y_valueChanged(int value) {
  * @param value new a coefficient.
  */
 void MainWindow::on_spinBox_a_z_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_a_z_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -624,6 +679,7 @@ void MainWindow::on_spinBox_a_z_valueChanged(int value) {
  * @param value new b coefficient.
  */
 void MainWindow::on_spinBox_b_z_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_b_z_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -642,6 +698,7 @@ void MainWindow::on_spinBox_b_z_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_c_z_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_c_z_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -660,6 +717,7 @@ void MainWindow::on_spinBox_c_z_valueChanged(int value) {
  * @param value new c coefficient.
  */
 void MainWindow::on_spinBox_d_z_valueChanged(int value) {
+    qDebug() << ":: on_spinBox_d_z_valueChanged";
     int idx = ui->mainView->settings.selectedIdx;
     if (idx == -1) return;
 
@@ -684,6 +742,7 @@ void MainWindow::on_spinBox_d_z_valueChanged(int value) {
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_envelopeCheckBox_toggled(bool checked){
+    qDebug() << ":: on_envelopeCheckBox_toggled";
   ui->mainView->settings.showEnvelope = checked;
   ui->mainView->update();
 }
@@ -693,6 +752,7 @@ void MainWindow::on_envelopeCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_toolCheckBox_toggled(bool checked){
+    qDebug() << ":: on_toolCheckBox_toggled";
   ui->mainView->settings.showTool = checked;
   ui->mainView->update();
 }
@@ -702,6 +762,7 @@ void MainWindow::on_toolCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_grazCurveCheckBox_toggled(bool checked){
+    qDebug() << ":: on_grazCurveCheckBox_toggled";
   ui->mainView->settings.showGrazingCurve = checked;
   ui->mainView->update();
 }
@@ -711,6 +772,7 @@ void MainWindow::on_grazCurveCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_pathCheckBox_toggled(bool checked){
+    qDebug() << ":: on_pathCheckBox_toggled";
   ui->mainView->settings.showPath = checked;
   ui->mainView->update();
 }
@@ -720,6 +782,7 @@ void MainWindow::on_pathCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_toolAxisCheckBox_toggled(bool checked){
+    qDebug() << ":: on_toolAxisCheckBox_toggled";
   ui->mainView->settings.showToolAxis = checked;
   ui->mainView->update();
 }
@@ -729,6 +792,7 @@ void MainWindow::on_toolAxisCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_normalsCheckBox_toggled(bool checked){
+    qDebug() << ":: on_normalsCheckBox_toggled";
   ui->mainView->settings.showNormals = checked;
   ui->mainView->update();
 }
@@ -738,6 +802,7 @@ void MainWindow::on_normalsCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_sphereCheckBox_toggled(bool checked){
+    qDebug() << ":: on_sphereCheckBox_toggled";
   ui->mainView->settings.showSpheres = checked;
   ui->mainView->update();
 }
@@ -747,6 +812,7 @@ void MainWindow::on_sphereCheckBox_toggled(bool checked){
  * @param checked The new value of the checkbox.
  */
 void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
+    qDebug() << ":: on_reflecLinesCheckBox_toggled";
     ui->fracReflSpinBox->setEnabled(checked);
     ui->freqReflSpinBox->setEnabled(checked);
 
@@ -760,6 +826,7 @@ void MainWindow::on_reflecLinesCheckBox_toggled(bool checked){
 }
 
 void MainWindow::on_freqReflSpinBox_valueChanged(int value){
+    qDebug() << ":: on_freqReflSpinBox_valueChanged";
     ui->mainView->settings.reflFreq = value;
     for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
         if (!ui->mainView->indicesUsed[i]) continue;
@@ -770,6 +837,7 @@ void MainWindow::on_freqReflSpinBox_valueChanged(int value){
 }
 
 void MainWindow::on_fracReflSpinBox_valueChanged(double value){
+    qDebug() << ":: on_fracReflSpinBox_valueChanged";
     ui->mainView->settings.percentBlack = value;
     for (int i = 0; i < ui->mainView->envelopes.size(); i++) {
         if (!ui->mainView->indicesUsed[i]) continue;
@@ -784,7 +852,7 @@ void MainWindow::on_fracReflSpinBox_valueChanged(double value){
  * @param value The new number of sectors.
  */
 void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
-    qDebug() << "Axis sectors changed";
+    qDebug() << ":: on_axisSectorsSpinBox_valueChanged";
     qDebug() << "TODO change to dynamic";
     ui->aSlider->setMaximum(value);
     ui->mainView->settings.aSectors = value;
@@ -811,7 +879,7 @@ void MainWindow::on_axisSectorsSpinBox_valueChanged(int value) {
  * @param value The new number of sectors.
  */
 void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
-    qDebug() << "Time sectors changed";
+    qDebug() << ":: on_timeSectorsSpinBox_valueChanged";
     ui->TimeSlider->setMaximum(value);
     ui->mainView->settings.tSectors = value;
 
@@ -839,6 +907,7 @@ void MainWindow::on_timeSectorsSpinBox_valueChanged(int value) {
  * @param value The new time value.
  */
 void MainWindow::on_TimeSlider_sliderMoved(int value) {
+    qDebug() << ":: on_TimeSlider_sliderMoved";
   CylinderMovement &move = ui->mainView->envelopes[0]->getToolMovement();
   SimplePath &path = move.getPath();
   ui->mainView->settings.timeIdx = value;
@@ -854,7 +923,7 @@ void MainWindow::on_TimeSlider_sliderMoved(int value) {
  * @param value The new a value.
  */
 void MainWindow::on_aSlider_sliderMoved(int value) {
-    qDebug() <<  value;
+    qDebug() << ":: on_aSlider_sliderMoved";
   ui->mainView->settings.aIdx = value;
   ui->mainView->updateBuffers();
   ui->mainView->update();
@@ -864,6 +933,7 @@ void MainWindow::on_aSlider_sliderMoved(int value) {
  * @brief MainWindow::on_ResetRotationButton_clicked Resets the rotation.
  */
 void MainWindow::on_ResetRotationButton_clicked() {
+    qDebug() << ":: on_ResetRotationButton_clicked";
   ui->RotationDialX->setValue(0);
   ui->RotationDialY->setValue(0);
   ui->RotationDialZ->setValue(0);
@@ -876,6 +946,7 @@ void MainWindow::on_ResetRotationButton_clicked() {
  * @param value Unused.
  */
 void MainWindow::on_RotationDialX_sliderMoved(int value) {
+    qDebug() << ":: on_RotationDialX_sliderMoved";
   ui->mainView->setRotation(value, ui->RotationDialY->value(),
                             ui->RotationDialZ->value());
 }
@@ -886,6 +957,7 @@ void MainWindow::on_RotationDialX_sliderMoved(int value) {
  * @param value Unused.
  */
 void MainWindow::on_RotationDialY_sliderMoved(int value) {
+    qDebug() << ":: on_RotationDialY_sliderMoved";
   ui->mainView->setRotation(ui->RotationDialX->value(), value,
                             ui->RotationDialZ->value());
 }
@@ -896,6 +968,7 @@ void MainWindow::on_RotationDialY_sliderMoved(int value) {
  * @param value Unused.
  */
 void MainWindow::on_RotationDialZ_sliderMoved(int value) {
+    qDebug() << ":: on_RotationDialZ_sliderMoved";
   ui->mainView->setRotation(ui->RotationDialX->value(),
                             ui->RotationDialY->value(), value);
 }
@@ -904,6 +977,7 @@ void MainWindow::on_RotationDialZ_sliderMoved(int value) {
  * @brief MainWindow::on_ResetScaleButton_clicked Resets the scale factor.
  */
 void MainWindow::on_ResetScaleButton_clicked() {
+    qDebug() << ":: on_ResetScaleButton_clicked";
   ui->ScaleSlider->setValue(100);
   ui->mainView->setScale(1);
 }
@@ -913,6 +987,7 @@ void MainWindow::on_ResetScaleButton_clicked() {
  * @param value The new scale value.
  */
 void MainWindow::on_ScaleSlider_sliderMoved(int value) {
+    qDebug() << ":: on_ScaleSlider_sliderMoved";
   ui->mainView->setScale(value / 100.0f);
 }
 

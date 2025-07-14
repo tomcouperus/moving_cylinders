@@ -39,7 +39,7 @@ Envelope::Envelope(int index, Tool *tool, const SimplePath &path, Envelope *adjE
     tool(tool),
     toolMovement(path, tool)
 {
-    setAdjacentEnvelope(adjEnvelope);
+    setAdjacentA0Envelope(adjEnvelope);
     sectorsA = tool->getSectors();
     sectorsT = toolMovement.getPath().getSectors();
 }
@@ -112,9 +112,15 @@ QSet<int> Envelope::getAllDependents() {
     return dependencySet;
 }
 
-void Envelope::setAdjacentEnvelope(Envelope *env){
+void Envelope::setAdjacentA0Envelope(Envelope *env){
     if (adjEnvA0 != nullptr) this->adjEnvA0->deregisterDependent(this);
     adjEnvA0 = env;
+    if (env != nullptr) env->registerDependent(this);
+}
+
+void Envelope::setAdjacentA1Envelope(Envelope *env){
+    if (adjEnvA1 != nullptr) this->adjEnvA1->deregisterDependent(this);
+    adjEnvA1 = env;
     if (env != nullptr) env->registerDependent(this);
 }
 
@@ -282,11 +288,6 @@ void Envelope::computeNormals(){
     QVector3D c = QVector3D(0,1,0);
 
     QVector3D v1, p1;
-    // SimplePath path = toolMovement->getPath();
-    // float aDelta = (tool->getA1()-tool->getA0())/sectorsA;
-    // float a1 = tool->getA1()-aDelta;
-    // float tDelta = (path.getT1()-path.getT0())/sectorsT;
-    // float t1 = path.getT1();
     QVector<Vertex> normals;
     for (int tIdx = 0; tIdx <= sectorsT; tIdx++)
     {
@@ -295,7 +296,7 @@ void Envelope::computeNormals(){
         {
             float t = (float) tIdx / sectorsT;
             float a = (float) aIdx / sectorsA;
-            p1 = getPathAt(t) + a*tool->getHeight()*getAxisAt(t);
+            p1 = getPathAt(t) + tool->getSphereCenterHeightAt(a)*getAxisAt(t);
             v1 = getEnvelopeAt(t, a);
 
             // Add vertices to array
@@ -408,14 +409,14 @@ QVector3D Envelope::getNormalDt2At(float t, float a)
     float m11 = G / EG_FF;
     float m11_t = (EG_FF * Gt - G * EG_FF_t) / EG_FF_2;
     float m11_tt = (Gtt * EG_FF_2 -
-                    2 * Gt * EG_FF_t * EG_FF -
+                    2 * Gt * EG_FF * EG_FF_t -
                     G * EG_FF * EG_FF_tt +
                     2 * G * EG_FF_t * EG_FF_t) / EG_FF_3;
 
     float m21 = -F / EG_FF;
     float m21_t = -(EG_FF * Ft - F * EG_FF_t) / EG_FF_2;
     float m21_tt = -(Ftt * EG_FF_2 -
-                     2 * Ft * EG_FF_t * EG_FF -
+                     2 * Ft * EG_FF * EG_FF_t -
                      F * EG_FF * EG_FF_tt +
                      2 * F * EG_FF_t * EG_FF_t) / EG_FF_3;
 
@@ -497,30 +498,30 @@ QVector3D Envelope::getNormalDt3At(float t, float a)
     float m11 = G / EG_FF;
     float m11_t = (EG_FF * Gt - G * EG_FF_t) / EG_FF_2;
     float m11_tt = (Gtt * EG_FF_2 -
-                    2 * Gt * EG_FF_t * EG_FF -
+                    2 * Gt * EG_FF * EG_FF_t -
                     G * EG_FF * EG_FF_tt +
                     2 * G * EG_FF_t * EG_FF_t) / EG_FF_3;
     float m11_ttt = (Gttt * EG_FF_3 -
-                     3 * Gtt * EG_FF_t * EG_FF_2 -
-                     3 * Gt * EG_FF_tt * EG_FF_2 +
-                     6 * Gt * EG_FF * EG_FF_t * EG_FF_t +
-                     6 * G * EG_FF_tt * EG_FF_t * EG_FF -
-                     G * EG_FF_t * EG_FF_2 -
-                     6 * G * EG_FF_t * EG_FF_t * EG_FF_t) / EG_FF_4;
+                     3 * EG_FF_2 * Gtt * EG_FF_t -
+                     3 * EG_FF_2 * Gt * EG_FF_tt +
+                     6 * EG_FF * Gt * EG_FF_t * EG_FF_t -
+                     G * EG_FF_ttt * EG_FF_2 -
+                     6 * G * EG_FF_t * EG_FF_t * EG_FF_t +
+                     6 * G * EG_FF * EG_FF_t * EG_FF_tt) / EG_FF_4;
 
     float m21 = -F / EG_FF;
     float m21_t = -(EG_FF * Ft - F * EG_FF_t) / EG_FF_2;
     float m21_tt = -(Ftt * EG_FF_2 -
-                     2 * Ft * EG_FF_t * EG_FF -
+                     2 * Ft * EG_FF * EG_FF_t -
                      F * EG_FF * EG_FF_tt +
                      2 * F * EG_FF_t * EG_FF_t) / EG_FF_3;
     float m21_ttt = -(Fttt * EG_FF_3 -
-                      3 * Ftt * EG_FF_t * EG_FF_2 -
-                      3 * Ft * EG_FF_tt * EG_FF_2 +
-                      6 * Ft * EG_FF * EG_FF_t * EG_FF_t +
-                      6 * F * EG_FF_tt * EG_FF_t * EG_FF -
-                      F * EG_FF_t * EG_FF_2 -
-                      6 * F * EG_FF_t * EG_FF_t * EG_FF_t) / EG_FF_4;
+                      3 * EG_FF_2 * Ftt * EG_FF_t -
+                      3 * EG_FF_2 * Ft * EG_FF_tt +
+                      6 * EG_FF * Ft * EG_FF_t * EG_FF_t -
+                      F * EG_FF_ttt * EG_FF_2 -
+                      6 * F * EG_FF_t * EG_FF_t * EG_FF_t +
+                      6 * F * EG_FF * EG_FF_t * EG_FF_tt) / EG_FF_4;
 
     float alpha = -m11 * ra;
     float alpha_t = -m11_t * ra;
@@ -768,21 +769,21 @@ QVector3D Envelope::getAxisAt(float t)
     QVector3D axis;
     if (isAxisConstrained())
     {
-        QVector3D x1 = adjEnvA0->getEnvelopeAt(t, 1);
-        QVector3D x2 = adjEnvA1->getEnvelopeAt(t, 0);
-        QVector3D deltaX = x2 - x1;
+        QVector3D x0 = adjEnvA0->getEnvelopeAt(t, 1);
+        QVector3D x1 = adjEnvA1->getEnvelopeAt(t, 0);
+        QVector3D deltaX = x1 - x0;
         QVector3D deltaX_hat = deltaX.normalized();
 
-        QVector3D x1_t = adjEnvA0->getEnvelopeDtAt(t, 1);
-        QVector3D x2_t = adjEnvA1->getEnvelopeDtAt(t, 0);
+        QVector3D x0_t = adjEnvA0->getEnvelopeDtAt(t, 1);
+        QVector3D x1_t = adjEnvA1->getEnvelopeDtAt(t, 0);
+        QVector3D x0_t_hat = x0_t.normalized();
         QVector3D x1_t_hat = x1_t.normalized();
-        QVector3D x2_t_hat = x2_t.normalized();
 
         // The following method only works when Delta X can be made with a cylinder of hight and radius of 1, where x1 lies on the bottom ring of the cylinder and x2 on the top ring.
 
         // Separately find the parts of the axis parallel and perpendicular to Delta X
         // By utilizing Delta X dot A = 1 we can calculate the angle between Delta X and A
-        float c_theta = 1.0f / deltaX.length();
+        float c_theta = std::clamp(1.0f / deltaX.length(), -1.0f, 1.0f);
         float s_theta = sqrt(1 - c_theta * c_theta);
         QVector3D axis_par_deltaX = c_theta * deltaX_hat;
 
@@ -796,17 +797,17 @@ QVector3D Envelope::getAxisAt(float t)
         // The normals at x1 and x2 are perpendicular to the respective time derivates, as well as the axis.
         // This means each normal is the cross product of the time derivative and the axis (which is split in the parallel and perpendicular part).
         // This eventually leads to the form A*cos(phi) + B*sin(phi)=C, where A, B, and C are all coplanar vectors (by construction), which is the only reason this works.
-        QVector3D A = v1 - QVector3D::crossProduct(x2_t_hat, v1) + QVector3D::crossProduct(x1_t_hat, v1);
-        QVector3D B = v2 - QVector3D::crossProduct(x2_t_hat, v2) + QVector3D::crossProduct(x1_t_hat, v2);
-        QVector3D C = deltaX + QVector3D::crossProduct(x2_t_hat, axis_par_deltaX) - QVector3D::crossProduct(x1_t_hat, axis_par_deltaX) - axis_par_deltaX;
+        QVector3D D = v1 - QVector3D::crossProduct(x1_t_hat, v1) + QVector3D::crossProduct(x0_t_hat, v1);
+        QVector3D E = v2 - QVector3D::crossProduct(x1_t_hat, v2) + QVector3D::crossProduct(x0_t_hat, v2);
+        QVector3D F = deltaX + QVector3D::crossProduct(x1_t_hat, axis_par_deltaX) - QVector3D::crossProduct(x0_t_hat, axis_par_deltaX) - axis_par_deltaX;
 
         // By using dot product we can find phi
-        float a = QVector3D::dotProduct(A, A);
-        float b = QVector3D::dotProduct(A, B);
-        float c = QVector3D::dotProduct(B, B);
-        float d = QVector3D::dotProduct(A, C);
-        float e = QVector3D::dotProduct(B, C);
-        float phi = atan2(e * a - d * b, d * c - e * b);
+        float h = QVector3D::dotProduct(D, D);
+        float i = QVector3D::dotProduct(D, E);
+        float j = QVector3D::dotProduct(E, E);
+        float k = QVector3D::dotProduct(D, F);
+        float l = QVector3D::dotProduct(E, F);
+        float phi = atan2(l * h - k * i, k * j - l * i);
         float c_phi = cos(phi);
         float s_phi = sin(phi);
 
@@ -851,7 +852,7 @@ QVector3D Envelope::getAxisDtAt(float t)
 
         // Separately find the parts of the axis parallel and perpendicular to Delta X
         // By utilizing Delta X dot A = 1 we can calculate the angle between Delta X and A
-        float c_theta = 1.0f / deltaX.length();
+        float c_theta = std::clamp(1.0f / deltaX.length(), -1.0f, 1.0f);
         float c_theta_t = -QVector3D::dotProduct(deltaX, deltaX_t) / pow(deltaX.length(), 3);
         float s_theta = sqrt(1 - c_theta * c_theta);
         float s_theta_t = -c_theta * c_theta_t / s_theta;

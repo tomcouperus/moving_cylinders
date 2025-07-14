@@ -46,8 +46,19 @@ public:
         percentBlack=settings.percentBlack;
     }
 
+    inline void setSectorsA(int n) { sectorsA = n; }
+    inline void setSectorsT(int n) { sectorsT = n; }
+
     inline int getIndex() const { return index; }
-    inline Envelope *getAdjEnvelope() { return adjEnvA0; }
+    inline Envelope *getAdjA0Envelope() { return adjEnvA0; }
+    void setAdjacentA0Envelope(Envelope *env);
+    inline Envelope *getAdjA1Envelope() { return adjEnvA1; }
+    void setAdjacentA1Envelope(Envelope *env);
+
+    void registerDependent(Envelope *dependent);
+    void deregisterDependent(Envelope *dependent);
+    bool checkDependencies();
+    QSet<int> getAllDependents();
 
     void initEnvelope();
     void update();
@@ -81,20 +92,14 @@ public:
     QVector3D getAxisDt3At(float t);
     QVector3D getAxisDt4At(float t);
 
-    inline void setSectorsA(int n) { sectorsA = n; }
-    inline void setSectorsT(int n) { sectorsT = n; }
 
-
-    void registerDependent(Envelope *dependent);
-    void deregisterDependent(Envelope *dependent);
-    bool checkDependencies();
-    QSet<int> getAllDependents();
 
     inline bool isActive() { return active; }
     inline void setActive(bool value) { active = value; }
 
     inline bool isPositContinuous() { return adjEnvA0 != nullptr; }
-    inline void setIsTanContinuous(bool value){ tanContToAdj = value; }
+    inline void setTanContinuity(bool value){ tanContToAdj = value; }
+    inline bool getTanContinuity() { return tanContToAdj; }
     inline bool isTanContinuous() { return !isAxisConstrained() && isPositContinuous() && tanContToAdj; }
     inline bool isAxisConstrained() {return isPositContinuous() && adjEnvA1 != nullptr; }
 
@@ -107,7 +112,6 @@ public:
     inline CylinderMovement& getToolMovement() { return toolMovement; }
     inline Tool* getTool(){ return tool; }
     inline void setTool(Tool *tool) { this->tool = tool; }
-    void setAdjacentEnvelope(Envelope *env);
 
     inline QVector<Vertex>& getVertexArr(){ return vertexArr; }
     inline QVector<Vertex>& getVertexArrCenters(){ return vertexArrCenters; }
