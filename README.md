@@ -1,5 +1,6 @@
 # Moving Cylinders
 This project is an exploration of envelope surfaces, which are of great importance in the CNC industry.
+For the prototype environment described in this paper (To Be Published soon), see [this repository](https://github.com/tomcouperus/Surface-Design-by-Envelopes).
 
 Computer numerically controlled machining has been the leading subtractive manufacturing technique for decades. 
 It is used in the automotive, aeronautic, and electronic industries, among many others. Many of these industries require high precision and smoothness in the finishing stage of their products. 
